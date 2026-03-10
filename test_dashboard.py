@@ -4,12 +4,14 @@ DATA DASHBOARD - Hierarchical Exploration of Electrical Consumption
 ================================================================================
 Author: Lorenzo Giannuzzo - Energy Center Lab, DENERG, Politecnico di Torino
 
-Launch:  streamlit run dashboard_ateco.py
+Launch:  streamlit run dashboard.py
 ================================================================================
 """
 
+import io
 import re
 import warnings
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -48,6 +50,13 @@ META_TARGET_COLS = {
     "TATE3DES": ["TATE3DES", "tate3des", "TATE3_DES"],
     "CCATETE": ["CCATETE", "ccatete", "Ccatete", "CCATE", "CodiceATECO"],
 }
+
+POTCONTR_VARIANTS = [
+    "PotenzaContrattuale", "potenzacontrattuale", "POTENZACONTRATTUALE",
+    "Potenza Contrattuale", "POTCONTR", "POT_CONTR", "POTCON",
+    "PotContr", "potcontr", "Pot_Contr", "pot_contr",
+    "Potenza_Contrattuale", "potenza_contrattuale",
+]
 
 COLORS_PLOTLY = px.colors.qualitative.Set2 + px.colors.qualitative.Pastel1
 
@@ -209,7 +218,7 @@ def lookup_ateco_description(code: str) -> str:
 
 def load_all_data():
     if not DATA_DIR.exists():
-        return pd.DataFrame(), pd.DataFrame(), ["data/ folder not found"]
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(columns=["POD", "POTCONTR"]), ["data/ folder not found"]
 
     all_dirs = sorted([d for d in DATA_DIR.iterdir() if d.is_dir()])
     valid_dirs = []
@@ -224,9 +233,10 @@ def load_all_data():
     n_dirs = len(valid_dirs)
 
     if n_dirs == 0:
-        return pd.DataFrame(), pd.DataFrame(), ["No valid directories found"]
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(columns=["POD", "POTCONTR"]), ["No valid directories found"]
 
     meta_frames, meas_frames = [], []
+    potcontr_frames = []
     progress_bar = st.progress(0, text="Preparing...")
     status_text = st.empty()
 
@@ -249,7 +259,8 @@ def load_all_data():
                 if "POD" not in col_map.values():
                     continue
                 df_m = df_m.rename(columns=col_map)
-                meta_cols = [c for c in ["POD", "D_49DES", "FDESC", "TATE3DES", "CCATETE"]
+                meta_cols = [c for c in ["POD", "D_49DES", "FDESC", "TATE3DES",
+                                         "CCATETE"]
                              if c in df_m.columns]
                 df_m = df_m[meta_cols].copy()
                 df_m["POD"] = normalize_pod(df_m["POD"])
@@ -266,8 +277,72 @@ def load_all_data():
                 available_q = [c for c in Q_COLS if c in df_ms.columns]
                 if "DataMisura" not in df_ms.columns or "POD" not in df_ms.columns:
                     continue
+
+                # --- Extract PotenzaContrattuale if present ---
+                pot_col_found = None
+                # 1) Exact match
+                for v in POTCONTR_VARIANTS:
+                    if v in df_ms.columns:
+                        pot_col_found = v
+                        break
+                # 2) Case-insensitive match
+                if pot_col_found is None:
+                    col_map_lower = {c.strip().lower(): c for c in df_ms.columns}
+                    for v in POTCONTR_VARIANTS:
+                        if v.strip().lower() in col_map_lower:
+                            pot_col_found = col_map_lower[v.strip().lower()]
+                            break
+                # 3) Fuzzy fallback: any column containing "potenza" or "potcontr"
+                if pot_col_found is None:
+                    for c in df_ms.columns:
+                        cl = c.strip().lower().replace("_", "").replace(" ", "")
+                        if "potenzacontrattuale" in cl or "potcontr" in cl:
+                            pot_col_found = c
+                            break
+                # 4) Last resort: any column with "potenza" in its name
+                if pot_col_found is None:
+                    for c in df_ms.columns:
+                        if "potenza" in c.strip().lower():
+                            pot_col_found = c
+                            break
+
+                if pot_col_found is not None:
+                    df_pot = df_ms[["POD", pot_col_found]].copy()
+                    df_pot["POD"] = normalize_pod(df_pot["POD"])
+                    df_pot = df_pot.rename(columns={pot_col_found: "POTCONTR"})
+                    df_pot["POTCONTR"] = pd.to_numeric(
+                        df_pot["POTCONTR"].astype(str)
+                        .str.replace(",", ".", regex=False).str.strip(),
+                        errors="coerce"
+                    )
+                    df_pot = df_pot.dropna(subset=["POTCONTR"])
+                    df_pot = df_pot.drop_duplicates(subset=["POD"], keep="last")
+                    if not df_pot.empty:
+                        potcontr_frames.append(df_pot)
+
                 cols = ["DataMisura", "POD"] + available_q
+                # Include Tipologia column if present (AP/RLP)
+                tipologia_col = None
+                for candidate in ["Tipologia", "tipologia", "TIPOLOGIA", "Tipo", "tipo", "TIPO"]:
+                    if candidate in df_ms.columns:
+                        tipologia_col = candidate
+                        break
+                if tipologia_col is None:
+                    # Case-insensitive fallback
+                    col_map_tip = {c.strip().lower(): c for c in df_ms.columns}
+                    if "tipologia" in col_map_tip:
+                        tipologia_col = col_map_tip["tipologia"]
+                if tipologia_col is not None:
+                    cols.append(tipologia_col)
+
                 df_ms = df_ms[cols].copy()
+
+                # Normalize Tipologia column name
+                if tipologia_col is not None and tipologia_col != "Tipologia":
+                    df_ms = df_ms.rename(columns={tipologia_col: "Tipologia"})
+                if "Tipologia" in df_ms.columns:
+                    df_ms["Tipologia"] = df_ms["Tipologia"].astype(str).str.strip().str.upper()
+
                 df_ms["POD"] = normalize_pod(df_ms["POD"])
                 for col in available_q:
                     df_ms[col] = pd.to_numeric(
@@ -285,20 +360,35 @@ def load_all_data():
 
     df_meta = pd.concat(meta_frames, ignore_index=True) if meta_frames else pd.DataFrame()
     df_meas = pd.concat(meas_frames, ignore_index=True) if meas_frames else pd.DataFrame()
+    df_potcontr = (
+        pd.concat(potcontr_frames, ignore_index=True)
+        .drop_duplicates(subset=["POD"], keep="last")
+        if potcontr_frames else pd.DataFrame(columns=["POD", "POTCONTR"])
+    )
 
     progress_bar.progress(1.0, text="Loading complete!")
     status_text.empty()
     progress_bar.empty()
 
-    return df_meta, df_meas, issues
+    return df_meta, df_meas, df_potcontr, issues
 
 
 @st.cache_data(show_spinner=False)
-def prepare_metadata(df_meta):
+def prepare_metadata(df_meta, df_potcontr):
     df_unique = (
         df_meta.sort_values("Periodo")
         .drop_duplicates(subset=["POD"], keep="last").copy()
     )
+
+    # Parse POTCONTR from measures data (not metadata)
+    if not df_potcontr.empty:
+        df_unique = df_unique.merge(
+            df_potcontr[["POD", "POTCONTR"]].rename(columns={"POTCONTR": "POTCONTR_kW"}),
+            on="POD", how="left"
+        )
+    else:
+        df_unique["POTCONTR_kW"] = np.nan
+
     if "CCATETE" not in df_unique.columns:
         return df_unique, False
     ateco_parsed = df_unique["CCATETE"].apply(parse_ateco).apply(pd.Series)
@@ -331,13 +421,11 @@ def compute_daily_profiles(df_meas, _prog=None):
     if _prog:
         _prog.progress(0.05, text="Extracting calendar month (5%)...")
 
-    # Memory-efficient: add Month column in-place, no full copy
     month_col = df_meas["DataMisura"].dt.month
 
     if _prog:
         _prog.progress(0.15, text="Averaging daily profiles per POD per month (15%)...")
 
-    # Groupby directly on original data — no 6 GiB copy needed
     grouped = (
         df_meas[available_q]
         .astype(np.float32)
@@ -363,10 +451,6 @@ def compute_daily_profiles(df_meas, _prog=None):
     if _prog:
         _prog.progress(0.80, text="Normalizing profiles (min-max per month) (80%)...")
 
-    # Min-Max normalization per POD per MONTH:
-    # For each month's 96 Q-values, independently map min->0, max->1.
-    # This highlights intra-day pattern within each month,
-    # removing cross-month seasonal amplitude differences.
     profile_norm = profile_raw.copy()
     for m in range(1, 13):
         prefix = f"M{m:02d}_"
@@ -558,6 +642,323 @@ def run_clustering(profile_norm, pods_subset, cluster_month=None):
 
 
 # ==============================================================================
+# EXPORT / DOWNLOAD HELPERS
+# ==============================================================================
+
+def fig_to_png_bytes(fig, width=1600, height=900, scale=2):
+    """Convert a Plotly figure to high-quality PNG bytes.
+    Tries kaleido first, then falls back to static HTML screenshot approach."""
+    try:
+        return fig.to_image(format="png", width=width, height=height, scale=scale,
+                            engine="kaleido")
+    except Exception as e_kal:
+        # Try without specifying engine (may use orca or other backend)
+        try:
+            return fig.to_image(format="png", width=width, height=height, scale=scale)
+        except Exception:
+            raise RuntimeError(
+                f"PNG export failed. Install kaleido: pip install kaleido. "
+                f"Original error: {e_kal}"
+            )
+
+
+def mpl_fig_to_png_bytes(fig_mpl, dpi=200):
+    """Convert a Matplotlib figure to PNG bytes."""
+    buf = io.BytesIO()
+    fig_mpl.savefig(buf, format="png", dpi=dpi, bbox_inches="tight",
+                    facecolor="white", edgecolor="none")
+    buf.seek(0)
+    return buf.read()
+
+
+def build_cluster_centroids_df(X_df, q_labels):
+    """Build a DataFrame with cluster centroid profiles + stats."""
+    q_cols = [c for c in X_df.columns if c.startswith("Q")]
+    rows = []
+    for cl in sorted(X_df["Cluster"].unique()):
+        cl_data = X_df[X_df["Cluster"] == cl][q_cols]
+        mean_p = cl_data.mean()
+        std_p = cl_data.std()
+        n_members = len(cl_data)
+
+        # Centroid row
+        row = {"Cluster": cl, "Statistic": "Centroid (mean)", "N_PODs": n_members}
+        for i, qc in enumerate(q_cols):
+            label = q_labels[i] if i < len(q_labels) else qc
+            row[label] = round(mean_p[qc], 6)
+        rows.append(row)
+
+        # Std row
+        row_std = {"Cluster": cl, "Statistic": "Std Dev", "N_PODs": n_members}
+        for i, qc in enumerate(q_cols):
+            label = q_labels[i] if i < len(q_labels) else qc
+            row_std[label] = round(std_p[qc], 6)
+        rows.append(row_std)
+
+    return pd.DataFrame(rows)
+
+
+def build_cluster_summary_df(X_df, q_labels):
+    """Build a summary DataFrame for each cluster."""
+    q_cols = [c for c in X_df.columns if c.startswith("Q")]
+    rows = []
+    for cl in sorted(X_df["Cluster"].unique()):
+        cl_data = X_df[X_df["Cluster"] == cl]
+        profile_mean = cl_data[q_cols].mean()
+        peak_idx = profile_mean.idxmax()
+        trough_idx = profile_mean.idxmin()
+        peak_q = int(peak_idx.replace("Q", "")) - 1
+        trough_q = int(trough_idx.replace("Q", "")) - 1
+        peak_time = q_labels[peak_q] if peak_q < len(q_labels) else "?"
+        trough_time = q_labels[trough_q] if trough_q < len(q_labels) else "?"
+        rows.append({
+            "Cluster": cl,
+            "N_PODs": len(cl_data),
+            "Pct_of_Total": f"{len(cl_data)/len(X_df)*100:.1f}%",
+            "Peak_Time": peak_time,
+            "Trough_Time": trough_time,
+            "Max_Norm": round(profile_mean.max(), 4),
+            "Min_Norm": round(profile_mean.min(), 4),
+            "Mean_Norm": round(profile_mean.mean(), 4),
+        })
+    return pd.DataFrame(rows)
+
+
+def build_users_with_clusters(X_df, df_meas, df_unique):
+    """Build DataFrame: all measures for clustered PODs + Cluster column + metadata."""
+    pod_cluster = X_df[["Cluster"]].reset_index().rename(columns={"index": "POD"})
+    if pod_cluster.columns[0] != "POD":
+        pod_cluster = pod_cluster.rename(columns={pod_cluster.columns[0]: "POD"})
+
+    # Ensure POD column is consistently formatted
+    pod_cluster["POD"] = pod_cluster["POD"].astype(str).str.strip().str.upper()
+
+    clustered_pods = set(pod_cluster["POD"])
+    df_meas_sub = df_meas[df_meas["POD"].isin(clustered_pods)].copy()
+
+    # If no measures found, return an empty but well-structured DataFrame
+    if df_meas_sub.empty:
+        # Return at least the POD-cluster mapping with metadata
+        meta_cols_to_merge = ["POD"]
+        for c in ["D_49DES", "FDESC", "TATE3DES", "CCATETE", "POTCONTR_kW",
+                   "ATECO_L1", "ATECO_L2", "ATECO_L3"]:
+            if c in df_unique.columns:
+                meta_cols_to_merge.append(c)
+
+        result = pod_cluster.merge(
+            df_unique[meta_cols_to_merge].drop_duplicates(subset=["POD"]),
+            on="POD", how="left"
+        )
+        return result
+
+    # Merge cluster assignment
+    df_meas_sub = df_meas_sub.merge(pod_cluster, on="POD", how="left")
+
+    # Merge metadata columns
+    meta_cols_to_merge = ["POD"]
+    for c in ["D_49DES", "FDESC", "TATE3DES", "CCATETE", "POTCONTR_kW",
+              "ATECO_L1", "ATECO_L2", "ATECO_L3"]:
+        if c in df_unique.columns:
+            meta_cols_to_merge.append(c)
+
+    df_meas_sub = df_meas_sub.merge(
+        df_unique[meta_cols_to_merge].drop_duplicates(subset=["POD"]),
+        on="POD", how="left"
+    )
+
+    # Reorder: POD, Cluster, metadata, DataMisura, Periodo, Q1..Q96
+    front_cols = ["POD", "Cluster"]
+    meta_extra = [c for c in meta_cols_to_merge if c != "POD"]
+    mid_cols = meta_extra + ["DataMisura", "Periodo"]
+    q_available = [c for c in Q_COLS if c in df_meas_sub.columns]
+    ordered = front_cols + mid_cols + q_available
+    ordered = [c for c in ordered if c in df_meas_sub.columns]
+    remaining = [c for c in df_meas_sub.columns if c not in ordered]
+    df_meas_sub = df_meas_sub[ordered + remaining]
+
+    return df_meas_sub
+
+
+def _safe_to_excel(df, writer, sheet_name, fallback_msg="No data available"):
+    """Safely write a DataFrame to Excel, handling empty DataFrames AND
+    internal to_excel failures to avoid 'At least one sheet must be visible'."""
+    try:
+        if df is not None and not df.empty:
+            df.to_excel(writer, index=False, sheet_name=sheet_name)
+        else:
+            pd.DataFrame({"Info": [fallback_msg]}).to_excel(
+                writer, index=False, sheet_name=sheet_name
+            )
+    except Exception as e:
+        # If to_excel failed (bad dtypes, too large, etc.), write a fallback
+        try:
+            pd.DataFrame({"Info": [f"Export error: {e}"]}).to_excel(
+                writer, index=False, sheet_name=sheet_name
+            )
+        except Exception:
+            pass  # Last resort: skip this sheet entirely
+
+
+def _safe_excel_write(output_buf, sheets: dict):
+    """Write multiple DataFrames to an Excel BytesIO buffer, guaranteeing
+    that the workbook always has at least one visible sheet.
+
+    sheets: dict of {sheet_name: (df, fallback_msg)}
+    """
+    from openpyxl import Workbook
+
+    writer = pd.ExcelWriter(output_buf, engine="openpyxl")
+    try:
+        for sheet_name, (df, fallback_msg) in sheets.items():
+            _safe_to_excel(df, writer, sheet_name, fallback_msg)
+    except Exception:
+        pass
+    finally:
+        # Guarantee at least one visible sheet before saving
+        wb = writer.book
+        if not wb.sheetnames:
+            wb.create_sheet("Info")
+            wb["Info"].append(["No data could be exported"])
+        writer.close()
+
+
+def build_export_zip(X_df, df_meas, df_unique, optimal_k, cluster_month,
+                     fig_profiles, fig_voting, fig_dendro_mpl,
+                     monthly_figs=None):
+    """Build a ZIP file containing all clustering export data."""
+    buf = io.BytesIO()
+
+    month_label = "OverallAvg" if cluster_month is None \
+        else MONTH_NAMES.get(cluster_month, str(cluster_month))
+
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        # 1) Users + measures + cluster
+        with st.spinner("Exporting user measures with clusters..."):
+            df_users = build_users_with_clusters(X_df, df_meas, df_unique)
+            users_buf = io.BytesIO()
+            _safe_excel_write(users_buf, {
+                "Measures_Clustered": (df_users, "No measure data found for clustered PODs"),
+            })
+            zf.writestr(
+                f"users_measures_k{optimal_k}_{month_label}.xlsx",
+                users_buf.getvalue()
+            )
+
+        # 2) Cluster descriptive Excel (centroids + summary)
+        with st.spinner("Exporting cluster descriptives..."):
+            q_labels = Q_TIME_LABELS
+            df_centroids = build_cluster_centroids_df(X_df, q_labels)
+            df_summary = build_cluster_summary_df(X_df, q_labels)
+
+            # POD list per cluster
+            pod_cluster = X_df[["Cluster"]].reset_index()
+            if pod_cluster.columns[0] != "Cluster":
+                pod_cluster = pod_cluster.rename(
+                    columns={pod_cluster.columns[0]: "POD"}
+                )
+            else:
+                pod_cluster.columns = ["Cluster", "POD"]
+
+            # Merge metadata for POD list
+            meta_merge_cols = ["POD"]
+            for c in ["D_49DES", "CCATETE", "POTCONTR_kW",
+                       "ATECO_L1", "ATECO_L2", "ATECO_L3"]:
+                if c in df_unique.columns:
+                    meta_merge_cols.append(c)
+            pod_list = pod_cluster.merge(
+                df_unique[meta_merge_cols].drop_duplicates(subset=["POD"]),
+                on="POD", how="left"
+            ).sort_values(["Cluster", "POD"])
+
+            desc_buf = io.BytesIO()
+            # Build voting details
+            voting_rows = []
+            for cl in sorted(X_df["Cluster"].unique()):
+                cl_pods = X_df[X_df["Cluster"] == cl].index.tolist()
+                voting_rows.append({
+                    "Cluster": cl, "N_PODs": len(cl_pods)
+                })
+            voting_df = pd.DataFrame(voting_rows)
+
+            _safe_excel_write(desc_buf, {
+                "Summary": (df_summary, "No summary data available"),
+                "Centroids": (df_centroids, "No centroid data available"),
+                "POD_Cluster_List": (pod_list, "No POD list available"),
+                "Cluster_Sizes": (voting_df, "No cluster size data"),
+            })
+
+            zf.writestr(
+                f"cluster_descriptives_k{optimal_k}_{month_label}.xlsx",
+                desc_buf.getvalue()
+            )
+
+        # 3) PNG images
+        png_errors = []
+        with st.spinner("Exporting high-quality PNG images..."):
+            # Cluster profiles
+            try:
+                png_profiles = fig_to_png_bytes(fig_profiles, width=1800, height=900)
+                zf.writestr(
+                    f"cluster_profiles_k{optimal_k}_{month_label}.png",
+                    png_profiles
+                )
+            except Exception as e:
+                png_errors.append(f"Cluster profiles: {e}")
+
+            # Voting chart
+            if fig_voting is not None:
+                try:
+                    png_voting = fig_to_png_bytes(fig_voting, width=1200, height=600)
+                    zf.writestr(
+                        f"optimal_k_voting_k{optimal_k}_{month_label}.png",
+                        png_voting
+                    )
+                except Exception as e:
+                    png_errors.append(f"Voting chart: {e}")
+
+            # Dendrogram (matplotlib)
+            if fig_dendro_mpl is not None:
+                try:
+                    png_dendro = mpl_fig_to_png_bytes(fig_dendro_mpl, dpi=200)
+                    zf.writestr(
+                        f"dendrogram_k{optimal_k}_{month_label}.png",
+                        png_dendro
+                    )
+                except Exception as e:
+                    png_errors.append(f"Dendrogram: {e}")
+
+            # Monthly breakdown figures
+            if monthly_figs:
+                for m, fig_m in monthly_figs.items():
+                    try:
+                        png_m = fig_to_png_bytes(fig_m, width=1000, height=600)
+                        zf.writestr(
+                            f"monthly_profiles/month_{m:02d}_{MONTH_NAMES[m]}_k{optimal_k}.png",
+                            png_m
+                        )
+                    except Exception as e:
+                        png_errors.append(f"Month {MONTH_NAMES.get(m, m)}: {e}")
+            elif cluster_month is None:
+                png_errors.append(
+                    "Monthly figs dict is empty — no monthly breakdown images to export"
+                )
+
+        # Write a summary of PNG export issues if any
+        if png_errors:
+            error_txt = "PNG EXPORT ISSUES\n" + "=" * 40 + "\n"
+            error_txt += "\n".join(f"- {e}" for e in png_errors)
+            error_txt += (
+                "\n\nTo fix: install kaleido with:\n"
+                "  pip install kaleido\n"
+                "Then reload the dashboard and re-run clustering."
+            )
+            zf.writestr("_PNG_EXPORT_ISSUES.txt", error_txt)
+
+    buf.seek(0)
+    return buf, png_errors
+
+
+# ==============================================================================
 # UI COMPONENTS
 # ==============================================================================
 
@@ -744,15 +1145,22 @@ def main():
         load_ateco_classification()
 
     # --- Data Loading ---
-    if "data_loaded" not in st.session_state:
-        df_meta, df_meas, issues = load_all_data()
+    if "data_loaded" not in st.session_state or "df_potcontr" not in st.session_state:
+        # Force reload if session was created by an older dashboard version
+        for key in ["data_loaded", "df_meta", "df_meas", "df_potcontr", "issues",
+                     "profile_norm", "profile_raw", "pods_12m"]:
+            st.session_state.pop(key, None)
+
+        df_meta, df_meas, df_potcontr, issues = load_all_data()
         st.session_state["df_meta"] = df_meta
         st.session_state["df_meas"] = df_meas
+        st.session_state["df_potcontr"] = df_potcontr
         st.session_state["issues"] = issues
         st.session_state["data_loaded"] = True
     else:
         df_meta = st.session_state["df_meta"]
         df_meas = st.session_state["df_meas"]
+        df_potcontr = st.session_state["df_potcontr"]
         issues = st.session_state["issues"]
 
     if df_meta.empty:
@@ -763,17 +1171,59 @@ def main():
                     st.text(iss)
         return
 
-    df_unique, has_ateco = prepare_metadata(df_meta)
+    df_unique, has_ateco = prepare_metadata(df_meta, df_potcontr)
 
     if not has_ateco:
         st.error("CCATETE column not found in metadata.")
         st.info(f"Columns found: {list(df_unique.columns)}")
         return
 
-    # --- Profile computation ---
+    # --- Tipologia filter (AP / RLP) - applied BEFORE profile computation ---
+    has_tipologia = "Tipologia" in df_meas.columns and df_meas["Tipologia"].notna().any()
+    if has_tipologia:
+        tip_values = sorted(df_meas["Tipologia"].dropna().unique().tolist())
+        tip_counts = df_meas.groupby("Tipologia")["POD"].nunique()
+        tip_options_display = []
+        for tv in tip_values:
+            n = tip_counts.get(tv, 0)
+            tip_options_display.append(f"{tv} ({n:,} PODs)")
+        tip_options_display.insert(0, "All")
+        tip_values.insert(0, "All")
+
+        sel_tipologia = st.sidebar.radio(
+            "Measure Type (Tipologia)",
+            tip_values,
+            format_func=lambda x: f"{x} ({tip_counts.get(x, 0):,} PODs)" if x != "All"
+                else f"All ({df_meas['POD'].nunique():,} PODs)",
+            index=0,
+            key="tipologia_filter",
+            help="AP = Active Power (Potenza Attiva), RLP = Reactive Load Profile (Reattiva Lavorata Prelevata)"
+        )
+        st.sidebar.divider()
+    else:
+        sel_tipologia = "All"
+
+    # Apply Tipologia filter to df_meas
+    if sel_tipologia != "All" and has_tipologia:
+        df_meas_filtered = df_meas[df_meas["Tipologia"] == sel_tipologia].copy()
+    else:
+        df_meas_filtered = df_meas
+
+    # --- Profile computation (depends on Tipologia filter) ---
+    # Invalidate cache if Tipologia filter changed
+    prev_tipologia = st.session_state.get("_prev_tipologia", None)
+    tipologia_changed = (prev_tipologia is not None and prev_tipologia != sel_tipologia)
+    if tipologia_changed:
+        st.session_state.pop("profile_norm", None)
+        st.session_state.pop("profile_raw", None)
+        st.session_state.pop("pods_12m", None)
+        st.session_state.pop("clustering_results", None)
+        st.session_state.pop("export_zip", None)
+    st.session_state["_prev_tipologia"] = sel_tipologia
+
     if "profile_norm" not in st.session_state:
         prog = st.progress(0, text="Computing daily load profiles (0%)...")
-        profile_norm, profile_raw = compute_daily_profiles(df_meas, prog)
+        profile_norm, profile_raw = compute_daily_profiles(df_meas_filtered, prog)
         st.session_state["profile_norm"] = profile_norm
         st.session_state["profile_raw"] = profile_raw
     else:
@@ -783,7 +1233,7 @@ def main():
     # --- Compute 12+ month PODs ---
     if "pods_12m" not in st.session_state:
         st.session_state["pods_12m"] = compute_pods_with_12_months(
-            df_meas[["POD", "Periodo"]].drop_duplicates()
+            df_meas_filtered[["POD", "Periodo"]].drop_duplicates()
         )
     pods_12m = st.session_state["pods_12m"]
 
@@ -797,17 +1247,26 @@ def main():
             st.rerun()
 
         n_pod_total = df_unique["POD"].nunique()
-        n_pod_meas = df_meas["POD"].nunique()
-        n_periodi = df_meas["Periodo"].nunique()
+        n_pod_meas = df_meas_filtered["POD"].nunique()
+        n_periodi = df_meas_filtered["Periodo"].nunique()
         n_with_profile = len(profile_norm)
         n_12m = len(pods_12m)
 
         st.metric("Unique PODs (metadata)", f"{n_pod_total:,}")
         st.metric("Unique PODs (measures)", f"{n_pod_meas:,}")
+        if has_tipologia and sel_tipologia != "All":
+            st.caption(f"Filtered: {sel_tipologia}")
         st.metric("Months in dataset", f"{n_periodi}")
         st.metric("PODs with 12+ months", f"{n_12m:,}")
         st.metric("PODs with load profile", f"{n_with_profile:,}")
         st.metric("ATECO codes loaded", f"{len(ATECO_LOOKUP):,}")
+
+        # Potenza contrattuale diagnostic
+        if "df_potcontr" in st.session_state:
+            n_pot = len(st.session_state["df_potcontr"])
+            st.metric("PODs with Pot. Contr.", f"{n_pot:,}")
+        else:
+            st.metric("PODs with Pot. Contr.", "N/A")
 
         st.divider()
         st.header("Filters")
@@ -853,6 +1312,113 @@ def main():
         if sel_l3 != "All":
             df_filtered = df_filtered[df_filtered["ATECO_L3"] == sel_l3]
 
+        # ----------------------------------------------------------------------
+        # POTENZA CONTRATTUALE FILTER
+        # ----------------------------------------------------------------------
+        st.divider()
+        st.header("Contractual Power Filter")
+
+        has_potcontr = (
+            "POTCONTR_kW" in df_filtered.columns
+            and df_filtered["POTCONTR_kW"].notna().any()
+        )
+
+        if has_potcontr:
+            pot_vals = df_filtered["POTCONTR_kW"].dropna()
+            n_with_pot = int(pot_vals.count())
+            n_without_pot = int(df_filtered["POTCONTR_kW"].isna().sum())
+
+            # Get unique power levels sorted, with POD count per level
+            power_levels = (
+                df_filtered.dropna(subset=["POTCONTR_kW"])
+                .groupby("POTCONTR_kW")["POD"].nunique()
+                .sort_index()
+            )
+
+            st.caption(
+                f"Available for {n_with_pot:,} PODs across "
+                f"{len(power_levels)} power levels. "
+                f"{n_without_pot:,} PODs missing this field."
+            )
+
+            enable_pot_filter = st.checkbox(
+                "Enable contractual power filter", value=False, key="pot_enable"
+            )
+
+            if enable_pot_filter:
+                # Select/Deselect all buttons
+                btn_col1, btn_col2 = st.columns(2)
+                with btn_col1:
+                    select_all = st.button("Select All", key="pot_sel_all",
+                                           use_container_width=True)
+                with btn_col2:
+                    deselect_all = st.button("Deselect All", key="pot_desel_all",
+                                             use_container_width=True)
+
+                # Manage default state for checkboxes
+                if select_all:
+                    for kw in power_levels.index:
+                        st.session_state[f"pot_cb_{kw}"] = True
+                if deselect_all:
+                    for kw in power_levels.index:
+                        st.session_state[f"pot_cb_{kw}"] = False
+
+                # Show checkboxes for each power level inside a scrollable container
+                selected_levels = []
+                with st.container(height=250):
+                    for kw_val, n_pods_kw in power_levels.items():
+                        default = st.session_state.get(f"pot_cb_{kw_val}", True)
+                        checked = st.checkbox(
+                            f"{kw_val:.1f} kW  ({n_pods_kw} PODs)",
+                            value=default,
+                            key=f"pot_cb_{kw_val}",
+                        )
+                        if checked:
+                            selected_levels.append(kw_val)
+
+                include_missing_pot = st.checkbox(
+                    f"Include {n_without_pot:,} PODs with missing power data",
+                    value=False, key="pot_include_na"
+                )
+
+                # Apply filter
+                if selected_levels:
+                    mask_pot = df_filtered["POTCONTR_kW"].isin(selected_levels)
+                else:
+                    mask_pot = pd.Series(False, index=df_filtered.index)
+
+                if include_missing_pot:
+                    mask_pot = mask_pot | df_filtered["POTCONTR_kW"].isna()
+
+                df_filtered = df_filtered[mask_pot]
+        else:
+            st.info(
+                "Contractual power column not found or "
+                "all values are missing in the current selection."
+            )
+            with st.expander("Diagnostics"):
+                if "POTCONTR_kW" in df_filtered.columns:
+                    n_total = len(df_filtered)
+                    n_notna = df_filtered["POTCONTR_kW"].notna().sum()
+                    st.text(f"Column POTCONTR_kW exists: YES")
+                    st.text(f"Total PODs in selection: {n_total}")
+                    st.text(f"Non-null values: {n_notna}")
+                    st.text(f"Sample values: {df_filtered['POTCONTR_kW'].dropna().head(5).tolist()}")
+                else:
+                    st.text("Column POTCONTR_kW: NOT in df_filtered")
+                    st.text(f"Available columns: {list(df_filtered.columns)}")
+                # Check df_potcontr
+                if "df_potcontr" in st.session_state:
+                    dpc = st.session_state["df_potcontr"]
+                    st.text(f"df_potcontr shape: {dpc.shape}")
+                    st.text(f"df_potcontr columns: {list(dpc.columns)}")
+                    if not dpc.empty:
+                        st.text(f"Sample PODs: {dpc.head(3).to_dict()}")
+                    else:
+                        st.text("df_potcontr is EMPTY — column was never found in CSV files")
+            enable_pot_filter = False
+
+        # Final count
         n_filtered = df_filtered["POD"].nunique()
         st.divider()
         st.metric("PODs in selection", f"{n_filtered:,}")
@@ -879,6 +1445,8 @@ def main():
         st.subheader("POD Distribution by ATECO Level")
 
         filter_parts = []
+        if has_tipologia and sel_tipologia != "All":
+            filter_parts.append(f"Type={sel_tipologia}")
         if use_12m_filter:
             filter_parts.append("12+ months")
         if sel_l1 != "All":
@@ -887,6 +1455,10 @@ def main():
             filter_parts.append(f"L2={sel_l2}")
         if sel_l3 != "All":
             filter_parts.append(f"L3={sel_l3}")
+        if has_potcontr and enable_pot_filter:
+            n_sel = len(selected_levels) if 'selected_levels' in dir() else 0
+            n_tot = len(power_levels) if 'power_levels' in dir() else 0
+            filter_parts.append(f"Power: {n_sel}/{n_tot} levels")
 
         if filter_parts:
             st.info(f"Active filters: {' > '.join(filter_parts)}  |  "
@@ -1000,138 +1572,220 @@ def main():
                     if error:
                         st.error(error)
                     else:
-                        q_cols = [c for c in X_df.columns if c.startswith("Q")]
-                        month_label = "Overall Average" if cluster_month is None \
-                            else MONTH_NAMES[cluster_month]
+                        # Store results in session_state for export
+                        st.session_state["clustering_results"] = {
+                            "X_df": X_df, "Z": Z, "optimal_k": optimal_k,
+                            "details": details, "cluster_month": cluster_month,
+                        }
 
-                        st.success(
-                            f"Clustering complete! Optimal k = {optimal_k} | "
-                            f"{len(X_df)} PODs | Profile: {month_label}"
+                # --- Render results from session_state ---
+                if "clustering_results" in st.session_state:
+                    cr = st.session_state["clustering_results"]
+                    X_df = cr["X_df"]
+                    Z = cr["Z"]
+                    optimal_k = cr["optimal_k"]
+                    details = cr["details"]
+                    cluster_month = cr["cluster_month"]
+
+                    q_cols = [c for c in X_df.columns if c.startswith("Q")]
+                    month_label = "Overall Average" if cluster_month is None \
+                        else MONTH_NAMES[cluster_month]
+
+                    st.success(
+                        f"Clustering complete! Optimal k = {optimal_k} | "
+                        f"{len(X_df)} PODs | Profile: {month_label}"
+                    )
+
+                    # --- Voting ---
+                    st.markdown("---")
+                    st.markdown("### Optimal k Determination")
+                    vote_fig, method_df = show_voting_chart(details)
+                    col_v1, col_v2 = st.columns([2, 1])
+                    with col_v1:
+                        if vote_fig:
+                            st.plotly_chart(vote_fig, use_container_width=True)
+                    with col_v2:
+                        st.markdown("**Method choices:**")
+                        if method_df is not None and not method_df.empty:
+                            st.dataframe(method_df, hide_index=True)
+                        st.metric("Optimal k (majority vote)", optimal_k)
+
+                    # --- Cluster profiles (FIRST) ---
+                    st.markdown("---")
+                    st.markdown("### Average Daily Load Profile per Cluster")
+                    fig_profiles = show_cluster_profiles(
+                        X_df, optimal_k, Q_TIME_LABELS
+                    )
+                    st.plotly_chart(fig_profiles, use_container_width=True)
+
+                    # --- Monthly breakdown (only for Overall) ---
+                    monthly_figs = {}
+                    if cluster_month is None:
+                        st.markdown("---")
+                        st.markdown("### Monthly Profile Breakdown by Cluster")
+                        cluster_labels = X_df[["Cluster"]].copy()
+                        months_to_show = [
+                            m for m in range(1, 13)
+                            if any(c.startswith(f"M{m:02d}_")
+                                   for c in profile_norm.columns)
+                        ]
+                        cols_per_row = 4
+                        for row_start in range(0, len(months_to_show), cols_per_row):
+                            row_months = months_to_show[row_start:row_start + cols_per_row]
+                            cols = st.columns(len(row_months))
+                            for col, m in zip(cols, row_months):
+                                with col:
+                                    m_df = extract_month_profile(
+                                        profile_norm.loc[X_df.index], m
+                                    )
+                                    if m_df.empty:
+                                        continue
+                                    m_df["Cluster"] = cluster_labels["Cluster"]
+                                    q_cols_m = [c for c in m_df.columns
+                                                if c.startswith("Q")]
+                                    fig_m = go.Figure()
+                                    for cl in sorted(m_df["Cluster"].unique()):
+                                        cl_data = m_df[m_df["Cluster"] == cl][q_cols_m]
+                                        mean_p = cl_data.mean()
+                                        x_labels = Q_TIME_LABELS[:len(q_cols_m)]
+                                        fig_m.add_trace(go.Scatter(
+                                            x=x_labels, y=mean_p, mode="lines",
+                                            name=f"Cl.{cl} (n={len(cl_data)})",
+                                            line=dict(width=2),
+                                        ))
+                                    fig_m.update_layout(
+                                        title=f"{MONTH_NAMES[m]}",
+                                        height=250,
+                                        margin=dict(t=30, b=20, l=30, r=10),
+                                        showlegend=(m == months_to_show[0]),
+                                        xaxis=dict(dtick=8, tickangle=-45,
+                                                   tickfont=dict(size=7)),
+                                        yaxis=dict(range=[-0.05, 1.05],
+                                                   tickfont=dict(size=8)),
+                                    )
+                                    st.plotly_chart(fig_m,
+                                                    use_container_width=True)
+                                    monthly_figs[m] = fig_m
+
+                    # --- Summary ---
+                    st.markdown("---")
+                    st.markdown("### Cluster Summary")
+                    summary_rows = []
+                    for cl in sorted(X_df["Cluster"].unique()):
+                        cl_data = X_df[X_df["Cluster"] == cl]
+                        profile_mean = cl_data[q_cols].mean()
+                        peak_idx = profile_mean.idxmax()
+                        trough_idx = profile_mean.idxmin()
+                        peak_q = int(peak_idx.replace("Q", "")) - 1
+                        trough_q = int(trough_idx.replace("Q", "")) - 1
+                        peak_time = Q_TIME_LABELS[peak_q] \
+                            if peak_q < len(Q_TIME_LABELS) else "?"
+                        trough_time = Q_TIME_LABELS[trough_q] \
+                            if trough_q < len(Q_TIME_LABELS) else "?"
+                        summary_rows.append({
+                            "Cluster": cl,
+                            "N. PODs": len(cl_data),
+                            "% of total": f"{len(cl_data)/len(X_df)*100:.1f}%",
+                            "Peak Time": peak_time,
+                            "Trough Time": trough_time,
+                            "Max (norm)": f"{profile_mean.max():.3f}",
+                            "Min (norm)": f"{profile_mean.min():.3f}",
+                        })
+                    st.dataframe(pd.DataFrame(summary_rows),
+                                 hide_index=True, use_container_width=True)
+
+                    # --- Typology per cluster ---
+                    if "D_49DES" in df_unique.columns:
+                        st.markdown("### Typology Composition per Cluster")
+                        cl_meta = (
+                            X_df[["Cluster"]].reset_index()
+                            .merge(df_unique[["POD", "D_49DES"]],
+                                   on="POD", how="left")
                         )
-
-                        # --- Voting ---
-                        st.markdown("---")
-                        st.markdown("### Optimal k Determination")
-                        vote_fig, method_df = show_voting_chart(details)
-                        col_v1, col_v2 = st.columns([2, 1])
-                        with col_v1:
-                            if vote_fig:
-                                st.plotly_chart(vote_fig, use_container_width=True)
-                        with col_v2:
-                            st.markdown("**Method choices:**")
-                            if method_df is not None and not method_df.empty:
-                                st.dataframe(method_df, hide_index=True)
-                            st.metric("Optimal k (majority vote)", optimal_k)
-
-                        # --- Cluster profiles (FIRST) ---
-                        st.markdown("---")
-                        st.markdown("### Average Daily Load Profile per Cluster")
-                        fig_profiles = show_cluster_profiles(
-                            X_df, optimal_k, Q_TIME_LABELS
-                        )
-                        st.plotly_chart(fig_profiles, use_container_width=True)
-
-                        # --- Monthly breakdown (only for Overall) ---
-                        if cluster_month is None:
-                            st.markdown("---")
-                            st.markdown("### Monthly Profile Breakdown by Cluster")
-                            cluster_labels = X_df[["Cluster"]].copy()
-                            months_to_show = [
-                                m for m in range(1, 13)
-                                if any(c.startswith(f"M{m:02d}_")
-                                       for c in profile_norm.columns)
-                            ]
-                            cols_per_row = 4
-                            for row_start in range(0, len(months_to_show), cols_per_row):
-                                row_months = months_to_show[row_start:row_start + cols_per_row]
-                                cols = st.columns(len(row_months))
-                                for col, m in zip(cols, row_months):
-                                    with col:
-                                        m_df = extract_month_profile(
-                                            profile_norm.loc[X_df.index], m
-                                        )
-                                        if m_df.empty:
-                                            continue
-                                        m_df["Cluster"] = cluster_labels["Cluster"]
-                                        q_cols_m = [c for c in m_df.columns
-                                                    if c.startswith("Q")]
-                                        fig_m = go.Figure()
-                                        for cl in sorted(m_df["Cluster"].unique()):
-                                            cl_data = m_df[m_df["Cluster"] == cl][q_cols_m]
-                                            mean_p = cl_data.mean()
-                                            x_labels = Q_TIME_LABELS[:len(q_cols_m)]
-                                            fig_m.add_trace(go.Scatter(
-                                                x=x_labels, y=mean_p, mode="lines",
-                                                name=f"Cl.{cl} (n={len(cl_data)})",
-                                                line=dict(width=2),
-                                            ))
-                                        fig_m.update_layout(
-                                            title=f"{MONTH_NAMES[m]}",
-                                            height=250,
-                                            margin=dict(t=30, b=20, l=30, r=10),
-                                            showlegend=(m == months_to_show[0]),
-                                            xaxis=dict(dtick=8, tickangle=-45,
-                                                       tickfont=dict(size=7)),
-                                            yaxis=dict(range=[-0.05, 1.05],
-                                                       tickfont=dict(size=8)),
-                                        )
-                                        st.plotly_chart(fig_m,
-                                                        use_container_width=True)
-
-                        # --- Summary ---
-                        st.markdown("---")
-                        st.markdown("### Cluster Summary")
-                        summary_rows = []
+                        cl_meta["D_49DES"] = cl_meta["D_49DES"].fillna("Unknown")
                         for cl in sorted(X_df["Cluster"].unique()):
-                            cl_data = X_df[X_df["Cluster"] == cl]
-                            profile_mean = cl_data[q_cols].mean()
-                            peak_idx = profile_mean.idxmax()
-                            trough_idx = profile_mean.idxmin()
-                            peak_q = int(peak_idx.replace("Q", "")) - 1
-                            trough_q = int(trough_idx.replace("Q", "")) - 1
-                            peak_time = Q_TIME_LABELS[peak_q] \
-                                if peak_q < len(Q_TIME_LABELS) else "?"
-                            trough_time = Q_TIME_LABELS[trough_q] \
-                                if trough_q < len(Q_TIME_LABELS) else "?"
-                            summary_rows.append({
-                                "Cluster": cl,
-                                "N. PODs": len(cl_data),
-                                "% of total": f"{len(cl_data)/len(X_df)*100:.1f}%",
-                                "Peak Time": peak_time,
-                                "Trough Time": trough_time,
-                                "Max (norm)": f"{profile_mean.max():.3f}",
-                                "Min (norm)": f"{profile_mean.min():.3f}",
-                            })
-                        st.dataframe(pd.DataFrame(summary_rows),
-                                     hide_index=True, use_container_width=True)
-
-                        # --- Typology per cluster ---
-                        if "D_49DES" in df_unique.columns:
-                            st.markdown("### Typology Composition per Cluster")
-                            cl_meta = (
-                                X_df[["Cluster"]].reset_index()
-                                .merge(df_unique[["POD", "D_49DES"]],
-                                       on="POD", how="left")
+                            cl_sub = cl_meta[cl_meta["Cluster"] == cl]
+                            tipo_count = (
+                                cl_sub.groupby("D_49DES")["POD"].count()
+                                .reset_index().rename(columns={"POD": "N"})
+                                .sort_values("N", ascending=False)
                             )
-                            cl_meta["D_49DES"] = cl_meta["D_49DES"].fillna("Unknown")
-                            for cl in sorted(X_df["Cluster"].unique()):
-                                cl_sub = cl_meta[cl_meta["Cluster"] == cl]
-                                tipo_count = (
-                                    cl_sub.groupby("D_49DES")["POD"].count()
-                                    .reset_index().rename(columns={"POD": "N"})
-                                    .sort_values("N", ascending=False)
-                                )
-                                tipo_count["%"] = (
-                                    tipo_count["N"] / tipo_count["N"].sum() * 100
-                                ).round(1)
-                                with st.expander(f"Cluster {cl} ({len(cl_sub)} PODs)"):
-                                    st.dataframe(tipo_count, hide_index=True)
+                            tipo_count["%"] = (
+                                tipo_count["N"] / tipo_count["N"].sum() * 100
+                            ).round(1)
+                            with st.expander(f"Cluster {cl} ({len(cl_sub)} PODs)"):
+                                st.dataframe(tipo_count, hide_index=True)
 
-                        # --- Dendrogram (LAST) ---
-                        st.markdown("---")
-                        st.markdown("### Dendrogram")
-                        fig_dendro = show_dendrogram(Z, X_df.index, optimal_k)
-                        st.pyplot(fig_dendro)
+                    # --- Dendrogram (LAST) ---
+                    st.markdown("---")
+                    st.markdown("### Dendrogram")
+                    fig_dendro = show_dendrogram(Z, X_df.index, optimal_k)
+                    st.pyplot(fig_dendro)
+
+                    # ===========================================================
+                    # DOWNLOAD SECTION
+                    # ===========================================================
+                    st.markdown("---")
+                    st.markdown("### Download Clustering Results")
+                    st.markdown(
+                        "Download a **ZIP archive** containing:\n"
+                        "- **Excel**: all user measures with cluster assignment + metadata\n"
+                        "- **Excel**: cluster descriptives (centroids, summary, POD list)\n"
+                        "- **PNG**: Average Daily Load Profile per Cluster (high-quality)\n"
+                        "- **PNG**: Optimal k voting chart\n"
+                        "- **PNG**: Dendrogram\n"
+                        + ("- **PNG**: Monthly Profile Breakdown (one image per month)\n"
+                           if cluster_month is None else "")
+                    )
+
+                    dl_col1, dl_col2 = st.columns([1, 2])
+                    with dl_col1:
+                        if st.button("Prepare Download Package", type="secondary",
+                                     key="prepare_zip"):
+                            with st.spinner("Building ZIP archive... this may take a moment."):
+                                zip_buf, png_errors = build_export_zip(
+                                    X_df=X_df,
+                                    df_meas=df_meas_filtered,
+                                    df_unique=df_unique,
+                                    optimal_k=optimal_k,
+                                    cluster_month=cluster_month,
+                                    fig_profiles=fig_profiles,
+                                    fig_voting=vote_fig,
+                                    fig_dendro_mpl=fig_dendro,
+                                    monthly_figs=monthly_figs if cluster_month is None else None,
+                                )
+                                st.session_state["export_zip"] = zip_buf
+                                st.session_state["export_png_errors"] = png_errors
+                            if png_errors:
+                                st.warning(
+                                    f"**{len(png_errors)} PNG export issue(s).** "
+                                    "Excel files are OK. See details below."
+                                )
+                            else:
+                                st.success("Package ready! All PNGs exported successfully.")
+
+                    with dl_col2:
+                        if "export_zip" in st.session_state:
+                            zip_buf = st.session_state["export_zip"]
+                            ml = "OverallAvg" if cluster_month is None \
+                                else MONTH_NAMES.get(cluster_month, str(cluster_month))
+                            fname = f"clustering_results_k{optimal_k}_{ml}.zip"
+                            st.download_button(
+                                label=f"Download {fname}",
+                                data=zip_buf,
+                                file_name=fname,
+                                mime="application/zip",
+                                type="primary",
+                            )
+
+                    if "export_png_errors" in st.session_state and st.session_state["export_png_errors"]:
+                        with st.expander("PNG export issues"):
+                            for err in st.session_state["export_png_errors"]:
+                                st.text(f"• {err}")
+                            st.markdown(
+                                "**Fix:** install `kaleido` with "
+                                "`pip install kaleido` and re-run."
+                            )
 
     # ==========================================================================
     # TAB 3: ATECO Legend
