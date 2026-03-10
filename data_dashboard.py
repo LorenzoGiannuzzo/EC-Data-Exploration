@@ -484,13 +484,49 @@ def compute_daily_profiles(df_meas, _prog=None):
     flat_cols = [f"M{int(month):02d}_{q}" for q, month in unstacked.columns]
     unstacked.columns = flat_cols
 
-    min_non_nan = 6 * n_q
-    unstacked = unstacked.dropna(thresh=min_non_nan)
+    # Lorenzo Giannuzzo: Step 1 — linear interpolation along the time axis
+    # to fill small isolated NaN gaps within each month block before any
+    # row-level filtering. limit=4 caps fills at 4 consecutive slots (1h)
+    # to avoid over-extrapolating large gaps.
+    unstacked = unstacked.interpolate(
+        axis=1, method="linear", limit=4, limit_direction="both"
+    )
+
+    # Lorenzo Giannuzzo: Step 2 — for each month block independently,
+    # forward-fill then backward-fill any residual NaN within that month.
+    # This handles leading/trailing gaps within a single month that
+    # interpolate() cannot reach with a finite limit.
+    for m in range(1, 13):
+        prefix = f"M{m:02d}_"
+        m_cols = [c for c in unstacked.columns if c.startswith(prefix)]
+        if not m_cols:
+            continue
+        unstacked[m_cols] = (
+            unstacked[m_cols]
+            .ffill(axis=1)
+            .bfill(axis=1)
+        )
+
+    # Lorenzo Giannuzzo: Step 3 — any month block still entirely NaN
+    # (POD has no data at all for that month) is filled with the row's
+    # median across all other months, so the POD is not lost.
+    # If even the row median is NaN (no data anywhere), fill with 0.
+    row_median = unstacked.median(axis=1)
+    for col in unstacked.columns:
+        mask = unstacked[col].isna()
+        if mask.any():
+            unstacked.loc[mask, col] = row_median[mask]
+    unstacked = unstacked.fillna(0)
+
+    # Lorenzo Giannuzzo: Step 4 — drop only rows that are entirely zero
+    # across all columns (POD with literally no measurements at all).
+    all_zero_mask = (unstacked == 0).all(axis=1)
+    unstacked = unstacked[~all_zero_mask]
 
     if _prog:
         _prog.progress(0.60, text="Interpolating missing values (60%)...")
 
-    profile_raw = unstacked.interpolate(axis=1, limit_direction="both")
+    profile_raw = unstacked.copy()
 
     if _prog:
         _prog.progress(0.80, text="Normalizing profiles (min-max per month) (80%)...")
@@ -504,9 +540,23 @@ def compute_daily_profiles(df_meas, _prog=None):
         m_data = profile_norm[m_cols]
         m_min = m_data.min(axis=1)
         m_max = m_data.max(axis=1)
-        m_range = (m_max - m_min).replace(0, np.nan)
-        profile_norm[m_cols] = m_data.sub(m_min, axis=0).div(m_range, axis=0)
-    profile_norm = profile_norm.dropna()
+        m_range = m_max - m_min
+
+        # Lorenzo Giannuzzo: when range == 0 (flat profile for the entire
+        # month) the normalized value is 0 everywhere instead of NaN,
+        # so the POD is retained rather than silently dropped.
+        has_range = m_range > 0
+        normalized = m_data.sub(m_min, axis=0).div(
+            m_range.where(has_range, other=1.0), axis=0
+        )
+        # For flat rows, force the result to 0 (min-max of a constant = 0)
+        normalized.loc[~has_range] = 0.0
+        profile_norm[m_cols] = normalized
+
+    # Lorenzo Giannuzzo: No more dropna() here — NaN cannot exist at this
+    # point because all gaps were filled above. Clip to [0, 1] as a safety
+    # guard against floating-point rounding at the boundaries.
+    profile_norm = profile_norm.clip(0.0, 1.0)
 
     if _prog:
         _prog.progress(1.0, text="Profiles complete!")
