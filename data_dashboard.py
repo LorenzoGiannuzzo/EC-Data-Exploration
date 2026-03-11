@@ -1053,6 +1053,204 @@ def plot_pearson_heatmap(df_corr):
     )
     return fig
 
+# ==============================================================================
+# MONTHLY CONSUMPTION DISTRIBUTION — TOP 15 TIPOLOGIE
+# ==============================================================================
+
+def compute_monthly_consumption_per_pod(df_meas):
+    """
+    Lorenzo Giannuzzo: Compute total monthly consumption (sum of Q1..Q96)
+    per POD per month. Each quarter-hour slot is in kWh, so summing all
+    96 slots gives kWh/day; multiplying by the number of days with data
+    in that month gives the monthly total.
+
+    Returns a DataFrame with columns: POD, Periodo, Monthly_kWh
+    """
+    available_q = [c for c in Q_COLS if c in df_meas.columns]
+    if not available_q or "DataMisura" not in df_meas.columns:
+        return pd.DataFrame()
+
+    df = df_meas[["POD", "DataMisura"] + available_q].copy()
+    df["YearMonth"] = df["DataMisura"].dt.to_period("M").astype(str)
+
+    # Sum all Q slots per day per POD, then sum days within the month
+    df["Daily_kWh"] = df[available_q].sum(axis=1)
+    monthly = (
+        df.groupby(["POD", "YearMonth"])["Daily_kWh"]
+        .sum()
+        .reset_index()
+        .rename(columns={"Daily_kWh": "Monthly_kWh"})
+    )
+    return monthly
+
+
+def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
+    """
+    Lorenzo Giannuzzo: Horizontal box plot of monthly consumption distribution
+    for the top-15 user typologies, labelled as ATECO code + description.
+
+    Professional color palette, one distinct color per typology.
+    """
+    monthly = compute_monthly_consumption_per_pod(df_meas)
+    if monthly.empty:
+        return None, None
+
+    # --- attach ATECO + typology info ---
+    meta_cols = ["POD", "CCATETE", "D_49DES", "FDESC", "TATE3DES",
+                 "ATECO_L1", "ATECO_L2", "ATECO_L3"]
+    avail_meta = [c for c in meta_cols if c in df_unique.columns]
+    merged = monthly.merge(
+        df_unique[avail_meta].drop_duplicates("POD"),
+        on="POD", how="left"
+    )
+
+    # --- build a readable label: ATECO code + short typology description ---
+    def make_label(row):
+        # Prefer finest ATECO level available
+        for col in ["ATECO_L3", "ATECO_L2", "ATECO_L1", "CCATETE"]:
+            code = row.get(col, None)
+            if code and str(code) not in ("", "N/A", "nan"):
+                desc = lookup_ateco_description(str(code))
+                if desc:
+                    short_desc = desc[:45]
+                    return f"{code} | {short_desc}"
+                return str(code)
+        # Fallback: use D_49DES or TATE3DES
+        for col in ["D_49DES", "TATE3DES", "FDESC"]:
+            val = row.get(col, None)
+            if val and str(val) not in ("", "nan"):
+                return str(val)[:55]
+        return "Unknown"
+
+    merged["Label"] = merged.apply(make_label, axis=1)
+
+    # --- top 15 by number of unique PODs ---
+    top15_labels = (
+        merged.groupby("Label")["POD"].nunique()
+        .sort_values(ascending=False)
+        .head(15)
+        .index.tolist()
+    )
+
+    df_top = merged[merged["Label"].isin(top15_labels)].copy()
+    df_top = df_top[df_top["Monthly_kWh"] > 0]
+
+    # Sort labels by median consumption (ascending → largest at top in horizontal plot)
+    label_order = (
+        df_top.groupby("Label")["Monthly_kWh"]
+        .median()
+        .sort_values(ascending=True)
+        .index.tolist()
+    )
+
+    # --- professional color palette (15 distinct colors) ---
+    PROF_COLORS = [
+        "#2E86AB", "#A23B72", "#F18F01", "#C73E1D", "#3B1F2B",
+        "#44BBA4", "#E94F37", "#393E41", "#F5A623", "#7B2D8B",
+        "#1A936F", "#C6483C", "#4059AD", "#6B4226", "#2CA58D",
+    ]
+
+    fig = go.Figure()
+
+    for idx, label in enumerate(label_order):
+        vals = df_top[df_top["Label"] == label]["Monthly_kWh"].dropna().values
+        if len(vals) == 0:
+            continue
+        color = PROF_COLORS[idx % len(PROF_COLORS)]
+
+        # --- box trace ---
+        fig.add_trace(go.Box(
+            x=vals,
+            name=label,
+            orientation="h",
+            marker=dict(
+                color=color,
+                size=3,
+                opacity=0.5,
+            ),
+            line=dict(color=color, width=1.8),
+            fillcolor=color,
+            opacity=0.75,
+            boxmean=False,
+            # show only up to 99th percentile to avoid extreme outlier stretch
+            # (we don't clip data, just let plotly handle whiskers)
+            boxpoints=False,
+            whiskerwidth=0.5,
+            showlegend=False,
+        ))
+
+    # --- n_pods annotation per category ---
+    n_pods_map = df_top.groupby("Label")["POD"].nunique()
+    annotations = []
+    for label in label_order:
+        n = n_pods_map.get(label, 0)
+        annotations.append(dict(
+            x=0,
+            y=label,
+            xref="x",
+            yref="y",
+            text=f"n={n}",
+            showarrow=False,
+            xanchor="right",
+            xshift=-6,
+            font=dict(size=9, color="#555555"),
+        ))
+
+    n_total_pods = df_top["POD"].nunique()
+    n_total_top = merged[merged["Label"].isin(top15_labels)]["POD"].nunique()
+
+    fig.update_layout(
+        title=dict(
+            text=(
+                f"Monthly Consumption Distribution — Top 15 User Typologies"
+                f"<br><sup>{n_total_top:,} PODs | {title_suffix}</sup>"
+            ),
+            font=dict(size=14, color="#1a1a2e"),
+            x=0.5,
+            xanchor="center",
+        ),
+        xaxis=dict(
+            title="Monthly Consumption [kWh]",
+            title_font=dict(size=11),
+            tickfont=dict(size=9),
+            gridcolor="#e8e8e8",
+            showgrid=True,
+            zeroline=True,
+            zerolinecolor="#cccccc",
+            zerolinewidth=1,
+        ),
+        yaxis=dict(
+            title="",
+            tickfont=dict(size=9),
+            automargin=True,
+        ),
+        plot_bgcolor="#fafafa",
+        paper_bgcolor="#ffffff",
+        height=max(500, len(label_order) * 45 + 160),
+        margin=dict(t=80, b=60, l=280, r=40),
+        annotations=annotations,
+        font=dict(family="Arial, sans-serif"),
+    )
+
+    # Summary table
+    summary_rows = []
+    for label in reversed(label_order):  # largest first in table
+        vals = df_top[df_top["Label"] == label]["Monthly_kWh"].dropna()
+        if len(vals) == 0:
+            continue
+        summary_rows.append({
+            "Typology": label,
+            "N PODs": int(n_pods_map.get(label, 0)),
+            "Median [kWh]": round(float(vals.median()), 1),
+            "Mean [kWh]": round(float(vals.mean()), 1),
+            "P25 [kWh]": round(float(vals.quantile(0.25)), 1),
+            "P75 [kWh]": round(float(vals.quantile(0.75)), 1),
+            "Max [kWh]": round(float(vals.max()), 1),
+        })
+    summary_df = pd.DataFrame(summary_rows)
+
+    return fig, summary_df
+
 
 # ==============================================================================
 # CLUSTER COMPOSITION CHART
@@ -1502,6 +1700,28 @@ def main():
                 f"**{n_base:,} PODs** available")
     else:
         st.info(f"No global filters → **{n_base:,} PODs** available")
+
+    # ==============================================================================
+    # CONSUMPTION DISTRIBUTION SECTION
+    # ==============================================================================
+    st.markdown("---")
+    st.subheader("📦 Monthly Consumption Distribution — Top 15 Typologies")
+
+    with st.spinner("Computing consumption distribution..."):
+        period_label = (
+            f"Filter: {' | '.join(filter_parts)}" if filter_parts else "All data"
+        )
+        fig_dist, summary_dist = plot_consumption_distribution_top15(
+            df_meas_filtered, df_unique, title_suffix=period_label
+        )
+
+    if fig_dist is not None:
+        st.plotly_chart(fig_dist, use_container_width=True,
+                        key="main_consumption_dist")
+        with st.expander("📋 Summary Statistics"):
+            st.dataframe(summary_dist, hide_index=True, use_container_width=True)
+    else:
+        st.warning("Not enough data to build consumption distribution chart.")
 
     if profile_norm.empty:
         st.error("No load profiles available. Check data.")
