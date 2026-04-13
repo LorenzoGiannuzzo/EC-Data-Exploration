@@ -117,7 +117,7 @@ DISTRIBUTOR_CODES = {
 
 ATECO_LOOKUP: dict[str, str] = {}
 ATECO_EXCEL_NAME = "Note-esplicative-ATECO-2025-italiano-inglese.xlsx"
-GSE_FILE_NAME = "profili_GSE_prelievo_2025.xlsx"
+GSE_FILE_NAME = "profili GSE_prelievo_2025.xlsx"
 ARERA_FILE_NAME   = "Copia di dati prelievo orario per provincia potenza6 anno 2024-mkt.xlsx"
 ARERA_FILE_NAME_2 = "Copia di dati prelievo orario per provincia0_a_1_5 anno 2024mkt.xlsx"
 ARERA_FILE_NAME_3 = "Copia di dati prelievo orario per provincia3_a_4_5 anno 2024mkt.xlsx"
@@ -864,7 +864,7 @@ def compute_global_metrics(X_df):
 
     metrics = {}
     try:
-        metrics["Silhouette Score"] = round(silhouette_score(X, labels), 4)
+        metrics["Silhouette Score"] = round(silhouette_score(X, labels), 2)
     except Exception:
         metrics["Silhouette Score"] = "N/A"
     try:
@@ -1016,10 +1016,13 @@ def plot_cluster_profiles(X_df, k, title_suffix=""):
         xaxis_title="Time of Day",
         yaxis_title="Normalized (0-1)",
         height=400,
-        yaxis=dict(range=[-0.05, 1.05]),
-        xaxis=dict(dtick=4, tickangle=-45, tickfont=dict(size=9)),
+        yaxis=dict(range=[-0.05, 1.05], gridcolor="#1e3a6b"),
+        xaxis=dict(dtick=4, tickangle=-45, tickfont=dict(size=9, color="#e8f4fd"),
+                   gridcolor="#1e3a6b", title_font=dict(color="#e8f4fd")),
         margin=dict(t=40, b=60, l=50, r=20),
-        legend=dict(font=dict(size=9)),
+        legend=dict(font=dict(size=9, color="#e8f4fd")),
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1048,13 +1051,15 @@ def plot_centroids_only(X_df, k, title_suffix=""):
         xaxis_title="Time of Day",
         yaxis_title="Normalized (0-1)",
         height=300,
-        yaxis=dict(range=[-0.05, 1.05], gridcolor="#eeeeee"),
-        xaxis=dict(dtick=4, tickangle=-45, tickfont=dict(size=9), gridcolor="#eeeeee"),
-        plot_bgcolor="#fafafa",
-        paper_bgcolor="#ffffff",
+        yaxis=dict(range=[-0.05, 1.05], gridcolor="#1e3a6b",
+                   title_font=dict(color="#e8f4fd"), tickfont=dict(size=9, color="#e8f4fd")),
+        xaxis=dict(dtick=4, tickangle=-45, tickfont=dict(size=9, color="#e8f4fd"),
+                   gridcolor="#1e3a6b", title_font=dict(color="#e8f4fd")),
+        plot_bgcolor="#0d2144",
+        paper_bgcolor="#0d1f3c",
         margin=dict(t=40, b=55, l=55, r=20),
-        legend=dict(font=dict(size=9), orientation="h", y=-0.30, x=0),
-        font=dict(family="Arial, sans-serif"),
+        legend=dict(font=dict(size=9, color="#e8f4fd"), orientation="h", y=-0.30, x=0),
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1075,7 +1080,10 @@ def plot_pearson_heatmap(df_corr):
         title="Pearson Correlation Between Cluster Centroids",
         height=350,
         margin=dict(t=40, b=20, l=20, r=20),
-        xaxis=dict(side="bottom"),
+        xaxis=dict(side="bottom", tickfont=dict(color="#e8f4fd")),
+        yaxis=dict(tickfont=dict(color="#e8f4fd")),
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1120,9 +1128,13 @@ def plot_cluster_composition(X_df, df_base, ateco_col, level_label):
         legend_title="ATECO Code",
         height=max(300, n_clusters * 70 + 140),
         margin=dict(t=40, b=50, l=100, r=20),
-        legend=dict(font=dict(size=9)),
-        yaxis=dict(automargin=True),
-        xaxis=dict(tickangle=0),
+        legend=dict(font=dict(size=9, color="#e8f4fd")),
+        yaxis=dict(automargin=True, tickfont=dict(color="#e8f4fd"),
+                   gridcolor="#1e3a6b"),
+        xaxis=dict(tickangle=0, tickfont=dict(color="#e8f4fd"),
+                   title_font=dict(color="#e8f4fd"), gridcolor="#1e3a6b"),
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     fig.update_traces(
         textposition="inside", textfont_size=9,
@@ -1377,7 +1389,7 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
         annotations.append(dict(
             x=0, y=label, xref="x", yref="y", text=f"n={n}",
             showarrow=False, xanchor="right", xshift=-6,
-            font=dict(size=9, color="#000000"),
+            font=dict(size=9, color="#e8f4fd"),
         ))
 
     n_total_top = merged[merged["Label"].isin(top15_labels)]["POD"].nunique()
@@ -1385,24 +1397,24 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
         title=dict(
             text=f"Monthly Consumption Distribution — Top 15 User Typologies<br>"
                  f"<sup>{n_total_top:,} PODs | {title_suffix}</sup>",
-            font=dict(size=14, color="#000000"), x=0.5, xanchor="center",
+            font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         xaxis=dict(
             title="Monthly Consumption [kWh]",
-            title_font=dict(size=11, color="#000000"),
-            tickfont=dict(size=9, color="#000000"),
-            gridcolor="#e8e8e8", showgrid=True,
+            title_font=dict(size=11, color="#e8f4fd"),
+            tickfont=dict(size=9, color="#e8f4fd"),
+            gridcolor="#1e3a6b", showgrid=True,
         ),
         yaxis=dict(
             title="",
-            tickfont=dict(size=9, color="#000000"),
+            tickfont=dict(size=9, color="#e8f4fd"),
             automargin=True,
         ),
-        plot_bgcolor="#fafafa", paper_bgcolor="#ffffff",
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
         height=max(500, len(label_order) * 45 + 160),
         margin=dict(t=80, b=60, l=280, r=40),
         annotations=annotations,
-        font=dict(family="Arial, sans-serif", color="#000000"),
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
 
     summary_rows = []
@@ -1455,7 +1467,7 @@ def plot_potcontr_pie(df_unique):
         ),
         text=custom_text,
         textinfo="text",
-        textfont=dict(size=12, color="#000000"),
+        textfont=dict(size=12, color="#e8f4fd"),
         textposition="inside",
         insidetextorientation="horizontal",
         sort=False,
@@ -1465,15 +1477,15 @@ def plot_potcontr_pie(df_unique):
         title=dict(
             text=f"Contractual Power Distribution<br>"
                  f"<sup>{df['POD'].nunique():,} PODs with power data</sup>",
-            font=dict(size=14, color="#000000"), x=0.5, xanchor="center",
+            font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         legend=dict(
             orientation="v", x=1.02, y=0.5,
-            font=dict(size=10, color="#000000"),
+            font=dict(size=10, color="#e8f4fd"),
         ),
-        plot_bgcolor="#fafafa", paper_bgcolor="#ffffff", height=480,
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c", height=480,
         margin=dict(t=80, b=60, l=80, r=180),
-        font=dict(family="Arial, sans-serif", color="#000000"),
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1542,28 +1554,28 @@ def plot_potcontr_stacked_bar(df_unique, top_n=10):
         title=dict(
             text=f"Contractual Power Distribution by Typology — Top {top_n}<br>"
                  f"<sup>{n_total:,} PODs with power data</sup>",
-            font=dict(size=14, color="#000000"), x=0.5, xanchor="center",
+            font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         xaxis=dict(
             title="Number of PODs",
-            title_font=dict(size=11, color="#000000"),
-            tickfont=dict(size=9, color="#000000"),
-            gridcolor="#e8e8e8", showgrid=True,
+            title_font=dict(size=11, color="#e8f4fd"),
+            tickfont=dict(size=9, color="#e8f4fd"),
+            gridcolor="#1e3a6b", showgrid=True,
         ),
         yaxis=dict(
             title="",
-            tickfont=dict(size=10, color="#000000"),
+            tickfont=dict(size=10, color="#e8f4fd"),
             automargin=True, tickangle=0,
         ),
         legend=dict(
             title="Contractual Power",
-            font=dict(size=10, color="#000000"),
+            font=dict(size=10, color="#e8f4fd"),
             orientation="v", x=1.01, y=0.5,
         ),
-        plot_bgcolor="#fafafa", paper_bgcolor="#ffffff",
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
         height=max(480, top_n * 50 + 160),
         margin=dict(t=80, b=60, l=320, r=160),
-        font=dict(family="Arial, sans-serif", color="#000000"),
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1818,16 +1830,16 @@ def plot_gse_comparison_month(
         ))
 
     fig.update_layout(
-        title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#000000")),
-        xaxis=dict(tickfont=dict(size=8, color="#000000"), tickangle=-45,
-                   dtick=3, gridcolor="#eeeeee"),
-        yaxis=dict(title="% monthly", tickfont=dict(size=8, color="#000000"),
-                   gridcolor="#eeeeee"),
+        title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#e8f4fd")),
+        xaxis=dict(tickfont=dict(size=8, color="#e8f4fd"), tickangle=-45,
+                   dtick=3, gridcolor="#1e3a6b"),
+        yaxis=dict(title="% monthly", tickfont=dict(size=8, color="#e8f4fd"),
+                   gridcolor="#1e3a6b"),
         height=280,
         margin=dict(t=35, b=55, l=55, r=10),
         legend=dict(font=dict(size=8), orientation="h", y=-0.35, x=0),
-        plot_bgcolor="#fafafa", paper_bgcolor="#ffffff",
-        font=dict(family="Arial, sans-serif", color="#000000"),
+        plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+        font=dict(family="Arial, sans-serif", color="#e8f4fd"),
     )
     return fig
 
@@ -1839,30 +1851,32 @@ def compute_comparison_metrics(
     col_wd: str = "GSE Weekday",
     col_we: str = "GSE Weekend",
 ) -> dict:
-    """Pearson r, RMSE, MAE between our profile and GSE weekday/weekend."""
+    """Pearson r, RMSE, MAE between our profile and GSE weekday/weekend.
+    Profiles are in % units, so RMSE/MAE are in percentage points (pp).
+    """
     metrics = {}
     for label, ref in [(f"vs {col_wd}", gse_wd), (f"vs {col_we}", gse_we)]:
         if our is None or ref is None:
-            metrics[label] = {"Pearson r": "—", "RMSE": "—", "MAE": "—"}
+            metrics[label] = {"Pearson r": "—", "RMSE (%)": "—", "MAE (%)": "—"}
             continue
         mask = ~(np.isnan(our) | np.isnan(ref))
         if mask.sum() < 2:
-            metrics[label] = {"Pearson r": "—", "RMSE": "—", "MAE": "—"}
+            metrics[label] = {"Pearson r": "—", "RMSE (%)": "—", "MAE (%)": "—"}
             continue
         r, _ = pearsonr(our[mask], ref[mask])
         rmse = np.sqrt(np.mean((our[mask] - ref[mask]) ** 2))
         mae = np.mean(np.abs(our[mask] - ref[mask]))
         metrics[label] = {
             "Pearson r": round(float(r), 4),
-            "RMSE (pp)": round(float(rmse), 5),
-            "MAE (pp)": round(float(mae), 5),
+            "RMSE (%)": round(float(rmse), 4),
+            "MAE (%)":  round(float(mae), 4),
         }
     return metrics
 
 
-def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: set):
+def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: set):
     """Full GSE comparison tab content."""
-    st.subheader("📊 GSE Profile Comparison")
+    st.subheader("GSE Profile Comparison")
     st.markdown(
         "Comparison of monthly average hourly profiles between PoliTo dataset "
         "and GSE 2025 reference profiles. Values are expressed as **% of monthly "
@@ -1894,18 +1908,21 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
     gse_other_wd    = compute_gse_monthly_hourly(df_gse, "PAUM")
     gse_other_we    = compute_gse_monthly_hourly(df_gse, "PAUF")
 
-    # ── POD groups ────────────────────────────────────────────────────────────
-    pods_dor  = set(df_unique[df_unique["ATECO_L2"] == "DO.R"]["POD"].unique())  & pods_12m
-    pods_donr = set(df_unique[df_unique["ATECO_L2"] == "DO.NR"]["POD"].unique()) & pods_12m
+    # ── POD groups — use df_base which already reflects all global sidebar filters ──
+    # df_base is pre-filtered by: tipologia, 12m coverage, power filter, meas_pods
+    # No need to re-intersect with pods_12m (already done upstream)
+    pods_dor  = set(df_base[df_base["ATECO_L2"] == "DO.R"]["POD"].unique())
+    pods_donr = set(df_base[df_base["ATECO_L2"] == "DO.NR"]["POD"].unique())
     pods_other = set(
-        df_unique[
-            ~df_unique["ATECO_L1"].str.upper().str.startswith("DO", na=False)
-            & ~df_unique["ATECO_L1"].str.upper().str.startswith("IL", na=False)
-            & (df_unique["ATECO_L1"] != "N/A")
+        df_base[
+            ~df_base["ATECO_L1"].str.upper().str.startswith("DO", na=False)
+            & ~df_base["ATECO_L1"].str.upper().str.startswith("IL", na=False)
+            & (df_base["ATECO_L1"] != "N/A")
         ]["POD"].unique()
-    ) & pods_12m
+    )
 
-    # AP only
+    # df_meas is already tipologia-filtered from the sidebar. Keep ap_pods intersection
+    # for robustness (in case user selects "All" tipologia but we still want AP for profiles).
     if "Tipologia" in df_meas.columns and df_meas["Tipologia"].notna().any():
         ap_vals = [v for v in df_meas["Tipologia"].dropna().unique()
                    if str(v).strip().upper() == "AP"]
@@ -1919,7 +1936,7 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
     pods_other = pods_other & ap_pods
 
     st.caption(
-        f"Groups (≥12 months, AP only) — "
+        f"Groups (consistent with global filters) — "
         f"DO.R: {len(pods_dor):,} PODs | "
         f"DO.NR: {len(pods_donr):,} PODs | "
         f"Other (excl. IL): {len(pods_other):,} PODs"
@@ -1947,9 +1964,9 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
 
     # ── Group tabs ────────────────────────────────────────────────────────────
     group_tabs = st.tabs([
-        "🏠 Domestic Resident (DO.R)",
-        "🏢 Domestic Non-Resident (DO.NR)",
-        "🏭 Other (excl. Public Lighting)",
+        "Domestic Resident (DO.R)",
+        "Domestic Non-Resident (DO.NR)",
+        "Other (excl. Public Lighting)",
     ])
 
     groups_cfg = [
@@ -2020,47 +2037,82 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
                             ))
 
                         fig2.update_layout(
-                            title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#000000")),
-                            xaxis=dict(tickfont=dict(size=8, color="#000000"),
-                                       title_font=dict(size=8, color="#000000"),
-                                       tickangle=-45, dtick=3, gridcolor="#eeeeee", showgrid=True),
-                            yaxis=dict(title="Average Daily Consumption [%]",
-                                       title_font=dict(size=8, color="#000000"),
-                                       tickfont=dict(size=8, color="#000000"),
-                                       gridcolor="#eeeeee", showgrid=True),
-                            height=300, margin=dict(t=35, b=60, l=60, r=10),
-                            legend=dict(font=dict(size=8, color="#000000"),
-                                        orientation="h", y=-0.42, x=0),
-                            plot_bgcolor="#fafafa", paper_bgcolor="#ffffff",
-                            font=dict(family="Arial, sans-serif", color="#000000"),
+                            title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#e8f4fd")),
+                            xaxis=dict(
+                                tickfont=dict(size=8, color="#e8f4fd"),
+                                title_font=dict(size=8, color="#e8f4fd"),
+                                tickangle=-45, dtick=3,
+                                gridcolor="#1e3a6b", showgrid=True,
+                                zeroline=False,
+                            ),
+                            yaxis=dict(
+                                title="Average Daily Consumption [%]",
+                                title_font=dict(size=8, color="#e8f4fd"),
+                                tickfont=dict(size=8, color="#e8f4fd"),
+                                gridcolor="#1e3a6b", showgrid=True,
+                                zeroline=False,
+                                rangemode="tozero",
+                            ),
+                            height=320,
+                            margin=dict(t=35, b=100, l=60, r=10),
+                            legend=dict(
+                                font=dict(size=8, color="#e8f4fd"),
+                                orientation="h", y=-0.55, x=0,
+                                bgcolor="rgba(0,0,0,0)",
+                            ),
+                            plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+                            font=dict(family="Arial, sans-serif", color="#e8f4fd"),
                             showlegend=True,
                         )
                         st.plotly_chart(fig2, use_container_width=True,
-                                        key=f"gse_{group_key}_m{month}")
+                                        key=f"gse_{group_key}_m{month}",
+                                        config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
                         group_figs[month] = fig2
 
-                        for polito_label, polito_arr in [
-                            ("PoliTo(avgM)", our_m_arr),
-                            ("PoliTo(avgF)", our_f_arr),
+                        # Correct pairing: avgM ↔ M-normalised GSE column (PDMM/PAUM)
+                        #                  avgF ↔ F-normalised GSE column (PDMF/PAUF)
+                        for polito_label, polito_arr, ref_arr, ref_col in [
+                            ("PoliTo(avgM)", our_m_arr, gse_wd_arr, gse_col_names["weekday"]),
+                            ("PoliTo(avgF)", our_f_arr, gse_we_arr, gse_col_names["weekend"]),
                         ]:
-                            m_dict = compute_comparison_metrics(
-                                polito_arr, gse_wd_arr, gse_we_arr,
-                                col_wd=gse_col_names["weekday"],
-                                col_we=gse_col_names["weekend"],
-                            )
-                            for ref_label, vals in m_dict.items():
-                                all_metric_rows.append({
-                                    "Month": MONTH_NAMES[month],
-                                    "PoliTo Profile": polito_label,
-                                    "Reference": ref_label,
-                                    **vals,
-                                })
+                            if polito_arr is None or ref_arr is None:
+                                continue
+                            mask = ~(np.isnan(polito_arr) | np.isnan(ref_arr))
+                            if mask.sum() < 2:
+                                continue
+                            r, _ = pearsonr(polito_arr[mask], ref_arr[mask])
+                            rmse = float(np.sqrt(np.mean((polito_arr[mask] - ref_arr[mask]) ** 2)))
+                            mae  = float(np.mean(np.abs(polito_arr[mask] - ref_arr[mask])))
+                            all_metric_rows.append({
+                                "Month":          MONTH_NAMES[month],
+                                "PoliTo Profile": polito_label,
+                                "GSE Reference":  ref_col,
+                                "Pearson r":      round(float(r), 4),
+                                "RMSE (pp)":      round(rmse * 100, 4),
+                                "MAE (pp)":       round(mae * 100, 4),
+                            })
 
             st.markdown("#### Similarity Metrics")
-            st.caption("**Pearson r**: shape similarity (1=perfect). **RMSE / MAE**: error in percentage points (pp).")
+            st.caption(
+                "Correct pairing: **PoliTo avgM ↔ GSE M-column** (PDMM/PAUM) | "
+                "**PoliTo avgF ↔ GSE F-column** (PDMF/PAUF). "
+                "RMSE and MAE in percentage points (pp)."
+            )
             df_metrics = pd.DataFrame(all_metric_rows) if all_metric_rows else pd.DataFrame()
             if not df_metrics.empty:
                 st.dataframe(df_metrics, hide_index=True, use_container_width=True)
+                # Excel download for metrics
+                _xl_met = io.BytesIO()
+                with pd.ExcelWriter(_xl_met, engine="openpyxl") as _w:
+                    df_metrics.to_excel(_w, index=False, sheet_name="Similarity_Metrics")
+                _xl_met.seek(0)
+                st.download_button(
+                    label="⬇️ Download Metrics Excel",
+                    data=_xl_met.getvalue(),
+                    file_name=f"GSE_similarity_metrics_{group_label}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"gse_metrics_dl_{group_key}",
+                )
 
             gse_export_data[group_key] = {
                 "label": group_label,
@@ -2071,7 +2123,7 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
 
     # ── Export ────────────────────────────────────────────────────────────────
     st.markdown("---")
-    st.subheader("📥 Export GSE Comparison")
+    st.subheader("Export GSE Comparison")
     st.caption("Exports all monthly charts as interactive HTML and metrics as Excel.")
 
     if st.button("Prepare GSE Export ZIP", type="primary", key="gse_export_btn"):
@@ -2129,6 +2181,15 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
                     xl_buf = io.BytesIO()
                     our_data = our_profiles.get(group_key, {})
                     hour_labels = [f"{h:02d}:00" for h in range(24)]
+                    # Retrieve the GSE ref for this group from groups_cfg
+                    gse_ref_exp = next(
+                        (ref for gk, gl, ref, cn in groups_cfg if gk == group_key),
+                        {"weekday": {}, "weekend": {}}
+                    )
+                    gse_cols_exp = next(
+                        (cn for gk, gl, ref, cn in groups_cfg if gk == group_key),
+                        {"weekday": "GSE_WD", "weekend": "GSE_WE"}
+                    )
                     with pd.ExcelWriter(xl_buf, engine="openpyxl") as writer:
                         if not metrics_df.empty:
                             metrics_df.to_excel(writer, index=False, sheet_name="Similarity_Metrics")
@@ -2139,10 +2200,12 @@ def gse_comparison_tab(df_unique: pd.DataFrame, df_meas: pd.DataFrame, pods_12m:
                                 mn = MONTH_NAMES[month]
                                 avgM = our_data.get("avgM", {}).get(month)
                                 avgF = our_data.get("avgF", {}).get(month)
-                                gse_wd = gse_ref["weekday"].get(month) if "gse_ref" in dir() else None
-                                gse_we = gse_ref["weekend"].get(month) if "gse_ref" in dir() else None
-                                row[f"PoliTo_avgM_{mn}"] = float(avgM[h_idx]) if avgM is not None else None
-                                row[f"PoliTo_avgF_{mn}"] = float(avgF[h_idx]) if avgF is not None else None
+                                gse_wd = gse_ref_exp["weekday"].get(month)
+                                gse_we = gse_ref_exp["weekend"].get(month)
+                                row[f"PoliTo_avgM_{mn}"]                    = float(avgM[h_idx]) if avgM is not None else None
+                                row[f"PoliTo_avgF_{mn}"]                    = float(avgF[h_idx]) if avgF is not None else None
+                                row[f"{gse_cols_exp['weekday']}_{mn}"]     = float(gse_wd[h_idx]) if gse_wd is not None else None
+                                row[f"{gse_cols_exp['weekend']}_{mn}"]     = float(gse_we[h_idx]) if gse_we is not None else None
                             rows_prof.append(row)
                         pd.DataFrame(rows_prof).to_excel(writer, index=False, sheet_name="Profile_Data")
                     zf.writestr(f"{safe_label}_metrics_and_profiles.xlsx", xl_buf.getvalue())
@@ -2333,36 +2396,39 @@ def _arera_daytype_chart(
     fig.update_layout(
         title=dict(
             text=f"{daytype_en} — {month_label}",
-            font=dict(size=11, color="#000000"),
+            font=dict(size=11, color="#0d1f3c"),
         ),
         xaxis=dict(
-            tickfont=dict(size=8, color="#000000"), tickangle=-45,
-            dtick=3, gridcolor="#eeeeee", showgrid=True,
-            title_font=dict(size=8, color="#000000"),
+            tickfont=dict(size=8, color="#1a3a6b"), tickangle=-45,
+            dtick=3, gridcolor="#d0dff0", showgrid=True,
+            zeroline=False,
+            title_font=dict(size=8, color="#1a3a6b"),
+            linecolor="#1a3a6b",
         ),
         yaxis=dict(
             title="Average kWh / hour",
-            title_font=dict(size=8, color="#000000"),
-            tickfont=dict(size=8, color="#000000"),
-            gridcolor="#eeeeee", showgrid=True,
+            title_font=dict(size=8, color="#1a3a6b"),
+            tickfont=dict(size=8, color="#1a3a6b"),
+            gridcolor="#d0dff0", showgrid=True,
+            zeroline=False,
         ),
         height=300,
         margin=dict(t=38, b=65, l=65, r=10),
-        legend=dict(font=dict(size=8, color="#000000"), orientation="h", y=-0.48, x=0),
-        plot_bgcolor="#fafafa", paper_bgcolor="#ffffff",
-        font=dict(family="Arial, sans-serif", color="#000000"),
+        legend=dict(font=dict(size=8, color="#0d1f3c"), orientation="h", y=-0.48, x=0),
+        plot_bgcolor="#f0f5fc", paper_bgcolor="#ffffff",
+        font=dict(family="Arial, sans-serif", color="#0d1f3c"),
         showlegend=show_legend,
     )
     return fig
 
 
 def arera_comparison_tab(
-    df_unique: pd.DataFrame,
+    df_base: pd.DataFrame,
     df_meas: pd.DataFrame,
     pods_12m: set,
 ):
     """ARERA profile comparison tab — kWh, two markets, per day type, per power class."""
-    st.subheader("📐 ARERA Profile Comparison")
+    st.subheader("ARERA Profile Comparison")
     st.markdown(
         f"Comparison of mean hourly load profiles [**kWh/h**] between PoliTo dataset "
         f"and ARERA 2024 reference data for **{ARERA_PROVINCE}**. "
@@ -2378,7 +2444,7 @@ def arera_comparison_tab(
             f"`{pc['label']}`: {'✅' if (DATA_DIR / pc['file']).exists() else '❌'}"
             for pc in ARERA_POWER_CLASSES
         )
-        st.caption(f"Province: **{ARERA_PROVINCE}** — Files: {files_status}")
+        st.caption(f"Files: {files_status}")
     with col_btn:
         if st.button("🔄 Reload ARERA cache", key="reload_arera_btn"):
             load_arera_profiles.clear()
@@ -2399,7 +2465,7 @@ def arera_comparison_tab(
     # ── Power class dropdown ──────────────────────────────────────────────────
     power_labels = [pc["label"] for pc in ARERA_POWER_CLASSES]
     sel_power_label = st.selectbox(
-        "⚡ Contractual Power Class",
+        "Contractual Power Class",
         power_labels,
         index=0,
         key="arera_power_sel",
@@ -2411,7 +2477,7 @@ def arera_comparison_tab(
     MONTH_KEYS = [0] + list(range(1, 13))
     MONTH_LBLS = ["Annual Average"] + [MONTH_NAMES[m] for m in range(1, 13)]
     sel_month_lbl = st.selectbox(
-        "📅 Month", MONTH_LBLS, index=0, key="arera_month_sel"
+        "Month", MONTH_LBLS, index=0, key="arera_month_sel"
     )
     sel_month = MONTH_KEYS[MONTH_LBLS.index(sel_month_lbl)]
 
@@ -2425,22 +2491,23 @@ def arera_comparison_tab(
         return
 
     # ── Build POD sets filtered by power class ────────────────────────────────
-    has_potcontr = "POTCONTR_kW" in df_unique.columns
+    # df_base already reflects all global sidebar filters (12m, tipologia, meas_pods)
+    has_potcontr = "POTCONTR_kW" in df_base.columns
     if has_potcontr:
-        kw_series = df_unique["POTCONTR_kW"].fillna(0)
+        kw_series = df_base["POTCONTR_kW"].fillna(0)
         power_mask = sel_pc["filter"](kw_series)
-        pods_power = set(df_unique[power_mask]["POD"].unique())
+        pods_power = set(df_base[power_mask]["POD"].unique())
     else:
-        pods_power = set(df_unique["POD"].unique())
+        pods_power = set(df_base["POD"].unique())
         st.warning("No POTCONTR_kW data — showing all PODs regardless of power class.")
 
     pods_dor = (
-        set(df_unique[df_unique["ATECO_L2"] == "DO.R"]["POD"].unique())
-        & pods_12m & ap_pods & pods_power
+        set(df_base[df_base["ATECO_L2"] == "DO.R"]["POD"].unique())
+        & ap_pods & pods_power
     )
     pods_donr = (
-        set(df_unique[df_unique["ATECO_L2"] == "DO.NR"]["POD"].unique())
-        & pods_12m & ap_pods & pods_power
+        set(df_base[df_base["ATECO_L2"] == "DO.NR"]["POD"].unique())
+        & ap_pods & pods_power
     )
 
     st.caption(
@@ -2475,8 +2542,8 @@ def arera_comparison_tab(
         ("DO.NR", "Non Residente"),
     ]
     group_tabs = st.tabs([
-        "🏠 Domestic Resident (DO.R)",
-        "🏢 Domestic Non-Resident (DO.NR)",
+        "Domestic Resident (DO.R)",
+        "Domestic Non-Resident (DO.NR)",
     ])
 
     arera_export_data: dict[str, dict] = {}
@@ -2511,7 +2578,7 @@ def arera_comparison_tab(
                         mkt: arera_kwh[mkt].get(dtype_en, {}).get(sel_month)
                         for mkt in MARKETS
                     }
-                    mt_arr = mkt_arrs.get("Maggior Tutela") or mkt_arrs.get("Tutti")
+                    mt_arr = mkt_arrs.get("Maggior Tutela") if mkt_arrs.get("Maggior Tutela") is not None else mkt_arrs.get("Tutti")
                     ml_arr = mkt_arrs.get("Mercato Libero")
 
                     fig = _arera_daytype_chart(
@@ -2526,33 +2593,42 @@ def arera_comparison_tab(
                     st.plotly_chart(
                         fig, use_container_width=True,
                         key=f"arera_{group_key}_{dtype_en}_{sel_month}_{sel_power_label}",
-                    )
+                        config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
                     export_figs[f"{dtype_en}_{sel_month_lbl}"] = fig
 
-                    # Metrics — dynamic over available markets
-                    for mkt_label, ref_arr in mkt_arrs.items():
-                        if our_arr is None or ref_arr is None:
+            # ── Metrics for ALL months × day types × markets ──────────────────
+            _day_types_for_metrics = ["Weekday", "Saturday", "Sunday"]
+            for mk in MONTH_KEYS:
+                ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
+                for _dtype in _day_types_for_metrics:
+                    for mkt_label in MARKETS:
+                        our_arr_m = our_dt.get(_dtype, {}).get(mk)
+                        ref_arr_m = arera_kwh.get(mkt_label, {}).get(_dtype, {}).get(mk)
+                        if our_arr_m is None or ref_arr_m is None:
                             continue
-                        mask = ~(np.isnan(our_arr) | np.isnan(ref_arr))
-                        if mask.sum() < 2:
+                        mask_m = ~(np.isnan(our_arr_m) | np.isnan(ref_arr_m))
+                        if mask_m.sum() < 2:
                             continue
-                        r, _  = pearsonr(our_arr[mask], ref_arr[mask])
-                        rmse  = float(np.sqrt(np.mean((our_arr[mask] - ref_arr[mask])**2)))
-                        mae   = float(np.mean(np.abs(our_arr[mask] - ref_arr[mask])))
+                        r_m, _   = pearsonr(our_arr_m[mask_m], ref_arr_m[mask_m])
+                        rmse_m   = float(np.sqrt(np.mean((our_arr_m[mask_m] - ref_arr_m[mask_m])**2)))
+                        mae_m    = float(np.mean(np.abs(our_arr_m[mask_m] - ref_arr_m[mask_m])))
+                        ref_mean = float(np.mean(ref_arr_m[mask_m]))
+                        cv_rmse  = (rmse_m / ref_mean * 100) if ref_mean > 0 else 0.0
+                        cv_mae   = (mae_m  / ref_mean * 100) if ref_mean > 0 else 0.0
                         all_metric_rows.append({
-                            "Day Type":     dtype_en,
-                            "Period":       sel_month_lbl,
+                            "Period":       ml_lbl,
+                            "Day Type":     _dtype,
                             "Power Class":  sel_power_label,
                             "ARERA Market": mkt_label,
-                            "Pearson r":    round(float(r), 4),
-                            "RMSE (kWh)":  round(rmse, 5),
-                            "MAE (kWh)":   round(mae, 5),
+                            "Pearson r":    round(float(r_m), 4),
+                            "RMSE (%)":     round(cv_rmse, 2),
+                            "MAE (%)":      round(cv_mae, 2),
                         })
 
             # ── Monthly overview ──────────────────────────────────────────────
             st.markdown("#### Full Monthly Overview")
             for dtype_en, dtype_it in zip(DAY_TYPES_EN, DAY_TYPES_IT):
-                with st.expander(f"📅 {dtype_en}", expanded=False):
+                with st.expander(f"{dtype_en}", expanded=False):
                     for row_start in range(0, 13, 4):
                         mcols = st.columns(4)
                         for ci, mk in enumerate(MONTH_KEYS[row_start:row_start + 4]):
@@ -2562,7 +2638,7 @@ def arera_comparison_tab(
                                     mkt: arera_kwh[mkt].get(dtype_en, {}).get(mk)
                                     for mkt in MARKETS
                                 }
-                                mt_m = mkt_arrs_m.get("Maggior Tutela") or mkt_arrs_m.get("Tutti")
+                                mt_m = mkt_arrs_m.get("Maggior Tutela") if mkt_arrs_m.get("Maggior Tutela") is not None else mkt_arrs_m.get("Tutti")
                                 ml_m = mkt_arrs_m.get("Mercato Libero")
                                 fig_m = _arera_daytype_chart(
                                     mk, ml_lbl, dtype_en,
@@ -2574,19 +2650,46 @@ def arera_comparison_tab(
                                         MARKETS[1] if len(MARKETS) >= 2 else None,
                                     ),
                                 )
-                                fig_m.update_layout(height=230, margin=dict(t=30, b=60, l=55, r=5))
+                                fig_m.update_layout(
+                                    height=230,
+                                    margin=dict(t=30, b=60, l=55, r=5),
+                                    plot_bgcolor="#f0f5fc",
+                                    paper_bgcolor="#ffffff",
+                                    font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                                    xaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
+                                               gridcolor="#d0dff0", zeroline=False),
+                                    yaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
+                                               gridcolor="#d0dff0", zeroline=False),
+                                    title=dict(font=dict(size=10, color="#0d1f3c")),
+                                    legend=dict(font=dict(size=7, color="#0d1f3c")),
+                                )
                                 st.plotly_chart(
                                     fig_m, use_container_width=True,
                                     key=f"arera_ov_{group_key}_{dtype_en}_{mk}_{sel_power_label}",
-                                )
+                                    config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
                                 export_figs[f"{dtype_en}_{ml_lbl}"] = fig_m
 
             # ── Metrics table ─────────────────────────────────────────────────
             st.markdown("#### Similarity Metrics")
-            st.caption("Pearson r: shape similarity (1=perfect). RMSE/MAE in kWh.")
+            st.caption("Pearson r: shape similarity (1=perfect). RMSE/MAE in % (normalised by mean of ARERA reference profile).")
             df_met = pd.DataFrame(all_metric_rows) if all_metric_rows else pd.DataFrame()
             if not df_met.empty:
+                # Ensure correct column order
+                col_order = ["Period", "Day Type", "Power Class", "ARERA Market", "Pearson r", "RMSE (%)", "MAE (%)"]
+                col_order = [c for c in col_order if c in df_met.columns]
+                df_met = df_met[col_order]
                 st.dataframe(df_met, hide_index=True, use_container_width=True)
+                _xl_arera = io.BytesIO()
+                with pd.ExcelWriter(_xl_arera, engine="openpyxl") as _wa:
+                    df_met.to_excel(_wa, index=False, sheet_name="Similarity_Metrics")
+                _xl_arera.seek(0)
+                st.download_button(
+                    label="⬇️ Download Metrics Excel",
+                    data=_xl_arera.getvalue(),
+                    file_name=f"ARERA_similarity_metrics_{group_key}_{sel_power_label}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"arera_metrics_dl_{group_key}_{sel_power_label}",
+                )
 
             arera_export_data[group_key] = {
                 "residenza":  residenza,
@@ -2598,7 +2701,7 @@ def arera_comparison_tab(
 
     # ── Export ────────────────────────────────────────────────────────────────
     st.markdown("---")
-    st.subheader("📥 Export ARERA Comparison")
+    st.subheader("Export ARERA Comparison")
     safe_pwr = sel_power_label.replace(" ", "_").replace(">", "gt").replace("≤", "le")
     st.caption(
         f"Exports current view: power class **{sel_power_label}**, "
@@ -2695,19 +2798,327 @@ def main():
         layout="wide",
     )
 
+    # ── Logo ──────────────────────────────────────────────────────────────────
+    logo_path = Path(__file__).parent / "images" / "logo_energy_center.png"
+    if logo_path.exists():
+        st.image(str(logo_path), width=440)
+
     st.title("Electrical Profiles Data Explorer - PoliTo")
-    st.caption("Energy Center Lab, DENERG, Politecnico di Torino")
+    st.caption("Energy Center Lab, DENERG, Politecnico di Torino — Author: Lorenzo Giannuzzo")
 
     st.markdown("""
     <style>
+    /* ── MAIN APP BACKGROUND ──────────────────────────────────────── */
+    [data-testid="stApp"],
+    .main,
+    [data-testid="stMain"] {
+        background-color: #0d1f3c !important;
+    }
+
+    /* ── SIDEBAR ──────────────────────────────────────────────────── */
+    [data-testid="stSidebar"],
+    [data-testid="stSidebar"] > div {
+        background-color: #1a3a6b !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #e8f4fd !important;
+    }
+    [data-testid="stSidebar"] .stRadio label,
+    [data-testid="stSidebar"] .stCheckbox label,
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stSlider label {
+        color: #e8f4fd !important;
+    }
+
+    /* ── TOP HEADER BAR ───────────────────────────────────────────── */
+    [data-testid="stHeader"] {
+        background-color: #0d1f3c !important;
+    }
+
+    /* ── GLOBAL TEXT ──────────────────────────────────────────────── */
+    h1, h2, h3, h4, h5, h6,
+    p, span, label, div,
+    .stMarkdown, .stCaption {
+        color: #e8f4fd !important;
+    }
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"] {
+        color: #e8f4fd !important;
+    }
+
+    /* ── TABS ─────────────────────────────────────────────────────── */
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        background-color: #0d1f3c !important;
+        border-bottom: 2px solid #ffffff !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab"] {
+        background-color: #0d1f3c !important;
+        color: #a8c4e0 !important;
+    }
+    [data-testid="stTabs"] [aria-selected="true"] {
+        background-color: #1a3a6b !important;
+        color: #ffffff !important;
+        border-bottom: 3px solid #ffffff !important;
+    }
+    [data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+        background-color: #ffffff !important;
+    }
+
+    /* ── EXPANDER HEADERS ─────────────────────────────────────────── */
+    [data-testid="stExpander"] summary,
+    [data-testid="stExpander"] summary:hover,
+    details summary,
+    details > summary {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+        border-radius: 4px !important;
+    }
+    [data-testid="stExpander"] summary:hover {
+        background-color: #2e5ea8 !important;
+    }
+    /* Arrow/chevron icon in expander */
+    [data-testid="stExpander"] summary svg {
+        fill: #e8f4fd !important;
+        stroke: #e8f4fd !important;
+    }
+    [data-testid="stExpander"],
+    [data-testid="stExpanderDetails"],
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #1a3a6b !important;
+        border: 1px solid #2e5ea8 !important;
+        border-radius: 6px !important;
+    }
+
+    /* ── INFO / WARNING / ERROR BOXES ─────────────────────────────── */
+    [data-testid="stInfo"] {
+        background-color: #1a3a6b !important;
+        border-left: 4px solid #4a9eff !important;
+    }
+    [data-testid="stWarning"] {
+        background-color: #2a3a20 !important;
+        border-left: 4px solid #f9a825 !important;
+    }
+    [data-testid="stError"] {
+        background-color: #3a1a1a !important;
+        border-left: 4px solid #e53935 !important;
+    }
+    [data-testid="stSuccess"] {
+        background-color: #1a3a20 !important;
+        border-left: 4px solid #2e7d32 !important;
+    }
+
+    /* ── TOOLTIP / HELP ICONS — keep grey ────────────────────────── */
+    button[data-testid="stTooltipIcon"] svg,
+    button[data-testid="stTooltipIcon"] svg path,
+    button[data-testid="stTooltipIcon"] svg circle {
+        fill: #8a9ab5 !important;
+        stroke: none !important;
+        color: #8a9ab5 !important;
+    }
+    button[data-testid="stTooltipIcon"]:hover svg,
+    button[data-testid="stTooltipIcon"]:hover svg path,
+    button[data-testid="stTooltipIcon"]:hover svg circle {
+        fill: #b0c4d8 !important;
+    }
+    /* accent-color for native inputs */
+    input[type="radio"],
+    input[type="checkbox"] {
+        accent-color: #2e7d32 !important;
+    }
+
+    /* ── SELECTBOX / DROPDOWNS ────────────────────────────────────── */
+    [data-testid="stSelectbox"] > div > div,
+    [data-baseweb="select"] {
+        background-color: #1a3a6b !important;
+        border-color: #2e5ea8 !important;
+        color: #e8f4fd !important;
+    }
+    [data-baseweb="select"] * {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+    }
+    [data-baseweb="popover"] [role="option"] {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+    }
+    [data-baseweb="popover"] [role="option"]:hover,
+    [data-baseweb="popover"] [aria-selected="true"] {
+        background-color: #2e5ea8 !important;
+    }
+
+    /* ── BUTTONS ──────────────────────────────────────────────────── */
+    [data-testid="stButton"] > button {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+        border: 1px solid #2e5ea8 !important;
+        border-radius: 5px !important;
+    }
+    [data-testid="stButton"] > button:hover {
+        background-color: #2e5ea8 !important;
+        border-color: #4a9eff !important;
+    }
+    /* Primary buttons — green */
+    [data-testid="stButton"] > button[kind="primary"] {
+        background-color: #2e7d32 !important;
+        border-color: #43a047 !important;
+        color: #ffffff !important;
+    }
+    [data-testid="stButton"] > button[kind="primary"]:hover {
+        background-color: #43a047 !important;
+    }
+
+    /* ── DOWNLOAD BUTTON ──────────────────────────────────────────── */
+    [data-testid="stDownloadButton"] > button {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+        border: 1px solid #2e5ea8 !important;
+    }
+    [data-testid="stDownloadButton"] > button[kind="primary"] {
+        background-color: #2e7d32 !important;
+        border-color: #43a047 !important;
+        color: #ffffff !important;
+    }
+
+    /* ── DATAFRAME / TABLE ────────────────────────────────────────── */
+    /* GlideDataGrid (canvas-based) is themed via config.toml base=dark.
+       Only style the outer wrapper border here. */
+    [data-testid="stDataFrame"] {
+        border: 1px solid #2e5ea8 !important;
+        border-radius: 6px !important;
+    }
+    /* Header row background for GlideDataGrid */
+    [data-testid="stDataFrame"] [role="columnheader"],
+    [data-testid="stDataFrame"] thead,
+    [data-testid="stDataFrame"] thead tr,
+    [data-testid="stDataFrame"] thead th,
+    [data-testid="stDataFrame"] .dvn-header,
+    [class*="dvn-header"],
+    [class*="headerRow"],
+    [class*="colHeader"] {
+        background-color: #1a3a6b !important;
+        color: #e8f4fd !important;
+    }
+
+    /* ── PROGRESS BAR ─────────────────────────────────────────────── */
+    [data-testid="stProgress"] > div {
+        background-color: #2e7d32 !important;
+    }
+
+    /* ── METRIC CARDS ─────────────────────────────────────────────── */
+    [data-testid="metric-container"] {
+        background-color: #1a3a6b !important;
+        border: 1px solid #2e5ea8 !important;
+        border-radius: 6px !important;
+        padding: 10px !important;
+    }
+
+    /* ── ATECO CHECKBOX NOWRAP (keep existing) ────────────────────── */
     [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stCheckbox"] label {
         white-space: nowrap;
+        color: #e8f4fd !important;
     }
     [data-testid="stVerticalBlockBorderWrapper"] > div[style*="overflow"] {
         overflow-x: auto !important;
         overflow-y: auto !important;
     }
+
+    /* ── PLOTLY CHART CONTAINER ───────────────────────────────────── */
+    [data-testid="stPlotlyChart"] {
+        background-color: transparent !important;
+    }
+
+    /* ── SLIDER ───────────────────────────────────────────────────── */
+    [data-testid="stSlider"] [data-testid="stSliderThumb"] {
+        background-color: #2e7d32 !important;
+    }
+    /* ── LOADING OVERLAY via CSS :has() ──────────────────────────── */
+    /* Hide Streamlit's default opacity dimming on rerun */
+    [data-testid="stApp"] {
+        transition: none !important;
+        opacity: 1 !important;
+    }
+    /* Show our overlay whenever Streamlit's status widget is present */
+    body:has([data-testid="stStatusWidget"]) #ld-overlay {
+        display: flex !important;
+    }
+    body:has([data-testid="stStatusWidget"]) [data-testid="stMain"],
+    body:has([data-testid="stStatusWidget"]) [data-testid="stSidebar"] {
+        opacity: 1 !important;
+        pointer-events: none !important;
+    }
+    #ld-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 31, 60, 0.93);
+      z-index: 2147483647;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+    #ld-logo {
+      width: 320px;
+      max-width: 80vw;
+      opacity: 0.95;
+    }
+    #ld-text {
+      color: #e8f4fd !important;
+      font-family: Arial, sans-serif !important;
+      font-size: 15px !important;
+      letter-spacing: 0.04em;
+      margin: 0 !important;
+      opacity: 0.75;
+    }
+    #ld-bar-wrap {
+      width: 320px;
+      max-width: 80vw;
+      height: 5px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #ld-bar {
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, #2e7d32, #4fc3f7, #2e7d32);
+      background-size: 200% 100%;
+      border-radius: 4px;
+      animation: ld-slide 1.4s ease-in-out infinite,
+                 ld-gradient 2s linear infinite;
+    }
+    @keyframes ld-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+    @keyframes ld-gradient {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
     </style>
+    """, unsafe_allow_html=True)
+
+    # ── Custom loading overlay — always in DOM, CSS controls visibility ──────
+    import base64
+    _logo_path = Path(__file__).parent / "images" / "logo_energy_center.png"
+    _logo_b64 = ""
+    if _logo_path.exists():
+        with open(_logo_path, "rb") as _f:
+            _logo_b64 = base64.b64encode(_f.read()).decode()
+
+    _logo_html = (
+        f"<img id='ld-logo' src='data:image/png;base64,{_logo_b64}'>"
+        if _logo_b64 else ""
+    )
+
+    st.markdown(f"""
+    <div id="ld-overlay">
+      {_logo_html}
+      <p id="ld-text">Updating dashboard…</p>
+      <div id="ld-bar-wrap"><div id="ld-bar"></div></div>
+    </div>
     """, unsafe_allow_html=True)
 
     if "ateco_loaded" not in st.session_state:
@@ -2759,7 +3170,7 @@ def main():
     # SIDEBAR
     # =========================================================================
     with st.sidebar:
-        st.header("⚙️ Global Filters")
+        st.header("Global Filters")
 
         if st.button("🔄 Reload Data"):
             prepare_metadata.clear()
@@ -2774,7 +3185,7 @@ def main():
             tip_values = sorted(df_meas["Tipologia"].dropna().unique().tolist())
             tip_counts = df_meas.groupby("Tipologia")["POD"].nunique()
             sel_tipologia = st.radio(
-                "Measure Type (Tipologia)",
+                "Data Type",
                 ["All"] + tip_values,
                 format_func=lambda x: (
                     f"All ({df_meas['POD'].nunique():,} PODs)" if x == "All"
@@ -2797,7 +3208,7 @@ def main():
             df_meas_filtered = df_meas
 
         coverage_opt = st.radio(
-            "Data coverage", ["All PODs", "12+ months only"], index=0,
+            "Data Extension", ["All PODs", "12+ months only"], index=0,
             help="Filter to PODs with ≥12 distinct months of data."
         )
         use_12m_filter = (coverage_opt == "12+ months only")
@@ -2809,7 +3220,7 @@ def main():
         profile_month = MONTH_LABELS.index(profile_period)
 
         st.divider()
-        st.header("⚡ Contractual Power")
+        st.header("Contractual Power")
         has_potcontr = (
             "POTCONTR_kW" in df_unique.columns and df_unique["POTCONTR_kW"].notna().any()
         )
@@ -2870,7 +3281,7 @@ def main():
             enable_pot_filter = False
 
         st.divider()
-        st.header("⚙️ Cluster Settings")
+        st.header("Cluster Settings")
         cluster_mode = st.radio(
             "Number of clusters",
             ["Automatic (majority vote)", "Manual"],
@@ -2881,7 +3292,7 @@ def main():
             manual_k = st.slider("k (number of clusters)", 2, 15, 4, key="manual_k_slider")
 
         st.divider()
-        st.header("📊 Statistics")
+        st.header("Statistics")
         n_pod_total = df_unique["POD"].nunique()
         n_pod_meas = df_meas_filtered["POD"].nunique()
         st.metric("PODs (metadata)", f"{n_pod_total:,}")
@@ -2930,7 +3341,7 @@ def main():
 
     filter_parts = []
     if has_tipologia and sel_tipologia != "All":
-        filter_parts.append(f"Type={sel_tipologia}")
+        filter_parts.append(f"Type = {sel_tipologia}")
     if use_12m_filter:
         filter_parts.append("12+ months")
     if has_potcontr and enable_pot_filter:
@@ -2939,9 +3350,9 @@ def main():
         filter_parts.append(f"Month={MONTH_LABELS[profile_month]}")
 
     if filter_parts:
-        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{n_base:,} PODs** available")
+        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{n_base:,} PODs** available".replace(",", "\u202f"))
     else:
-        st.info(f"No global filters → **{n_base:,} PODs** available")
+        st.info(f"No global filters → **{n_base:,} PODs** available".replace(",", "\u202f"))
 
     if profile_norm.empty:
         st.error("No load profiles available. Check data.")
@@ -2957,9 +3368,9 @@ def main():
     # MAIN TABS
     # =========================================================================
     tab_cluster, tab_gse, tab_arera = st.tabs([
-        "🔍 Clustering Explorer",
-        "📊 GSE Profile Comparison",
-        "📈 ARERA Profile Comparison",
+        "Clustering Explorer",
+        "GSE Profile Comparison",
+        "ARERA Profile Comparison",
     ])
 
     with tab_cluster:
@@ -2969,7 +3380,7 @@ def main():
 
         # ── 2. DISTRIBUTION CHARTS ───────────────────────────────────────────
         st.markdown("---")
-        st.subheader("📊 Data Distribution Overview")
+        st.subheader("Data Distribution Overview")
 
         period_label = f"Filter: {' | '.join(filter_parts)}" if filter_parts else "All data"
 
@@ -2980,8 +3391,8 @@ def main():
                 df_meas_for_dist, df_base, title_suffix=period_label
             )
         if fig_dist is not None:
-            st.plotly_chart(fig_dist, use_container_width=True, key="main_consumption_dist")
-            with st.expander("📋 Summary Statistics — Consumption"):
+            st.plotly_chart(fig_dist, use_container_width=True, key="main_consumption_dist", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+            with st.expander("Summary Statistics — Consumption"):
                 st.dataframe(summary_dist, hide_index=True, use_container_width=True)
         else:
             st.warning("Not enough data to build consumption distribution chart.")
@@ -2990,19 +3401,19 @@ def main():
             st.markdown("#### Contractual Power Distribution")
             fig_pie = plot_potcontr_pie(df_unique)
             if fig_pie is not None:
-                st.plotly_chart(fig_pie, use_container_width=True, key="main_potcontr_pie")
+                st.plotly_chart(fig_pie, use_container_width=True, key="main_potcontr_pie", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
 
         if has_potcontr:
             st.markdown("#### Contractual Power by Typology — Top 10")
             fig_stack = plot_potcontr_stacked_bar(df_unique, top_n=10)
             if fig_stack is not None:
-                st.plotly_chart(fig_stack, use_container_width=True, key="main_potcontr_stack")
+                st.plotly_chart(fig_stack, use_container_width=True, key="main_potcontr_stack", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
 
     with tab_gse:
-        gse_comparison_tab(df_unique, df_meas_filtered, pods_12m)
+        gse_comparison_tab(df_base, df_meas_filtered, pods_12m)
 
     with tab_arera:
-        arera_comparison_tab(df_unique, df_meas_filtered, pods_12m)
+        arera_comparison_tab(df_base, df_meas_filtered, pods_12m)
 
 
 # ==============================================================================
@@ -3268,7 +3679,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
         available_level_names = [lname for lname, _, _, _ in active_levels]
         opts = ["None"] + available_level_names
         _mbkd_sel = st.selectbox(
-            "🗓 Monthly breakdown for level", opts, index=0,
+            "Monthly breakdown for level", opts, index=0,
             key="monthly_bkd_level",
             help="Run an independent clustering for each calendar month on the selected ATECO level.",
         )
@@ -3287,12 +3698,15 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
 
     btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 2])
     with btn_col1:
-        run_clicked = st.button("▶ Run Clustering", type="primary", key="run_cl_btn")
+        run_clicked = st.button("▶ Run Clustering", type="primary", key="run_cl_btn",
+                                use_container_width=True)
     with btn_col2:
         if has_cached:
-            st.success("Results cached ✓")
+            st.button("Results cached ✓", disabled=True, key="cached_indicator",
+                      use_container_width=True)
         elif cached_fp is not None and cached_fp != sel_fingerprint:
-            st.warning("Selection changed — click Run")
+            st.button("Selection changed — click Run", disabled=True,
+                      key="changed_indicator", use_container_width=True)
 
     # =========================================================================
     # COMPUTE OR LOAD CACHED
@@ -3379,7 +3793,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
             st.plotly_chart(fig, use_container_width=True, key=f"frag_prof_{level_name}")
 
             if len(codes) >= 2:
-                with st.expander(f"📊 Cluster Composition by {ateco_col}", expanded=True):
+                with st.expander(f"Cluster Composition by {ateco_col}", expanded=True):
                     fig_comp, comp_table = plot_cluster_composition(
                         X_df, df_base, ateco_col, level_name)
                     st.plotly_chart(fig_comp, use_container_width=True,
@@ -3394,7 +3808,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                 parent_cols = [("ATECO_L1", "L1 Section"), ("ATECO_L2", "L2 Division")]
 
             for par_col, par_label in parent_cols:
-                with st.expander(f"📊 Cluster Composition by {par_label}", expanded=False):
+                with st.expander(f"Cluster Composition by {par_label}", expanded=False):
                     fig_par, tbl_par = plot_cluster_composition(
                         X_df, df_base, par_col, f"{level_name} → {par_label}")
                     st.plotly_chart(fig_par, use_container_width=True,
@@ -3402,7 +3816,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                     st.dataframe(tbl_par, hide_index=True, use_container_width=True,
                                  key=f"frag_comptbl_{level_name}_{par_col}")
 
-            with st.expander("📋 ATECO → Cluster Breakdown (rows = ATECO, cols = Clusters)",
+            with st.expander("ATECO → Cluster Breakdown (rows = ATECO, cols = Clusters)",
                              expanded=False):
                 bkd = build_ateco_cluster_breakdown(X_df, df_base, ateco_col, level_name)
                 st.dataframe(bkd, hide_index=True, use_container_width=True,
@@ -3433,7 +3847,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                 fig_corr = plot_pearson_heatmap(df_corr)
                 st.plotly_chart(fig_corr, use_container_width=True,
                                 key=f"frag_pears_{level_name}")
-                with st.expander("ℹ️ How to read Pearson r / P-values"):
+                with st.expander("How to read Pearson r / P-values"):
                     st.markdown(PEARSON_HELP)
                 with st.expander("P-values"):
                     st.dataframe(df_pval.style.format("{:.2e}"), use_container_width=True)
@@ -3476,11 +3890,13 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                 title="Cross-Level Centroid Correlation",
                 height=max(400, n_c * 35 + 100),
                 margin=dict(t=40, b=20, l=20, r=20),
-                xaxis=dict(tickangle=-45, tickfont=dict(size=9)),
-                yaxis=dict(tickfont=dict(size=9)),
+                xaxis=dict(tickangle=-45, tickfont=dict(size=9, color="#e8f4fd")),
+                yaxis=dict(tickfont=dict(size=9, color="#e8f4fd")),
+                plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+                font=dict(family="Arial, sans-serif", color="#e8f4fd"),
             )
             st.plotly_chart(fig_cross, use_container_width=True, key="frag_cross_corr")
-            with st.expander("ℹ️ How to read Pearson r"):
+            with st.expander("How to read Pearson r"):
                 st.markdown(PEARSON_HELP)
 
             fig_overlay = go.Figure()
@@ -3494,9 +3910,14 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
             fig_overlay.update_layout(
                 title="All Cluster Centroids Overlaid",
                 xaxis_title="Time of Day", yaxis_title="Normalized (0-1)",
-                height=450, yaxis=dict(range=[-0.05, 1.05]),
-                xaxis=dict(dtick=8, tickangle=-45),
-                legend=dict(font=dict(size=9)),
+                height=450,
+                yaxis=dict(range=[-0.05, 1.05], gridcolor="#1e3a6b",
+                           title_font=dict(color="#e8f4fd"), tickfont=dict(color="#e8f4fd")),
+                xaxis=dict(dtick=8, tickangle=-45, gridcolor="#1e3a6b",
+                           title_font=dict(color="#e8f4fd"), tickfont=dict(color="#e8f4fd")),
+                legend=dict(font=dict(size=9, color="#e8f4fd")),
+                plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+                font=dict(family="Arial, sans-serif", color="#e8f4fd"),
             )
             st.plotly_chart(fig_overlay, use_container_width=True, key="frag_overlay")
 
@@ -3506,7 +3927,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
     _mbkd_level = st.session_state.get("monthly_bkd_level", "None")
     if _mbkd_level and _mbkd_level != "None" and _mbkd_level in valid_results:
         st.markdown("---")
-        st.subheader(f"🗓 Monthly Breakdown — {_mbkd_level}")
+        st.subheader(f"Monthly Breakdown — {_mbkd_level}")
 
         res_bkd = valid_results[_mbkd_level]
         pods_bkd = list(res_bkd["X_df"].index)
@@ -3543,13 +3964,13 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
             res_m = monthly_results[m]
             month_name = res_m["month_name"]
             if "error" in res_m:
-                with st.expander(f"📅 {month_name} — ⚠ insufficient data"):
+                with st.expander(f"{month_name} — insufficient data"):
                     st.warning(res_m["error"])
                 continue
             X_m = res_m["X_df"]
             k_m = res_m["k"]
             n_m = res_m["n_pods"]
-            with st.expander(f"📅 {month_name} — k={k_m} | {n_m} PODs", expanded=False):
+            with st.expander(f"{month_name} — k={k_m} | {n_m} PODs", expanded=False):
                 fig_m = plot_cluster_profiles(X_m, k_m, f" | {_mbkd_level} — {month_name}")
                 st.plotly_chart(fig_m, use_container_width=True,
                                 key=f"frag_monthly_{_mbkd_level}_{m}")
@@ -3571,7 +3992,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
     # EXPORT  — HTML only
     # =========================================================================
     st.markdown("---")
-    st.subheader("📥 Export Results")
+    st.subheader("Export Results")
     st.caption("Charts are exported as interactive HTML files.")
 
     if st.button("Prepare Export ZIP", type="primary", key="frag_export_btn"):
