@@ -118,7 +118,7 @@ DISTRIBUTOR_CODES = {
 
 ATECO_LOOKUP: dict[str, str] = {}
 ATECO_EXCEL_NAME = "Note-esplicative-ATECO-2025-italiano-inglese.xlsx"
-GSE_FILE_NAME = "profili_GSE_prelievo_2025.xlsx"
+GSE_FILE_NAME = "profili GSE_prelievo_2025.xlsx"
 ARERA_FILE_NAME   = "Copia di dati prelievo orario per provincia potenza6 anno 2024-mkt.xlsx"
 ARERA_FILE_NAME_2 = "Copia di dati prelievo orario per provincia0_a_1_5 anno 2024mkt.xlsx"
 ARERA_FILE_NAME_3 = "Copia di dati prelievo orario per provincia3_a_4_5 anno 2024mkt.xlsx"
@@ -557,7 +557,7 @@ def prepare_metadata(df_meta, df_potcontr):
 
 @st.cache_data(show_spinner=False)
 def compute_pods_with_12_months(_df_meas_periodi):
-    pod_months = _df_meas_periodi.groupby("POD")["Periodo"].nunique()
+    pod_months = _df_meas_periodi.groupby("POD", observed=True)["Periodo"].nunique()
     return set(pod_months[pod_months >= 12].index)
 
 
@@ -606,7 +606,7 @@ def compute_daily_profiles(df_meas, _prog=None):
         grouped = (
             df_meas[available_q]
             .astype(np.float32)
-            .groupby([df_meas["POD"], month_col])
+            .groupby([df_meas["POD"], month_col], observed=True)
             .mean()
         )
         unstacked = grouped.unstack(level=1)
@@ -680,7 +680,7 @@ def get_overall_avg_profile(profile_df):
     if not all_months_data:
         return pd.DataFrame()
     stacked = pd.concat(all_months_data, keys=range(len(all_months_data)))
-    return stacked.groupby(level=1).mean()
+    return stacked.groupby(level=1, observed=True).mean()
 
 
 def get_single_month_profile(profile_df, month_number):
@@ -991,7 +991,7 @@ def build_ateco_dominant_cluster_df(valid_results: dict, df_base: pd.DataFrame) 
         sub = df_base[["POD", ateco_col]].drop_duplicates("POD")
         sub = sub[sub[ateco_col] != "N/A"]
 
-        for ateco_code, grp in sub.groupby(ateco_col):
+        for ateco_code, grp in sub.groupby(ateco_col, observed=True):
             pods_in_group = set(grp["POD"].tolist())
             total_pods = len(pods_in_group)
             desc = lookup_ateco_description(str(ateco_code))
@@ -1164,8 +1164,8 @@ def plot_cluster_composition(X_df, df_base, ateco_col, level_label):
         lambda c: f"{c} — {lookup_ateco_description(c)[:40]}"
         if lookup_ateco_description(c) else str(c)
     )
-    comp = merged.groupby(["Cluster", "AtecoLabel"]).size().reset_index(name="Count")
-    totals = merged.groupby("Cluster").size().reset_index(name="Total")
+    comp = merged.groupby(["Cluster", "AtecoLabel"], observed=True).size().reset_index(name="Count")
+    totals = merged.groupby("Cluster", observed=True).size().reset_index(name="Total")
     comp = comp.merge(totals, on="Cluster")
     comp["Pct"] = (comp["Count"] / comp["Total"] * 100).round(1)
     comp["Text"] = comp.apply(
@@ -1216,8 +1216,8 @@ def build_ateco_cluster_breakdown(X_df, df_base, ateco_col, level_label):
     merged["AtecoDesc"] = merged[ateco_col].apply(
         lambda c: lookup_ateco_description(c)[:50] if lookup_ateco_description(c) else ""
     )
-    cross = merged.groupby([ateco_col, "AtecoDesc", "Cluster"]).size().reset_index(name="Count")
-    ateco_totals = merged.groupby(ateco_col).size().reset_index(name="Total")
+    cross = merged.groupby([ateco_col, "AtecoDesc", "Cluster"], observed=True).size().reset_index(name="Count")
+    ateco_totals = merged.groupby(ateco_col, observed=True).size().reset_index(name="Total")
     cross = cross.merge(ateco_totals, on=ateco_col)
     cross["Pct"] = (cross["Count"] / cross["Total"] * 100).round(1)
     cross["Label"] = cross.apply(lambda r: f"{int(r['Count'])} ({r['Pct']:.1f}%)", axis=1)
@@ -1253,8 +1253,8 @@ def build_cluster_ateco_breakdown(X_df, df_base, ateco_col, level_label):
         axis=1
     )
 
-    cross = merged.groupby(["Cluster", "AtecoLabel"]).size().reset_index(name="Count")
-    cluster_totals = merged.groupby("Cluster").size().reset_index(name="Total PODs")
+    cross = merged.groupby(["Cluster", "AtecoLabel"], observed=True).size().reset_index(name="Count")
+    cluster_totals = merged.groupby("Cluster", observed=True).size().reset_index(name="Total PODs")
     cross = cross.merge(cluster_totals, on="Cluster")
     cross["Pct"] = (cross["Count"] / cross["Total PODs"] * 100).round(1)
     cross["CellLabel"] = cross.apply(
@@ -1376,7 +1376,7 @@ def compute_monthly_consumption_per_pod(df_meas):
     df["YearMonth"] = df["DataMisura"].dt.to_period("M").astype(str)
     df["Daily_kWh"] = df[available_q].sum(axis=1) / 1000
     monthly = (
-        df.groupby(["POD", "YearMonth"])["Daily_kWh"]
+        df.groupby(["POD", "YearMonth"], observed=True)["Daily_kWh"]
         .sum().reset_index().rename(columns={"Daily_kWh": "Monthly_kWh"})
     )
     return monthly
@@ -1410,7 +1410,7 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
     merged = merged[merged["Label"] != "Unknown"]
 
     top15_labels = (
-        merged.groupby("Label")["POD"].nunique()
+        merged.groupby("Label", observed=True)["POD"].nunique()
         .sort_values(ascending=False).head(15).index.tolist()
     )
 
@@ -1418,7 +1418,7 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
     df_top = df_top[df_top["Monthly_kWh"] > 0]
 
     label_order = (
-        df_top.groupby("Label")["POD"].nunique()
+        df_top.groupby("Label", observed=True)["POD"].nunique()
         .sort_values(ascending=True).index.tolist()
     )
 
@@ -1442,7 +1442,7 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
             boxmean=False, boxpoints=False, whiskerwidth=0.5, showlegend=False,
         ))
 
-    n_pods_map = df_top.groupby("Label")["POD"].nunique()
+    n_pods_map = df_top.groupby("Label", observed=True)["POD"].nunique()
     annotations = []
     for label in label_order:
         n = n_pods_map.get(label, 0)
@@ -1576,7 +1576,7 @@ def plot_potcontr_stacked_bar(df_unique, top_n=10):
         df["POTCONTR_kW"], bins=POTCONTR_BINS, labels=POTCONTR_BIN_LABELS, right=True
     )
 
-    top_labels = (df.groupby("Label")["POD"].nunique()
+    top_labels = (df.groupby("Label", observed=True)["POD"].nunique()
                   .sort_values(ascending=False).head(top_n).index.tolist())
     df_top = df[df["Label"].isin(top_labels)]
 
@@ -1684,8 +1684,8 @@ def load_gse_profiles() -> pd.DataFrame | None:
 def compute_gse_monthly_hourly(df_gse: pd.DataFrame, col: str) -> dict[int, np.ndarray]:
     """Average GSE column by (Month, Hour-of-day) → dict month→array[24]."""
     result = {}
-    for month, grp in df_gse.groupby("Mese"):
-        hourly = grp.groupby("Ora")[col].mean().reindex(range(24)).values
+    for month, grp in df_gse.groupby("Mese", observed=True):
+        hourly = grp.groupby("Ora", observed=True)[col].mean().reindex(range(24)).values
         result[int(month)] = hourly
     return result
 
@@ -1782,7 +1782,7 @@ def compute_our_fascia_profiles(
         .reset_index()
     )
     result = {}
-    for month, grp_m in pct_reset.groupby("_month"):
+    for month, grp_m in pct_reset.groupby("_month", observed=True):
         result[int(month)] = grp_m[hpct_cols].mean().values
 
     return result
@@ -1838,7 +1838,7 @@ def compute_our_normalized_profiles(
     # Average over PODs per month
     pct_reset = pct.reset_index()
     result = {}
-    for month, grp_m in pct_reset.groupby("_month"):
+    for month, grp_m in pct_reset.groupby("_month", observed=True):
         result[int(month)] = grp_m[h_cols].mean().values
 
     return result
@@ -2356,7 +2356,7 @@ def compute_arera_hourly_kwh(
     for wd_it, wd_en in ARERA_DAYTYPE_MAP.items():
         sub_wd = sub[sub["Working Day"] == wd_it]
         month_dict: dict[int, np.ndarray] = {}
-        for mese, grp in sub_wd.groupby("_mese"):
+        for mese, grp in sub_wd.groupby("_mese", observed=True):
             hourly = grp.sort_values("_hour")["kWh"].values.astype(float)
             if len(hourly) == 24:
                 month_dict[int(mese)] = hourly
@@ -2861,13 +2861,61 @@ def arera_comparison_tab(
             key="arera_download_btn",
         )
 
+@st.fragment
+def distribution_overview_section(df_base, df_meas_filtered, df_unique, has_potcontr, filter_parts):
+    """Distribution charts in own fragment — isolated from clustering reruns."""
+    st.markdown("---")
+    st.subheader("Data Distribution Overview")
+
+    period_label = f"Filter: {' | '.join(filter_parts)}" if filter_parts else "All data"
+
+    st.markdown("#### Monthly Consumption Distribution — Top 15 Typologies")
+    _dist_key = f"_fig_dist_{id(df_base)}_{len(df_base)}"
+    if _dist_key not in st.session_state:
+        with st.spinner("Computing consumption distribution..."):
+            df_meas_for_dist = df_meas_filtered[df_meas_filtered["POD"].isin(df_base["POD"])]
+            _fig_dist, _summary_dist = plot_consumption_distribution_top15(
+                df_meas_for_dist, df_base, title_suffix=period_label
+            )
+            st.session_state[_dist_key] = (_fig_dist, _summary_dist)
+            for _k in list(st.session_state.keys()):
+                if _k.startswith("_fig_dist_") and _k != _dist_key:
+                    del st.session_state[_k]
+    fig_dist, summary_dist = st.session_state[_dist_key]
+    if fig_dist is not None:
+        st.plotly_chart(fig_dist, use_container_width=True, key="main_consumption_dist",
+                        config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+        with st.expander("Summary Statistics — Consumption"):
+            st.dataframe(summary_dist, hide_index=True, use_container_width=True)
+    else:
+        st.warning("Not enough data to build consumption distribution chart.")
+
+    if has_potcontr:
+        st.markdown("#### Contractual Power Distribution")
+        if "_fig_pie" not in st.session_state:
+            st.session_state["_fig_pie"] = plot_potcontr_pie(df_unique)
+        fig_pie = st.session_state["_fig_pie"]
+        if fig_pie is not None:
+            st.plotly_chart(fig_pie, use_container_width=True, key="main_potcontr_pie",
+                            config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+
+    if has_potcontr:
+        st.markdown("#### Contractual Power by Typology — Top 10")
+        if "_fig_stack" not in st.session_state:
+            st.session_state["_fig_stack"] = plot_potcontr_stacked_bar(df_unique, top_n=10)
+        fig_stack = st.session_state["_fig_stack"]
+        if fig_stack is not None:
+            st.plotly_chart(fig_stack, use_container_width=True, key="main_potcontr_stack",
+                            config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+
+
 # ==============================================================================
 # MAIN APPLICATION
 # ==============================================================================
 
 def main():
     st.set_page_config(
-        page_title="ATECO Hierarchical Clustering",
+        page_title="Data Exploration - PoliTo",
         page_icon="📊",
         layout="wide",
     )
@@ -3077,6 +3125,19 @@ def main():
     [data-testid="stProgress"] > div {
         background-color: #2e7d32 !important;
     }
+    /* Remove the green container background, keep only bar and text */
+    [data-testid="stProgressBar"],
+    div[data-testid="stProgressBar"],
+    [data-testid="stProgress"] {
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    /* The container wrapping progress + text */
+    [data-testid="stApp"] .stProgress,
+    .element-container:has([data-testid="stProgress"]) {
+        background-color: transparent !important;
+    }
 
     /* ── METRIC CARDS ─────────────────────────────────────────────── */
     [data-testid="metric-container"] {
@@ -3182,7 +3243,7 @@ def main():
         has_tipologia = ("Tipologia" in df_meas.columns and df_meas["Tipologia"].notna().any())
         if has_tipologia:
             tip_values = sorted(df_meas["Tipologia"].dropna().unique().tolist())
-            tip_counts = df_meas.groupby("Tipologia")["POD"].nunique()
+            tip_counts = df_meas.groupby("Tipologia", observed=True)["POD"].nunique()
             sel_tipologia = st.radio(
                 "Data Type",
                 ["All"] + tip_values,
@@ -3202,7 +3263,7 @@ def main():
             sel_tipologia = "All"
 
         if sel_tipologia != "All" and has_tipologia:
-            df_meas_filtered = df_meas[df_meas["Tipologia"] == sel_tipologia].copy()
+            df_meas_filtered = df_meas[df_meas["Tipologia"] == sel_tipologia]
         else:
             df_meas_filtered = df_meas
 
@@ -3279,16 +3340,21 @@ def main():
             st.info("No contractual power data available.")
             enable_pot_filter = False
 
+        # Clear cached charts if filters changed
+        _filter_sig = (sel_tipologia, coverage_opt,
+                       str(sorted(selected_ranges)) if has_potcontr and enable_pot_filter else "",
+                       include_missing if has_potcontr and enable_pot_filter else False)
+        if st.session_state.get("_filter_sig") != _filter_sig:
+            st.session_state["_filter_sig"] = _filter_sig
+            for _ck in ["_fig_pie", "_fig_stack"]:
+                st.session_state.pop(_ck, None)
+            for _k in list(st.session_state.keys()):
+                if _k.startswith("_fig_dist_"):
+                    del st.session_state[_k]
+
         st.divider()
         st.header("Cluster Settings")
-        cluster_mode = st.radio(
-            "Number of clusters",
-            ["Automatic (majority vote)", "Manual"],
-            index=0, key="cluster_mode"
-        )
-        manual_k = None
-        if cluster_mode == "Manual":
-            manual_k = st.slider("k (number of clusters)", 2, 15, 4, key="manual_k_slider")
+        st.caption("Set k inside the Clustering Explorer tab.")
 
         st.divider()
         st.header("Statistics")
@@ -3358,7 +3424,7 @@ def main():
         return
 
     l1_counts = (
-        df_base.groupby("ATECO_L1")["POD"].nunique()
+        df_base.groupby("ATECO_L1", observed=True)["POD"].nunique()
         .reset_index().rename(columns={"POD": "N"})
         .sort_values("N", ascending=False)
     )
@@ -3374,39 +3440,12 @@ def main():
 
     with tab_cluster:
         # ── 1. ATECO CLUSTERING SECTION ──────────────────────────────────────
-        ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
+        ateco_clustering_section(df_base, profile_norm, df_unique, None,
                                  profile_month, l1_counts)
 
-        # ── 2. DISTRIBUTION CHARTS ───────────────────────────────────────────
-        st.markdown("---")
-        st.subheader("Data Distribution Overview")
-
-        period_label = f"Filter: {' | '.join(filter_parts)}" if filter_parts else "All data"
-
-        st.markdown("#### Monthly Consumption Distribution — Top 15 Typologies")
-        with st.spinner("Computing consumption distribution..."):
-            df_meas_for_dist = df_meas_filtered[df_meas_filtered["POD"].isin(df_base["POD"])]
-            fig_dist, summary_dist = plot_consumption_distribution_top15(
-                df_meas_for_dist, df_base, title_suffix=period_label
-            )
-        if fig_dist is not None:
-            st.plotly_chart(fig_dist, use_container_width=True, key="main_consumption_dist", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
-            with st.expander("Summary Statistics — Consumption"):
-                st.dataframe(summary_dist, hide_index=True, use_container_width=True)
-        else:
-            st.warning("Not enough data to build consumption distribution chart.")
-
-        if has_potcontr:
-            st.markdown("#### Contractual Power Distribution")
-            fig_pie = plot_potcontr_pie(df_unique)
-            if fig_pie is not None:
-                st.plotly_chart(fig_pie, use_container_width=True, key="main_potcontr_pie", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
-
-        if has_potcontr:
-            st.markdown("#### Contractual Power by Typology — Top 10")
-            fig_stack = plot_potcontr_stacked_bar(df_unique, top_n=10)
-            if fig_stack is not None:
-                st.plotly_chart(fig_stack, use_container_width=True, key="main_potcontr_stack", config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+        # ── 2. DISTRIBUTION CHARTS — in own fragment so clustering reruns don't touch them
+        distribution_overview_section(df_base, df_meas_filtered, df_unique,
+                                      has_potcontr, filter_parts)
 
     with tab_gse:
         gse_comparison_tab(df_base, df_meas_filtered, pods_12m)
@@ -3477,7 +3516,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
         else:
             df_l1_filtered = df_base[df_base["ATECO_L1"].isin(selected_l1)]
             l2_data = (
-                df_l1_filtered.groupby(["ATECO_L1", "ATECO_L2"])["POD"].nunique()
+                df_l1_filtered.groupby(["ATECO_L1", "ATECO_L2"], observed=True)["POD"].nunique()
                 .reset_index().rename(columns={"POD": "N"})
             )
             l2_data = l2_data[l2_data["ATECO_L2"] != "N/A"]
@@ -3568,7 +3607,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
         else:
             df_l2_filtered = df_base[df_base["ATECO_L2"].isin(selected_l2)]
             l3_data = (
-                df_l2_filtered.groupby(["ATECO_L1", "ATECO_L2", "ATECO_L3"])["POD"]
+                df_l2_filtered.groupby(["ATECO_L1", "ATECO_L2", "ATECO_L3"], observed=True)["POD"]
                 .nunique().reset_index().rename(columns={"POD": "N"})
             )
             l3_data = l3_data[l3_data["ATECO_L3"] != "N/A"]
@@ -3684,6 +3723,23 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
         )
         if _mbkd_sel != "None":
             monthly_breakdown_level = _mbkd_sel
+
+    # ── Cluster settings (inside fragment so k change stays local) ────────────
+    st.markdown("---")
+    _ck_col1, _ck_col2 = st.columns([1, 1])
+    with _ck_col1:
+        cluster_mode = st.radio(
+            "Number of clusters",
+            ["Automatic (majority vote)", "Manual"],
+            index=0, key="cluster_mode",
+            horizontal=True,
+        )
+    with _ck_col2:
+        if cluster_mode == "Manual":
+            manual_k = st.slider("k (number of clusters)", 2, 15, 4, key="manual_k_slider")
+        else:
+            manual_k = None
+            st.empty()
 
     sel_fingerprint = (
         tuple(sorted(selected_l1)),
