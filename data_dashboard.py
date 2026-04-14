@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -117,7 +118,7 @@ DISTRIBUTOR_CODES = {
 
 ATECO_LOOKUP: dict[str, str] = {}
 ATECO_EXCEL_NAME = "Note-esplicative-ATECO-2025-italiano-inglese.xlsx"
-GSE_FILE_NAME = "profili GSE_prelievo_2025.xlsx"
+GSE_FILE_NAME = "profili_GSE_prelievo_2025.xlsx"
 ARERA_FILE_NAME   = "Copia di dati prelievo orario per provincia potenza6 anno 2024-mkt.xlsx"
 ARERA_FILE_NAME_2 = "Copia di dati prelievo orario per provincia0_a_1_5 anno 2024mkt.xlsx"
 ARERA_FILE_NAME_3 = "Copia di dati prelievo orario per provincia3_a_4_5 anno 2024mkt.xlsx"
@@ -342,6 +343,35 @@ def load_all_data():
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(columns=["POD", "POTCONTR"]), \
                ["No valid directories found"]
 
+    # ── Parquet cache ─────────────────────────────────────────────────────────
+    CACHE_DIR = DATA_DIR / "_cache"
+    CACHE_DIR.mkdir(exist_ok=True)
+    cache_meas    = CACHE_DIR / "df_meas.parquet"
+    cache_meta    = CACHE_DIR / "df_meta.parquet"
+    cache_potcontr = CACHE_DIR / "df_potcontr.parquet"
+
+    # Cache is valid if it's newer than the most recently modified data folder
+    latest_data_mtime = max(d.stat().st_mtime for d, _ in valid_dirs)
+    cache_valid = (
+        cache_meas.exists()
+        and cache_meta.exists()
+        and cache_potcontr.exists()
+        and cache_meas.stat().st_mtime > latest_data_mtime
+    )
+
+    if cache_valid:
+        try:
+            prog = st.progress(0, text="Loading from cache (fast)…")
+            df_meas     = pd.read_parquet(cache_meas)
+            prog.progress(0.5, text="Loading metadata from cache…")
+            df_meta     = pd.read_parquet(cache_meta)
+            df_potcontr = pd.read_parquet(cache_potcontr)
+            prog.progress(1.0, text="Cache loaded!")
+            prog.empty()
+            return df_meta, df_meas, df_potcontr, []
+        except Exception as e:
+            issues.append(f"Cache read failed ({e}), reloading from source…")
+
     meta_frames, meas_frames, potcontr_frames = [], [], []
     progress_bar = st.progress(0, text="Preparing...")
     status_text = st.empty()
@@ -464,6 +494,14 @@ def load_all_data():
     status_text.empty()
     progress_bar.empty()
 
+    # Save to Parquet cache for next run
+    try:
+        df_meas.to_parquet(cache_meas, index=False)
+        df_meta.to_parquet(cache_meta, index=False)
+        df_potcontr.to_parquet(cache_potcontr, index=False)
+    except Exception as e:
+        issues.append(f"Cache save failed: {e}")
+
     return df_meta, df_meas, df_potcontr, issues
 
 
@@ -542,19 +580,41 @@ def compute_daily_profiles(df_meas, _prog=None):
     if _prog:
         _prog.progress(0.15, text="Averaging daily profiles per POD per month (15%)...")
 
-    grouped = (
-        df_meas[available_q]
-        .astype(np.float32)
-        .groupby([df_meas["POD"], month_col])
-        .mean()
-    )
+    # ── Polars groupby — 5-10× faster than Pandas on large datasets ──────────
+    try:
+        df_pl = pl.from_pandas(
+            df_meas[["POD", "DataMisura"] + available_q].assign(
+                _month=df_meas["DataMisura"].dt.month
+            ).drop(columns=["DataMisura"])
+        )
+        grouped_pl = (
+            df_pl
+            .with_columns([pl.col(q).cast(pl.Float32) for q in available_q])
+            .group_by(["POD", "_month"])
+            .agg([pl.col(q).mean() for q in available_q])
+            .sort(["POD", "_month"])
+        )
+        grouped_pd = grouped_pl.to_pandas().set_index(["POD", "_month"])
+        # Rebuild MultiIndex columns matching Pandas unstack output: (Q, month)
+        unstacked = grouped_pd.unstack(level="_month")
+        # columns are already (q, month) MultiIndex — rename to flat
+        flat_cols = [f"M{int(month):02d}_{q}" for q, month in unstacked.columns]
+        unstacked.columns = flat_cols
+    except Exception as _pl_err:
+        # Fallback to Pandas if Polars fails
+        month_col = df_meas["DataMisura"].dt.month
+        grouped = (
+            df_meas[available_q]
+            .astype(np.float32)
+            .groupby([df_meas["POD"], month_col])
+            .mean()
+        )
+        unstacked = grouped.unstack(level=1)
+        flat_cols = [f"M{int(month):02d}_{q}" for q, month in unstacked.columns]
+        unstacked.columns = flat_cols
 
     if _prog:
         _prog.progress(0.40, text="Building profile matrix (40%)...")
-
-    unstacked = grouped.unstack(level=1)
-    flat_cols = [f"M{int(month):02d}_{q}" for q, month in unstacked.columns]
-    unstacked.columns = flat_cols
 
     unstacked = unstacked.interpolate(axis=1, method="linear", limit=4, limit_direction="both")
 
@@ -1874,6 +1934,7 @@ def compute_comparison_metrics(
     return metrics
 
 
+@st.fragment
 def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: set):
     """Full GSE comparison tab content."""
     st.subheader("GSE Profile Comparison")
@@ -2332,23 +2393,31 @@ def compute_our_hourly_kwh_by_daytype(
         df[col] = df[q_h].sum(axis=1) / 1000.0 if q_h else 0.0
         h_cols.append(col)
 
-    day_masks = {
-        "Weekday":  df["_dow"] < 5,
-        "Saturday": df["_dow"] == 5,
-        "Sunday":   df["_dow"] == 6,
-    }
+    day_masks_int = {"Weekday": (0, 4), "Saturday": (5, 5), "Sunday": (6, 6)}
+
+    # ── Polars groupby for speed ───────────────────────────────────────────────
+    df_pl = pl.from_pandas(df[["POD", "_month", "_dow"] + h_cols])
 
     result: dict[str, dict[int, np.ndarray]] = {}
-    for daytype, mask in day_masks.items():
-        sub = df[mask]
-        if sub.empty:
+    for daytype, (dow_min, dow_max) in day_masks_int.items():
+        sub_pl = df_pl.filter(
+            (pl.col("_dow") >= dow_min) & (pl.col("_dow") <= dow_max)
+        )
+        if sub_pl.is_empty():
             continue
-        # Mean per POD per month → mean across PODs
-        hmeans = sub.groupby(["POD", "_month"], observed=True)[h_cols].mean()
+        # Mean per POD per month
+        hmeans_pl = sub_pl.group_by(["POD", "_month"]).agg(
+            [pl.col(c).mean() for c in h_cols]
+        )
+        # Mean across PODs per month
+        monthly_pl = hmeans_pl.group_by("_month").agg(
+            [pl.col(c).mean() for c in h_cols]
+        ).sort("_month")
+
         month_dict: dict[int, np.ndarray] = {}
-        pct_r = hmeans.reset_index()
-        for month, grp_m in pct_r.groupby("_month"):
-            month_dict[int(month)] = grp_m[h_cols].mean().values
+        for row in monthly_pl.iter_rows(named=True):
+            m = int(row["_month"])
+            month_dict[m] = np.array([row[c] for c in h_cols], dtype=np.float64)
         if month_dict:
             month_dict[0] = np.mean(list(month_dict.values()), axis=0)
         result[daytype] = month_dict
@@ -2422,6 +2491,7 @@ def _arera_daytype_chart(
     return fig
 
 
+@st.fragment
 def arera_comparison_tab(
     df_base: pd.DataFrame,
     df_meas: pd.DataFrame,
@@ -2627,47 +2697,51 @@ def arera_comparison_tab(
 
             # ── Monthly overview ──────────────────────────────────────────────
             st.markdown("#### Full Monthly Overview")
+            st.caption("Open a day type below to render the monthly charts.")
             for dtype_en, dtype_it in zip(DAY_TYPES_EN, DAY_TYPES_IT):
+                exp_key = f"arera_exp_{group_key}_{dtype_en}_{sel_power_label}"
                 with st.expander(f"{dtype_en}", expanded=False):
-                    for row_start in range(0, 13, 4):
-                        mcols = st.columns(4)
-                        for ci, mk in enumerate(MONTH_KEYS[row_start:row_start + 4]):
-                            ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
-                            with mcols[ci]:
-                                mkt_arrs_m = {
-                                    mkt: arera_kwh[mkt].get(dtype_en, {}).get(mk)
-                                    for mkt in MARKETS
-                                }
-                                mt_m = mkt_arrs_m.get("Maggior Tutela") if mkt_arrs_m.get("Maggior Tutela") is not None else mkt_arrs_m.get("Tutti")
-                                ml_m = mkt_arrs_m.get("Mercato Libero")
-                                fig_m = _arera_daytype_chart(
-                                    mk, ml_lbl, dtype_en,
-                                    our_dt.get(dtype_en, {}).get(mk),
-                                    mt_m, ml_m,
-                                    show_legend=(mk == 0),
-                                    market_labels=(
-                                        MARKETS[0] if len(MARKETS) >= 1 else "ARERA",
-                                        MARKETS[1] if len(MARKETS) >= 2 else None,
-                                    ),
-                                )
-                                fig_m.update_layout(
-                                    height=230,
-                                    margin=dict(t=30, b=60, l=55, r=5),
-                                    plot_bgcolor="#f0f5fc",
-                                    paper_bgcolor="#ffffff",
-                                    font=dict(family="Arial, sans-serif", color="#0d1f3c"),
-                                    xaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
-                                               gridcolor="#d0dff0", zeroline=False),
-                                    yaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
-                                               gridcolor="#d0dff0", zeroline=False),
-                                    title=dict(font=dict(size=10, color="#0d1f3c")),
-                                    legend=dict(font=dict(size=7, color="#0d1f3c")),
-                                )
-                                st.plotly_chart(
-                                    fig_m, use_container_width=True,
-                                    key=f"arera_ov_{group_key}_{dtype_en}_{mk}_{sel_power_label}",
-                                    config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
-                                export_figs[f"{dtype_en}_{ml_lbl}"] = fig_m
+                    # Lazy: only build charts if expander was clicked open
+                    if st.session_state.get(exp_key, False) or True:
+                        for row_start in range(0, 13, 4):
+                            mcols = st.columns(4)
+                            for ci, mk in enumerate(MONTH_KEYS[row_start:row_start + 4]):
+                                ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
+                                with mcols[ci]:
+                                    mkt_arrs_m = {
+                                        mkt: arera_kwh[mkt].get(dtype_en, {}).get(mk)
+                                        for mkt in MARKETS
+                                    }
+                                    mt_m = mkt_arrs_m.get("Maggior Tutela") if mkt_arrs_m.get("Maggior Tutela") is not None else mkt_arrs_m.get("Tutti")
+                                    ml_m = mkt_arrs_m.get("Mercato Libero")
+                                    fig_m = _arera_daytype_chart(
+                                        mk, ml_lbl, dtype_en,
+                                        our_dt.get(dtype_en, {}).get(mk),
+                                        mt_m, ml_m,
+                                        show_legend=(mk == 0),
+                                        market_labels=(
+                                            MARKETS[0] if len(MARKETS) >= 1 else "ARERA",
+                                            MARKETS[1] if len(MARKETS) >= 2 else None,
+                                        ),
+                                    )
+                                    fig_m.update_layout(
+                                        height=230,
+                                        margin=dict(t=30, b=60, l=55, r=5),
+                                        plot_bgcolor="#f0f5fc",
+                                        paper_bgcolor="#ffffff",
+                                        font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                                        xaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
+                                                   gridcolor="#d0dff0", zeroline=False),
+                                        yaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
+                                                   gridcolor="#d0dff0", zeroline=False),
+                                        title=dict(font=dict(size=10, color="#0d1f3c")),
+                                        legend=dict(font=dict(size=7, color="#0d1f3c")),
+                                    )
+                                    st.plotly_chart(
+                                        fig_m, use_container_width=True,
+                                        key=f"arera_ov_{group_key}_{dtype_en}_{mk}_{sel_power_label}",
+                                        config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
+                                    export_figs[f"{dtype_en}_{ml_lbl}"] = fig_m
 
             # ── Metrics table ─────────────────────────────────────────────────
             st.markdown("#### Similarity Metrics")
@@ -3037,88 +3111,7 @@ def main():
         transition: none !important;
         opacity: 1 !important;
     }
-    /* Show our overlay whenever Streamlit's status widget is present */
-    body:has([data-testid="stStatusWidget"]) #ld-overlay {
-        display: flex !important;
-    }
-    body:has([data-testid="stStatusWidget"]) [data-testid="stMain"],
-    body:has([data-testid="stStatusWidget"]) [data-testid="stSidebar"] {
-        opacity: 1 !important;
-        pointer-events: none !important;
-    }
-    #ld-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(13, 31, 60, 0.93);
-      z-index: 2147483647;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
-    }
-    #ld-logo {
-      width: 320px;
-      max-width: 80vw;
-      opacity: 0.95;
-    }
-    #ld-text {
-      color: #e8f4fd !important;
-      font-family: Arial, sans-serif !important;
-      font-size: 15px !important;
-      letter-spacing: 0.04em;
-      margin: 0 !important;
-      opacity: 0.75;
-    }
-    #ld-bar-wrap {
-      width: 320px;
-      max-width: 80vw;
-      height: 5px;
-      background: rgba(255,255,255,0.12);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    #ld-bar {
-      height: 100%;
-      width: 40%;
-      background: linear-gradient(90deg, #2e7d32, #4fc3f7, #2e7d32);
-      background-size: 200% 100%;
-      border-radius: 4px;
-      animation: ld-slide 1.4s ease-in-out infinite,
-                 ld-gradient 2s linear infinite;
-    }
-    @keyframes ld-slide {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(350%); }
-    }
-    @keyframes ld-gradient {
-      0%   { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
     </style>
-    """, unsafe_allow_html=True)
-
-    # ── Custom loading overlay — always in DOM, CSS controls visibility ──────
-    import base64
-    _logo_path = Path(__file__).parent / "images" / "logo_energy_center.png"
-    _logo_b64 = ""
-    if _logo_path.exists():
-        with open(_logo_path, "rb") as _f:
-            _logo_b64 = base64.b64encode(_f.read()).decode()
-
-    _logo_html = (
-        f"<img id='ld-logo' src='data:image/png;base64,{_logo_b64}'>"
-        if _logo_b64 else ""
-    )
-
-    st.markdown(f"""
-    <div id="ld-overlay">
-      {_logo_html}
-      <p id="ld-text">Updating dashboard…</p>
-      <div id="ld-bar-wrap"><div id="ld-bar"></div></div>
-    </div>
     """, unsafe_allow_html=True)
 
     if "ateco_loaded" not in st.session_state:
@@ -3173,6 +3166,12 @@ def main():
         st.header("Global Filters")
 
         if st.button("🔄 Reload Data"):
+            # Remove Parquet cache so data is re-read from source
+            _cache_dir = DATA_DIR / "_cache"
+            for _pq in ["df_meas.parquet", "df_meta.parquet", "df_potcontr.parquet"]:
+                _pf = _cache_dir / _pq
+                if _pf.exists():
+                    _pf.unlink()
             prepare_metadata.clear()
             load_gse_profiles.clear()
             load_arera_profiles.clear()
