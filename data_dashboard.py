@@ -28,6 +28,11 @@ from sklearn.metrics import (
 
 warnings.filterwarnings("ignore")
 
+def _fmt(n) -> str:
+    """Format number with narrow no-break space as thousands separator."""
+    return f"{int(n):,}".replace(",", "\u202f")
+
+
 DATA_DIR = Path(__file__).parent / "data"
 
 MESI_IT = {
@@ -1456,7 +1461,7 @@ def plot_consumption_distribution_top15(df_meas, df_unique, title_suffix=""):
     fig.update_layout(
         title=dict(
             text=f"Monthly Consumption Distribution — Top 15 User Typologies<br>"
-                 f"<sup>{n_total_top:,} PODs | {title_suffix}</sup>",
+                 f"<sup>{_fmt(n_total_top)} PODs | {title_suffix}</sup>",
             font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         xaxis=dict(
@@ -1536,7 +1541,7 @@ def plot_potcontr_pie(df_unique):
     fig.update_layout(
         title=dict(
             text=f"Contractual Power Distribution<br>"
-                 f"<sup>{df['POD'].nunique():,} PODs with power data</sup>",
+                 f"<sup>{_fmt(df['POD'].nunique())} PODs with power data</sup>",
             font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         legend=dict(
@@ -1613,7 +1618,7 @@ def plot_potcontr_stacked_bar(df_unique, top_n=10):
         barmode="stack",
         title=dict(
             text=f"Contractual Power Distribution by Typology — Top {top_n}<br>"
-                 f"<sup>{n_total:,} PODs with power data</sup>",
+                 f"<sup>{_fmt(n_total)} PODs with power data</sup>",
             font=dict(size=14, color="#e8f4fd"), x=0.5, xanchor="center",
         ),
         xaxis=dict(
@@ -1998,9 +2003,9 @@ def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: s
 
     st.caption(
         f"Groups (consistent with global filters) — "
-        f"DO.R: {len(pods_dor):,} PODs | "
-        f"DO.NR: {len(pods_donr):,} PODs | "
-        f"Other (excl. IL): {len(pods_other):,} PODs"
+        f"DO.R: {_fmt(len(pods_dor))} PODs | "
+        f"DO.NR: {_fmt(len(pods_donr))} PODs | "
+        f"Other (excl. IL): {_fmt(len(pods_other))} PODs"
     )
 
     # ── Compute our profiles (cached) ─────────────────────────────────────────
@@ -2582,7 +2587,7 @@ def arera_comparison_tab(
 
     st.caption(
         f"Power class **{sel_power_label}** — "
-        f"DO.R: **{len(pods_dor):,}** PODs | DO.NR: **{len(pods_donr):,}** PODs"
+        f"DO.R: **{_fmt(len(pods_dor))}** PODs | DO.NR: **{_fmt(len(pods_donr))}** PODs"
     )
 
     # ── Compute our profiles (cached per power class) ─────────────────────────
@@ -3116,27 +3121,60 @@ def main():
     [data-testid="stDataFrame"] .dvn-header,
     [class*="dvn-header"],
     [class*="headerRow"],
-    [class*="colHeader"] {
-        background-color: #1a3a6b !important;
+    [class*="colHeader"],
+    [data-testid="stDataFrame"] [data-testid="glideDataGridHeader"],
+    /* Target the sticky header row specifically */
+    [data-testid="stDataFrame"] div[role="row"]:first-child,
+    [data-testid="stDataFrame"] div[role="row"]:first-child > div {
+        background-color: #1e4a8a !important;
         color: #e8f4fd !important;
     }
 
     /* ── PROGRESS BAR ─────────────────────────────────────────────── */
-    [data-testid="stProgress"] > div {
+    /* Only the actual progress bar fill should be green */
+    [data-testid="stProgress"] > div > div {
         background-color: #2e7d32 !important;
     }
-    /* Remove the green container background, keep only bar and text */
+    /* Track (background of bar) — subtle dark */
+    [data-testid="stProgress"] > div {
+        background-color: rgba(255,255,255,0.12) !important;
+    }
+    /* Remove ALL green backgrounds from containers */
     [data-testid="stProgressBar"],
-    div[data-testid="stProgressBar"],
-    [data-testid="stProgress"] {
+    [data-testid="stProgress"],
+    div[data-testid="stProgress"],
+    .element-container:has([data-testid="stProgress"]),
+    .stProgress,
+    div.stProgress {
         background-color: transparent !important;
+        background: transparent !important;
         border: none !important;
         box-shadow: none !important;
     }
-    /* The container wrapping progress + text */
-    [data-testid="stApp"] .stProgress,
-    .element-container:has([data-testid="stProgress"]) {
+    /* Progress text label — the green bg comes from a sibling div Streamlit injects */
+    [data-testid="stProgress"] ~ div,
+    [data-testid="stProgress"] ~ p,
+    [data-testid="stProgress"] + div,
+    [data-testid="stProgress"] + p,
+    /* Streamlit wraps the text in a div with inline style background */
+    div[class*="progress"] > div,
+    div[class*="Progress"] > div,
+    p[data-testid="stProgressMessage"],
+    [data-testid="stProgressMessage"],
+    [data-testid="stProgressMessage"] > div,
+    /* Nuclear: any direct child div of the element container with progress */
+    .element-container:has([data-testid="stProgress"]) > div > div,
+    .element-container:has([data-testid="stProgress"]) > div {
         background-color: transparent !important;
+        background: transparent !important;
+        color: #e8f4fd !important;
+    }
+    /* Override any inline style with background containing rgb(46,125,50) green */
+    *[style*="background-color: rgb(46, 125, 50)"],
+    *[style*="background-color: rgb(46,125,50)"],
+    *[style*="background: rgb(46, 125, 50)"] {
+        background-color: transparent !important;
+        background: transparent !important;
     }
 
     /* ── METRIC CARDS ─────────────────────────────────────────────── */
@@ -3248,8 +3286,8 @@ def main():
                 "Data Type",
                 ["All"] + tip_values,
                 format_func=lambda x: (
-                    f"All ({df_meas['POD'].nunique():,} PODs)" if x == "All"
-                    else f"{x} ({tip_counts.get(x, 0):,} PODs)"
+                    f"All ({_fmt(df_meas['POD'].nunique())} PODs)" if x == "All"
+                    else f"{x} ({_fmt(tip_counts.get(x, 0))} PODs)"
                 ),
                 index=0, key="tip_filter",
                 help=(
@@ -3311,7 +3349,7 @@ def main():
                         if n_r == 0:
                             continue
                         checked = st.checkbox(
-                            f"{range_label} ({n_r:,})",
+                            f"{range_label} ({_fmt(n_r)})",
                             value=True,
                             key=f"pot2_range_{range_label}",
                         )
@@ -3360,8 +3398,24 @@ def main():
         st.header("Statistics")
         n_pod_total = df_unique["POD"].nunique()
         n_pod_meas = df_meas_filtered["POD"].nunique()
-        st.metric("PODs (metadata)", f"{n_pod_total:,}")
-        st.metric("PODs (measures)", f"{n_pod_meas:,}")
+        st.metric("PODs (metadata)", _fmt(n_pod_total))
+        st.metric("PODs (measures)", _fmt(n_pod_meas))
+
+        # Total input data size
+        _total_bytes = 0
+        if DATA_DIR.exists():
+            for _f in DATA_DIR.rglob("*"):
+                if _f.is_file() and "_cache" not in str(_f):
+                    try:
+                        _total_bytes += _f.stat().st_size
+                    except Exception:
+                        pass
+        _total_gb = _total_bytes / (1024 ** 3)
+        if _total_gb >= 1:
+            _size_str = f"{_total_gb:.2f} GB"
+        else:
+            _size_str = f"{_total_bytes / (1024**2):.0f} MB"
+        st.metric("Input data size", _size_str)
 
         if issues:
             with st.expander(f"⚠ {len(issues)} warnings"):
@@ -3415,9 +3469,9 @@ def main():
         filter_parts.append(f"Month={MONTH_LABELS[profile_month]}")
 
     if filter_parts:
-        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{n_base:,} PODs** available".replace(",", "\u202f"))
+        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{_fmt(n_base)} PODs** available".replace(",", "\u202f"))
     else:
-        st.info(f"No global filters → **{n_base:,} PODs** available".replace(",", "\u202f"))
+        st.info(f"No global filters → **{_fmt(n_base)} PODs** available")
 
     if profile_norm.empty:
         st.error("No load profiles available. Check data.")
@@ -4169,7 +4223,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                         bp_df = build_ateco_cluster_breakdown(X_df, df_base, bp_col, level_name)
                         bp_df.to_excel(writer, index=False, sheet_name=bp_sheet)
 
-                zf.writestr(f"{level_name}_k{k}_stats.xlsx", excel_buf.getvalue())
+                zf.writestr(f"{level_name}_k{k}_general_statistics.xlsx", excel_buf.getvalue())
 
                 # Profile chart (HTML)
                 step += 1
@@ -4188,7 +4242,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                                           text=f"Centroid overlay chart {level_name}...")
                 try:
                     fig_co_exp = plot_centroids_only(X_df, k, f" | {level_name}")
-                    zf.writestr(f"{level_name}_k{k}_centroids_overlay.html",
+                    zf.writestr(f"{level_name}_k{k}_cluster_centroids.html",
                                 fig_co_exp.to_html(include_plotlyjs="cdn"))
                 except Exception as e:
                     export_errors.append(f"{level_name} centroid overlay: {e}")
@@ -4204,7 +4258,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                         inv_bkd_exp, level_name, k,
                         centroid_chart_html=centroid_div,
                     )
-                    zf.writestr(f"{level_name}_k{k}_cluster_ateco_breakdown.html", inv_html)
+                    zf.writestr(f"{level_name}_k{k}_cluster_within_ateco_analysis.html", inv_html)
                 except Exception as e:
                     export_errors.append(f"{level_name} cluster→ATECO HTML: {e}")
 
@@ -4289,7 +4343,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                         bkd_exp, level_name, k,
                         centroid_chart_html=centroid_div,
                     )
-                    zf.writestr(f"{level_name}_k{k}_ateco_breakdown.html", bkd_html)
+                    zf.writestr(f"{level_name}_k{k}_ateco_within_cluster_analysis.html", bkd_html)
                 except Exception as e:
                     export_errors.append(f"{level_name} ateco→cluster breakdown: {e}")
 
@@ -4362,7 +4416,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
         st.download_button(
             label="⬇️ Download Results ZIP",
             data=st.session_state["_export_zip"],
-            file_name="ateco_clustering_results.zip",
+            file_name="clustering_results.zip",
             mime="application/zip",
             type="primary",
             key="frag_download_btn",
