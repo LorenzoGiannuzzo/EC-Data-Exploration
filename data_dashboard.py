@@ -3461,6 +3461,10 @@ def main():
     df_base = df_base[df_base["POD"].isin(meas_pods)]
     n_base = df_base["POD"].nunique()
 
+    # Count PODs without a valid profile (all-zero measurements removed by compute_daily_profiles)
+    n_with_profile = len(set(profile_norm.index) & set(df_base["POD"].unique()))
+    n_no_profile = n_base - n_with_profile
+
     filter_parts = []
     if has_tipologia and sel_tipologia != "All":
         filter_parts.append(f"Type = {sel_tipologia}")
@@ -3471,10 +3475,18 @@ def main():
     if profile_month > 0:
         filter_parts.append(f"Month={MONTH_LABELS[profile_month]}")
 
+    _n_str = _fmt(n_base)
     if filter_parts:
-        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{_fmt(n_base)} PODs** available".replace(",", "\u202f"))
+        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{_n_str} PODs** available")
     else:
-        st.info(f"No global filters → **{_fmt(n_base)} PODs** available")
+        st.info(f"No global filters → **{_n_str} PODs** available")
+
+    if n_no_profile > 0:
+        st.caption(
+            f"ℹ {_fmt(n_no_profile)} POD{'s' if n_no_profile > 1 else ''} out of {_n_str} "
+            f"excluded from clustering: all-zero measurements (no valid load profile). "
+            f"{_fmt(n_with_profile)} PODs have a usable profile."
+        )
 
     if profile_norm.empty:
         st.error("No load profiles available. Check data.")
@@ -3545,12 +3557,10 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
             if st.button("Select All", key="sa_l1", use_container_width=True):
                 for c in all_l1_codes:
                     st.session_state[f"cb_l1_{c}"] = True
-                _frag_rerun()
         with da1:
             if st.button("Deselect All", key="da_l1", use_container_width=True):
                 for c in all_l1_codes:
                     st.session_state[f"cb_l1_{c}"] = False
-                _frag_rerun()
 
         with st.container(height=350):
             for _, row in l1_counts.iterrows():
@@ -3589,14 +3599,12 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                             st.session_state[f"cb_l2_{c}"] = True
                         for l1c in selected_l1:
                             st.session_state[f"cb_l2par_{l1c}"] = True
-                        _frag_rerun()
                 with da2:
                     if st.button("Deselect All", key="da_l2", use_container_width=True):
                         for c in all_l2_codes:
                             st.session_state[f"cb_l2_{c}"] = False
                         for l1c in selected_l1:
                             st.session_state[f"cb_l2par_{l1c}"] = False
-                        _frag_rerun()
 
                 with st.container(height=350):
                     _rendered_l2: set[str] = set()  # guard against duplicate keys
@@ -3679,14 +3687,12 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                             st.session_state[f"cb_l3_{c}"] = True
                         for l2c in selected_l2:
                             st.session_state[f"cb_l3par_{l2c}"] = True
-                        _frag_rerun()
                 with da3:
                     if st.button("Deselect All", key="da_l3", use_container_width=True):
                         for c in all_l3_codes:
                             st.session_state[f"cb_l3_{c}"] = False
                         for l2c in selected_l2:
                             st.session_state[f"cb_l3par_{l2c}"] = False
-                        _frag_rerun()
 
                 with st.container(height=350):
                     _rendered_l3: set[str] = set()  # guard against duplicate keys
@@ -3781,6 +3787,12 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
 
     # ── Cluster settings (inside fragment so k change stays local) ────────────
     st.markdown("---")
+    # Ensure keys exist before rendering to prevent reset on rerun
+    if "cluster_mode" not in st.session_state:
+        st.session_state["cluster_mode"] = "Automatic (majority vote)"
+    if "manual_k_slider" not in st.session_state:
+        st.session_state["manual_k_slider"] = 4
+
     _ck_col1, _ck_col2 = st.columns([1, 1])
     with _ck_col1:
         cluster_mode = st.radio(
