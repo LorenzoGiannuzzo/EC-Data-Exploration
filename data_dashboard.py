@@ -2853,6 +2853,7 @@ def arera_comparison_tab(
         prog.progress(1.0, text="ARERA export ready!")
         prog.empty()
         st.session_state["_arera_export_zip"] = arera_buf.getvalue()
+        st.session_state["_arera_export_power"] = safe_pwr
         st.session_state["_arera_export_errors"] = arera_errs
 
     if "_arera_export_zip" in st.session_state:
@@ -2918,6 +2919,625 @@ def distribution_overview_section(df_base, df_meas_filtered, df_unique, has_potc
 # ==============================================================================
 # MAIN APPLICATION
 # ==============================================================================
+
+@st.fragment
+def export_results_tab():
+    """Centralised export hub — download ZIPs from all sections."""
+
+    st.subheader("Export Results")
+    st.markdown(
+        "Download results generated in each section. "
+        "If a section has not been run yet, a reminder is shown — "
+        "go to the relevant tab to generate the results first."
+    )
+
+    # ── Helper ────────────────────────────────────────────────────────────────
+    def _dl_btn(label, key, data, filename):
+        st.download_button(
+            label, data=data, file_name=filename,
+            mime="application/zip", type="primary",
+            key=key, use_container_width=True,
+        )
+
+    def _not_ready(msg):
+        st.warning(msg)
+
+    # ── 1. Clustering Explorer ────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Clustering Explorer")
+    _cl_zip = st.session_state.get("_export_zip")
+    _cl_res = st.session_state.get("_cl_results")
+    if _cl_zip:
+        _dl_btn("Download clustering_results.zip",
+                "exp_dl_clustering", _cl_zip, "clustering_results.zip")
+    elif _cl_res:
+        st.info(
+            "Clustering results are available but the export has not been prepared yet. "
+            "Go to the **Clustering Explorer** tab and click **Prepare Export ZIP**."
+        )
+    else:
+        _not_ready(
+            "No clustering results found. "
+            "Go to the **Clustering Explorer** tab, select ATECO codes and press **Run Clustering**."
+        )
+
+    # ── 2. GSE Profile Comparison ─────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### GSE Profile Comparison")
+    _gse_zip = st.session_state.get("_gse_export_zip")
+    if _gse_zip:
+        _dl_btn("Download gse_comparison_export.zip",
+                "exp_dl_gse", _gse_zip, "gse_comparison_export.zip")
+    else:
+        _not_ready(
+            "GSE export not prepared. "
+            "Go to the **GSE Profile Comparison** tab and click **Prepare Export ZIP**."
+        )
+
+    # ── 3. ARERA Profile Comparison ───────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### ARERA Profile Comparison")
+    _arera_zip = st.session_state.get("_arera_export_zip")
+    _arera_pwr = st.session_state.get("_arera_export_power", "")
+    if _arera_zip:
+        _fname = f"arera_comparison_{_arera_pwr}.zip" if _arera_pwr else "arera_comparison.zip"
+        _dl_btn(f"Download {_fname}",
+                "exp_dl_arera", _arera_zip, _fname)
+    else:
+        _not_ready(
+            "ARERA export not prepared. "
+            "Go to the **ARERA Profile Comparison** tab, select a power class and click **Prepare Export ZIP**."
+        )
+
+    # ── 4. Outliers Detection ─────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Outliers Detection")
+    _od_zip  = st.session_state.get("_od_export_zip")
+    _od_res  = st.session_state.get("_od_results")
+    if _od_zip:
+        _dl_btn("Download outliers_detection_results.zip",
+                "exp_dl_outliers", _od_zip, "outliers_detection_results.zip")
+    elif _od_res:
+        st.info(
+            "Outlier detection results are available but the export has not been prepared yet. "
+            "Go to the **Outliers Detection** tab and click **Prepare Export ZIP**."
+        )
+        # Allow preparing the ZIP directly from here
+        if st.button("Prepare Outliers Export ZIP", key="exp_od_prepare_btn"):
+            import zipfile as _zf, io as _io
+            _r    = _od_res
+            _X_df = _r["X_df"]; _cl_sizes = _r["cl_sizes"]
+            _out_cls = _r["outlier_clusters"]; _df_out = _r["df_out"]
+            _df_gaps = _r["df_gaps"]; _threshold = _r["threshold"]
+            _q_cols  = [c for c in _X_df.columns if c.startswith("Q")]
+            _x_labels = [f"{(i//4):02d}:{(i%4)*15:02d}" for i in range(len(_q_cols))]
+            _zb = _io.BytesIO(); _errs = []
+            with _zf.ZipFile(_zb, "w", _zf.ZIP_DEFLATED) as _z:
+                # Sizes chart
+                try:
+                    _colors_b = ["#e53935" if c in _out_cls else "#2e7d32" for c in _cl_sizes.index]
+                    _fs = go.Figure(go.Bar(
+                        x=[f"Cl.{c}" for c in _cl_sizes.index], y=_cl_sizes.values,
+                        marker_color=_colors_b, text=_cl_sizes.values,
+                        textposition="outside", textfont=dict(color="#0d1f3c", size=10),
+                    ))
+                    _fs.add_hline(y=_threshold, line_dash="dash", line_color="#e65100",
+                                  annotation_text=f"Threshold = {_threshold}",
+                                  annotation_font_color="#e65100")
+                    _fs.update_layout(
+                        title=dict(text="Number of PODs per Cluster (red = outlier)",
+                                   font=dict(color="#0d1f3c", size=13), x=0.5, xanchor="center"),
+                        xaxis=dict(title="Cluster", tickfont=dict(color="#1a3a6b"),
+                                   title_font=dict(color="#1a3a6b")),
+                        yaxis=dict(title="N. PODs", tickfont=dict(color="#1a3a6b"),
+                                   title_font=dict(color="#1a3a6b"), gridcolor="#d0dff0"),
+                        plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+                        font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                        height=320, margin=dict(t=40, b=50, l=55, r=20),
+                    )
+                    _z.writestr("cluster_sizes_overview.html", _fs.to_html(include_plotlyjs="cdn"))
+                except Exception as e:
+                    _errs.append(f"sizes chart: {e}")
+                # Profile charts
+                for _cl in _out_cls:
+                    try:
+                        _sub = _X_df[_X_df["Cluster"] == _cl][_q_cols]
+                        _mean = _sub.mean().values
+                        _std  = _sub.std().values if len(_sub) > 1 else np.zeros(len(_q_cols))
+                        _fp = go.Figure()
+                        _fp.add_trace(go.Scatter(
+                            x=_x_labels + _x_labels[::-1],
+                            y=list(_mean + _std) + list((_mean - _std)[::-1]),
+                            fill="toself", fillcolor="rgba(229,57,53,0.15)",
+                            line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
+                        ))
+                        _fp.add_trace(go.Scatter(
+                            x=_x_labels, y=_mean, mode="lines",
+                            name=f"Cluster {_cl} (n={int(_cl_sizes[_cl])})",
+                            line=dict(color="#e53935", width=2),
+                        ))
+                        _fp.update_layout(
+                            title=dict(text=f"Outlier — Cluster {_cl} (n={int(_cl_sizes[_cl])})",
+                                       font=dict(size=11, color="#0d1f3c")),
+                            xaxis=dict(tickfont=dict(size=8, color="#1a3a6b"), tickangle=-45,
+                                       dtick=12, gridcolor="#d0dff0", showgrid=True, zeroline=False,
+                                       title_font=dict(color="#1a3a6b")),
+                            yaxis=dict(title="Normalised (0-1)", title_font=dict(size=8, color="#1a3a6b"),
+                                       tickfont=dict(size=8, color="#1a3a6b"),
+                                       gridcolor="#d0dff0", showgrid=True, zeroline=False),
+                            height=280, margin=dict(t=38, b=60, l=55, r=10),
+                            legend=dict(font=dict(size=8, color="#0d1f3c")),
+                            plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+                            font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                        )
+                        _z.writestr(f"outlier_cluster_{_cl}_profile.html",
+                                    _fp.to_html(include_plotlyjs="cdn"))
+                    except Exception as e:
+                        _errs.append(f"profile cluster {_cl}: {e}")
+                # Excel
+                try:
+                    _pod_to_cl = _X_df[["Cluster"]].reset_index()
+                    _pod_to_cl.columns = ["POD", "Cluster"]
+                    _show_cols = ["POD"] + [c for c in ["ATECO_L1","ATECO_L2","ATECO_L3","POTCONTR"]
+                                            if c in _df_out.columns]
+                    _dd = _df_out[_show_cols].copy().merge(_pod_to_cl, on="POD", how="left")
+                    _dd.insert(0, "Cluster", _dd.pop("Cluster"))
+                    _dd["Cluster"] = _dd["Cluster"].apply(
+                        lambda x: f"Cluster {int(x)}" if pd.notna(x) else "")
+                    if not _df_gaps.empty:
+                        _dd = _dd.merge(
+                            _df_gaps[["POD","Days with data","Expected days","Missing days","Missing %"]],
+                            on="POD", how="left")
+                    _xl = _io.BytesIO()
+                    with pd.ExcelWriter(_xl, engine="openpyxl") as _wr:
+                        _dd.to_excel(_wr, sheet_name="Outlier_PODs", index=False)
+                        _ateco_c = (_df_out.groupby("ATECO_L1", observed=True)["POD"].nunique()
+                                    .reset_index().rename(columns={"POD":"N. PODs"})
+                                    .sort_values("N. PODs", ascending=False))
+                        _ateco_c["ATECO_L1"] = _ateco_c["ATECO_L1"].apply(
+                            lambda c: f"{c} — {lookup_ateco_description(c)}"
+                            if lookup_ateco_description(c) else c)
+                        _ateco_c.to_excel(_wr, sheet_name="ATECO_Composition", index=False)
+                        pd.DataFrame({
+                            "Cluster": [f"Cluster {c}" for c in _cl_sizes.index],
+                            "N. PODs": _cl_sizes.values,
+                            "Is Outlier": ["Yes" if c in _out_cls else "No"
+                                           for c in _cl_sizes.index],
+                        }).to_excel(_wr, sheet_name="Cluster_Sizes", index=False)
+                        if not _df_gaps.empty:
+                            _df_gaps.sort_values("Missing %", ascending=False).to_excel(
+                                _wr, sheet_name="Data_Gaps", index=False)
+                    _z.writestr("outliers_detection_results.xlsx", _xl.getvalue())
+                except Exception as e:
+                    _errs.append(f"Excel: {e}")
+                if _errs:
+                    _z.writestr("_EXPORT_ISSUES.txt", "\n".join(f"- {e}" for e in _errs))
+            st.session_state["_od_export_zip"] = _zb.getvalue()
+            st.rerun()
+    else:
+        _not_ready(
+            "No outlier detection results found. "
+            "Go to the **Outliers Detection** tab and press **Perform Outlier Detection**."
+        )
+
+
+@st.fragment
+def outliers_detection_tab(
+    df_base, profile_norm, df_unique, profile_month, df_meas):
+    """Outlier detection via single-linkage hierarchical clustering (k=10 fixed)."""
+
+    # ── Introduction ─────────────────────────────────────────────────────────
+    st.subheader("Outliers Detection")
+    st.markdown("""
+This section identifies **outlier PODs** in the dataset using hierarchical clustering
+with **single linkage** (nearest-neighbour) and a selectable number of clusters **k** (10–30).
+
+Single linkage tends to form a few large, compact clusters and several small ones —
+these small clusters typically capture anomalous or atypical load profiles that differ
+significantly from the majority of users.
+
+**Methodology:**
+- Profiles are aggregated to their overall average (or selected month);
+- Hierarchical clustering is applied with single linkage + Euclidean distance;
+- Clusters with fewer PODs than the threshold below are flagged as **outliers**;
+- Results show the outlier profiles, their composition, and allow export.
+
+**Data gap metrics (shown in the POD table and gap section):**
+- **Days with data** — number of distinct days for which at least one measurement record exists for that POD;
+- **Expected days** — total calendar days between the first and last measurement date of that POD (inclusive);
+- **Missing days** — difference between expected and actual days (Expected − Days with data);
+- **Missing %** — share of missing days over the expected observation window.
+""")
+
+    # ── Settings ─────────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Detection Settings")
+    _s1, _s2, _s3 = st.columns([1, 1, 2])
+    with _s1:
+        outlier_threshold = st.slider(
+            "Outlier threshold (max PODs per cluster)",
+            min_value=1, max_value=30, value=5, step=1,
+            key="outlier_threshold",
+            help="Clusters with fewer PODs than this value are flagged as outliers."
+        )
+    with _s2:
+        n_clusters_od = st.slider(
+            "Number of clusters (k)",
+            min_value=10, max_value=30, value=10, step=1,
+            key="od_n_clusters",
+            help="Total number of clusters to form. Higher k = more granular outlier detection."
+        )
+    with _s3:
+        st.metric("PODs available", _fmt(len(set(profile_norm.index) & set(df_base["POD"].unique()))))
+
+    st.markdown("---")
+
+    # ── Fingerprint ──────────────────────────────────────────────────────────
+    _pods_all = list(set(profile_norm.index) & set(df_base["POD"].unique()))
+    _od_fp = (len(_pods_all), outlier_threshold, n_clusters_od, profile_month)
+    _has_od = (
+        st.session_state.get("_od_fingerprint") == _od_fp
+        and "_od_results" in st.session_state
+    )
+
+    # ── Run button ───────────────────────────────────────────────────────────
+    _bc1, _bc2, _ = st.columns([1, 1, 2])
+    with _bc1:
+        _run = st.button(" Perform Outlier Detection", type="primary",
+                         key="od_run_btn", use_container_width=True)
+    with _bc2:
+        if _has_od:
+            st.button("Results cached ✓", disabled=True, key="od_cached_btn",
+                      use_container_width=True)
+
+    # ── Compute ──────────────────────────────────────────────────────────────
+    if _run:
+        if len(_pods_all) < 10:
+            st.error(f"Need at least 10 PODs with profiles (have {len(_pods_all)}).")
+            return
+
+        with st.spinner("Running single-linkage clustering…"):
+            from scipy.cluster.hierarchy import linkage as _linkage, fcluster as _fcluster
+            from sklearn.preprocessing import normalize as _normalize
+
+            # Build profile matrix
+            if profile_month == 0:
+                _X_df = get_overall_avg_profile(profile_norm.loc[_pods_all])
+            else:
+                _X_df = get_single_month_profile(profile_norm.loc[_pods_all], profile_month)
+            _X_df = _X_df.dropna()
+
+            if len(_X_df) < 10:
+                st.error("Not enough valid profiles after filtering.")
+                return
+
+            _X = _X_df.values
+            _Z = _linkage(_X, method="single", metric="euclidean")
+            _labels = _fcluster(_Z, t=n_clusters_od, criterion="maxclust")
+            _X_df = _X_df.copy()
+            _X_df["Cluster"] = _labels
+
+        # Identify outlier clusters
+        _cl_sizes = _X_df["Cluster"].value_counts().sort_index()
+        _outlier_clusters = sorted(_cl_sizes[_cl_sizes < outlier_threshold].index.tolist())
+        _normal_clusters  = sorted(_cl_sizes[_cl_sizes >= outlier_threshold].index.tolist())
+
+        # Build outlier POD list with ATECO info
+        _outlier_pods = _X_df[_X_df["Cluster"].isin(_outlier_clusters)].index.tolist()
+        _df_out = df_unique[df_unique["POD"].isin(_outlier_pods)].copy()
+
+        # Compute data gaps per outlier POD
+        # Gap = expected daily records (date range) minus actual records
+        _gap_rows = []
+        if not df_meas.empty and "DataMisura" in df_meas.columns:
+            _meas_out = df_meas[df_meas["POD"].isin(_outlier_pods)].copy()
+            for _pod, _grp in _meas_out.groupby("POD", observed=True):
+                _dates = pd.to_datetime(_grp["DataMisura"])
+                _actual = _dates.nunique()
+                _expected = int((_dates.max() - _dates.min()).days) + 1
+                _gaps = max(0, _expected - _actual)
+                _gap_pct = round(_gaps / _expected * 100, 1) if _expected > 0 else 0.0
+                _gap_rows.append({
+                    "POD": _pod,
+                    "Days with data": _actual,
+                    "Expected days": _expected,
+                    "Missing days": _gaps,
+                    "Missing %": _gap_pct,
+                })
+        _df_gaps = pd.DataFrame(_gap_rows) if _gap_rows else pd.DataFrame()
+
+        st.session_state["_od_results"] = {
+            "X_df": _X_df,
+            "cl_sizes": _cl_sizes,
+            "outlier_clusters": _outlier_clusters,
+            "normal_clusters": _normal_clusters,
+            "outlier_pods": _outlier_pods,
+            "df_out": _df_out,
+            "df_gaps": _df_gaps,
+            "threshold": outlier_threshold,
+            "n_clusters": n_clusters_od,
+            "n_total": len(_X_df),
+        }
+        st.session_state["_od_fingerprint"] = _od_fp
+        st.session_state.pop("_od_export_zip", None)
+        _has_od = True
+
+    if not _has_od:
+        st.info("Configure the settings above and press ** Perform Outlier Detection**.")
+        return
+
+    # ── Display results ───────────────────────────────────────────────────────
+    _res         = st.session_state["_od_results"]
+    _X_df        = _res["X_df"]
+    _cl_sizes    = _res["cl_sizes"]
+    _out_cls     = _res["outlier_clusters"]
+    _norm_cls    = _res["normal_clusters"]
+    _outlier_pods = _res["outlier_pods"]
+    _df_out      = _res["df_out"]
+    _df_gaps     = _res["df_gaps"]
+    _threshold   = _res["threshold"]
+    _n_total     = _res["n_total"]
+
+    st.markdown("---")
+    st.subheader("Results")
+
+    # Summary metrics
+    _m1, _m2, _m3, _m4 = st.columns(4)
+    _m1.metric("Total PODs analysed",   _fmt(_n_total))
+    _m2.metric("Clusters found",        str(_res.get("n_clusters", 10)))
+    _m3.metric("Outlier clusters",      str(len(_out_cls)))
+    _m4.metric("Outlier PODs",          _fmt(len(_outlier_pods)))
+
+    if not _out_cls:
+        st.success(f"No outlier clusters found (all clusters have ≥ {_threshold} PODs).")
+        return
+
+    st.markdown(f"**Outlier clusters** (< {_threshold} PODs): "
+                + ", ".join([f"Cluster {c} (n={int(_cl_sizes[c])})" for c in _out_cls]))
+
+    # ── Cluster size overview chart ───────────────────────────────────────────
+    st.markdown("#### Cluster Size Overview")
+    _colors_bar = ["#e53935" if c in _out_cls else "#2e7d32" for c in _cl_sizes.index]
+    _fig_sizes = go.Figure(go.Bar(
+        x=[f"Cl.{c}" for c in _cl_sizes.index],
+        y=_cl_sizes.values,
+        marker_color=_colors_bar,
+        text=_cl_sizes.values,
+        textposition="outside",
+        textfont=dict(color="#0d1f3c", size=10),
+    ))
+    _fig_sizes.add_hline(
+        y=_threshold, line_dash="dash", line_color="#f9a825",
+        annotation_text=f"Threshold = {_threshold}",
+        annotation_font_color="#e65100",
+    )
+    _fig_sizes.update_layout(
+        title=dict(text="Number of PODs per Cluster (red = outlier)",
+                   font=dict(color="#0d1f3c", size=13), x=0.5, xanchor="center"),
+        xaxis=dict(title="Cluster", tickfont=dict(color="#1a3a6b"),
+                   title_font=dict(color="#1a3a6b")),
+        yaxis=dict(title="N. PODs", tickfont=dict(color="#1a3a6b"),
+                   title_font=dict(color="#1a3a6b"), gridcolor="#d0dff0"),
+        plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+        font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+        height=320, margin=dict(t=40, b=50, l=55, r=20),
+    )
+    st.plotly_chart(_fig_sizes, use_container_width=True, key="od_sizes_chart",
+                    config={"toImageButtonOptions": {"format": "png", "scale": 4}})
+
+    # ── Outlier cluster profiles ──────────────────────────────────────────────
+    st.markdown("#### Outlier Cluster Profiles")
+    _q_cols = [c for c in _X_df.columns if c.startswith("Q")]
+    _x_labels = [f"{(i//4):02d}:{(i%4)*15:02d}" for i in range(len(_q_cols))]
+
+    _n_out_cols = min(len(_out_cls), 3)
+    _prof_cols  = st.columns(_n_out_cols) if _n_out_cols > 1 else [st]
+
+    _outlier_figs = {}
+    for _i, _cl in enumerate(_out_cls):
+        _sub = _X_df[_X_df["Cluster"] == _cl][_q_cols]
+        _mean = _sub.mean().values
+        _std  = _sub.std().values if len(_sub) > 1 else np.zeros(len(_q_cols))
+        _n_cl = int(_cl_sizes[_cl])
+
+        _fig_p = go.Figure()
+        _fig_p.add_trace(go.Scatter(
+            x=_x_labels + _x_labels[::-1],
+            y=list(_mean + _std) + list((_mean - _std)[::-1]),
+            fill="toself", fillcolor="rgba(229,57,53,0.15)",
+            line=dict(color="rgba(0,0,0,0)"), showlegend=False, hoverinfo="skip",
+        ))
+        _fig_p.add_trace(go.Scatter(
+            x=_x_labels, y=_mean, mode="lines",
+            name=f"Cluster {_cl} (n={_n_cl})",
+            line=dict(color="#e53935", width=2),
+        ))
+        _fig_p.update_layout(
+            title=dict(text=f"Outlier — Cluster {_cl} (n={_n_cl})",
+                       font=dict(size=11, color="#0d1f3c")),
+            xaxis=dict(tickfont=dict(size=8, color="#1a3a6b"), tickangle=-45, dtick=12,
+                       gridcolor="#d0dff0", showgrid=True, zeroline=False,
+                       title_font=dict(color="#1a3a6b")),
+            yaxis=dict(title="Normalised (0-1)",
+                       title_font=dict(size=8, color="#1a3a6b"),
+                       tickfont=dict(size=8, color="#1a3a6b"),
+                       gridcolor="#d0dff0", showgrid=True, zeroline=False),
+            height=280, margin=dict(t=38, b=60, l=55, r=10),
+            legend=dict(font=dict(size=8, color="#0d1f3c")),
+            plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+            font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+        )
+        _col_idx = _i % _n_out_cols
+        with _prof_cols[_col_idx]:
+            st.plotly_chart(_fig_p, use_container_width=True,
+                            key=f"od_prof_{_cl}",
+                            config={"toImageButtonOptions": {"format": "png", "scale": 4}})
+        _outlier_figs[_cl] = _fig_p
+
+    # ── Outlier POD table ─────────────────────────────────────────────────────
+    st.markdown("#### Outlier POD Details")
+    if _df_out.empty:
+        st.caption("No metadata available for outlier PODs.")
+    else:
+        _show_cols = ["POD", "ATECO_L1", "ATECO_L2", "ATECO_L3"]
+        _show_cols = [c for c in _show_cols if c in _df_out.columns]
+        if "POTCONTR" in _df_out.columns:
+            _show_cols.append("POTCONTR")
+        _df_display = _df_out[_show_cols].copy()
+        # Add cluster label
+        _pod_to_cl = _X_df[["Cluster"]].reset_index()
+        _pod_to_cl.columns = ["POD", "Cluster"]
+        _df_display = _df_display.merge(_pod_to_cl, on="POD", how="left")
+        _df_display.insert(0, "Cluster", _df_display.pop("Cluster"))
+        _df_display["Cluster"] = _df_display["Cluster"].apply(
+            lambda x: f"Cluster {int(x)}" if pd.notna(x) else "")
+        # Merge gap info — all gap columns
+        if not _df_gaps.empty:
+            _df_display = _df_display.merge(
+                _df_gaps[["POD", "Days with data", "Expected days", "Missing days", "Missing %"]],
+                on="POD", how="left"
+            )
+        st.dataframe(_df_display.style.set_properties(**{"text-align": "left"}),
+                     hide_index=True, use_container_width=True)
+
+    # ── Missing data section ──────────────────────────────────────────────────
+    if not _df_gaps.empty:
+        st.markdown("#### Data Gaps per Outlier POD")
+        st.caption("For each outlier POD: number of missing days vs expected days in the observation window.")
+
+        _pods_with_gaps = _df_gaps[_df_gaps["Missing days"] > 0].sort_values("Missing %", ascending=False)
+        _pods_no_gaps   = _df_gaps[_df_gaps["Missing days"] == 0]
+
+        _g1, _g2, _g3 = st.columns(3)
+        _g1.metric("PODs with gaps",    _fmt(len(_pods_with_gaps)))
+        _g2.metric("PODs without gaps", _fmt(len(_pods_no_gaps)))
+        _avg_missing = round(_df_gaps["Missing %"].mean(), 1)
+        _g3.metric("Avg missing data",  f"{_avg_missing} %")
+
+        if not _df_gaps.empty:
+            # Bar chart: missing % per POD
+            _df_gaps_sorted = _df_gaps.sort_values("Missing %", ascending=False)
+            _fig_gaps = go.Figure(go.Bar(
+                x=_df_gaps_sorted["POD"].astype(str),
+                y=_df_gaps_sorted["Missing %"],
+                marker_color=[
+                    "#e53935" if v > 20 else "#f9a825" if v > 5 else "#2e7d32"
+                    for v in _df_gaps_sorted["Missing %"]
+                ],
+                text=[f"{v}%" for v in _df_gaps_sorted["Missing %"]],
+                textposition="outside",
+                textfont=dict(color="#0d1f3c", size=9),
+            ))
+            _fig_gaps.update_layout(
+                title="Missing Data % per Outlier POD",
+                xaxis=dict(title="POD", tickfont=dict(color="#e8f4fd", size=8),
+                           tickangle=-45, title_font=dict(color="#e8f4fd")),
+                yaxis=dict(title="Missing %", tickfont=dict(color="#e8f4fd"),
+                           title_font=dict(color="#e8f4fd"), gridcolor="#1e3a6b"),
+                plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
+                font=dict(family="Arial, sans-serif", color="#e8f4fd"),
+                height=340, margin=dict(t=40, b=100, l=55, r=20),
+            )
+            st.plotly_chart(_fig_gaps, use_container_width=True, key="od_gaps_chart",
+                            config={"toImageButtonOptions": {"format": "png", "scale": 4}})
+
+        st.dataframe(
+            _df_gaps.sort_values("Missing %", ascending=False)
+            .style.set_properties(**{"text-align": "left"}),
+            hide_index=True, use_container_width=True,
+        )
+
+    # ── ATECO composition of outliers ─────────────────────────────────────────
+    st.markdown("#### ATECO Composition of Outlier PODs")
+    if not _df_out.empty and "ATECO_L1" in _df_out.columns:
+        # Build multi-level ATECO composition
+        _gcols = [c for c in ["ATECO_L1", "ATECO_L2", "ATECO_L3"] if c in _df_out.columns]
+        _ateco_counts = (
+            _df_out.groupby(_gcols, observed=True)["POD"].nunique()
+            .reset_index().rename(columns={"POD": "N. PODs"})
+            .sort_values(["ATECO_L1", "ATECO_L2" if "ATECO_L2" in _gcols else "ATECO_L1",
+                          "N. PODs"], ascending=[True, True, False])
+        )
+        for _col in _gcols:
+            _ateco_counts[_col] = _ateco_counts[_col].apply(
+                lambda c: f"{c} — {lookup_ateco_description(c)}" if lookup_ateco_description(c) else c
+            )
+        st.dataframe(_ateco_counts.style.set_properties(**{"text-align": "left"}),
+                     hide_index=True, use_container_width=True)
+
+    # ── Export ────────────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Export Results")
+
+    if "_od_export_zip" not in st.session_state:
+        if st.button(" Prepare Export ZIP", key="od_export_btn"):
+            import zipfile as _zf
+            import io as _io
+
+            _zb = _io.BytesIO()
+            _errs = []
+            with _zf.ZipFile(_zb, "w", _zf.ZIP_DEFLATED) as _z:
+
+                # Cluster size chart
+                try:
+                    _z.writestr("cluster_sizes_overview.html",
+                                _fig_sizes.to_html(include_plotlyjs="cdn"))
+                except Exception as e:
+                    _errs.append(f"sizes chart: {e}")
+
+                # Outlier profile charts
+                for _cl, _fig_p in _outlier_figs.items():
+                    try:
+                        _z.writestr(f"outlier_cluster_{_cl}_profile.html",
+                                    _fig_p.to_html(include_plotlyjs="cdn"))
+                    except Exception as e:
+                        _errs.append(f"profile cluster {_cl}: {e}")
+
+                # Gap chart
+                if not _df_gaps.empty:
+                    try:
+                        _z.writestr("data_gaps_per_pod.html",
+                                    _fig_gaps.to_html(include_plotlyjs="cdn"))
+                    except Exception as e:
+                        _errs.append(f"gaps chart: {e}")
+
+                # Outlier POD table — Excel
+                try:
+                    _xl = _io.BytesIO()
+                    with pd.ExcelWriter(_xl, engine="openpyxl") as _wr:
+                        if not _df_display.empty:
+                            _df_display.to_excel(_wr, sheet_name="Outlier_PODs", index=False)
+                        _ateco_counts.to_excel(_wr, sheet_name="ATECO_Composition", index=False)
+                        _cl_sizes_df = pd.DataFrame({
+                            "Cluster": [f"Cluster {c}" for c in _cl_sizes.index],
+                            "N. PODs": _cl_sizes.values,
+                            "Is Outlier": ["Yes" if c in _out_cls else "No"
+                                           for c in _cl_sizes.index],
+                        })
+                        _cl_sizes_df.to_excel(_wr, sheet_name="Cluster_Sizes", index=False)
+                        if not _df_gaps.empty:
+                            _df_gaps.sort_values("Missing %", ascending=False).to_excel(
+                                _wr, sheet_name="Data_Gaps", index=False)
+                    _z.writestr("outliers_detection_results.xlsx", _xl.getvalue())
+                except Exception as e:
+                    _errs.append(f"Excel: {e}")
+
+                if _errs:
+                    _z.writestr("_EXPORT_ISSUES.txt",
+                                "\n".join(f"- {e}" for e in _errs))
+
+            st.session_state["_od_export_zip"] = _zb.getvalue()
+
+    if "_od_export_zip" in st.session_state:
+        st.download_button(
+            " Download outliers_detection_results.zip",
+            data=st.session_state["_od_export_zip"],
+            file_name="outliers_detection_results.zip",
+            mime="application/zip",
+            type="primary",
+            key="od_dl_btn",
+        )
+
 
 def main():
     _icon_path = Path(__file__).parent / "images" / "logo_polito.png"
@@ -3501,10 +4121,12 @@ def main():
     # =========================================================================
     # MAIN TABS
     # =========================================================================
-    tab_cluster, tab_gse, tab_arera = st.tabs([
+    tab_cluster, tab_gse, tab_arera, tab_outliers, tab_export = st.tabs([
         "Clustering Explorer",
         "GSE Profile Comparison",
         "ARERA Profile Comparison",
+        "Outliers Detection",
+        "Export Results",
     ])
 
     with tab_cluster:
@@ -3521,6 +4143,12 @@ def main():
 
     with tab_arera:
         arera_comparison_tab(df_base, df_meas_filtered, pods_12m)
+
+    with tab_outliers:
+        outliers_detection_tab(df_base, profile_norm, df_unique, profile_month, df_meas_filtered)
+
+    with tab_export:
+        export_results_tab()
 
 
 # ==============================================================================
