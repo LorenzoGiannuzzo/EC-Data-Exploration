@@ -1949,6 +1949,18 @@ def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: s
         "consumption per hour** (same normalisation as GSE). "
         "Only PODs with ≥12 months of data are included."
     )
+    st.markdown("""
+**GSE reference profiles legend:**
+
+| Profile | Description |
+|---------|-------------|
+| **PDMM** | *Profilo di Prelievo Domestico Monorario* — domestic single-tariff load profile, normalised on monthly consumption |
+| **PDMF** | *Profilo di Prelievo Domestico in Fasce* — domestic time-of-use load profile, normalised on monthly consumption |
+| **PAUM** | *Profilo di Prelievo Altri Usi Monorario* — non-domestic (commercial) single-tariff load profile, normalised on monthly consumption |
+| **PAUF** | *Profilo di Prelievo Altri Usi in Fasce* — non-domestic (commercial) time-of-use load profile, normalised on monthly consumption |
+
+All GSE profiles are computed according to the official GSE normalisation methodology on monthly energy consumption.
+""")
 
     # ── Load GSE ──────────────────────────────────────────────────────────────
     gse_path = DATA_DIR / GSE_FILE_NAME
@@ -2940,7 +2952,11 @@ def export_results_tab():
         )
 
     def _not_ready(msg):
-        st.warning(msg)
+        st.markdown(
+            f'<div style="background:rgba(20,60,120,0.55);border-left:4px solid #5b8dd9;'
+            f'padding:12px 16px;border-radius:4px;color:#c8dff5;font-size:14px;">{msg}</div>',
+            unsafe_allow_html=True,
+        )
 
     # ── 1. Clustering Explorer ────────────────────────────────────────────────
     st.markdown("---")
@@ -2951,15 +2967,9 @@ def export_results_tab():
         _dl_btn("Download clustering_results.zip",
                 "exp_dl_clustering", _cl_zip, "clustering_results.zip")
     elif _cl_res:
-        st.info(
-            "Clustering results are available but the export has not been prepared yet. "
-            "Go to the **Clustering Explorer** tab and click **Prepare Export ZIP**."
-        )
+        st.caption("Clustering results ready. Go to the **Clustering Explorer** tab and click **Prepare Export ZIP**.")
     else:
-        _not_ready(
-            "No clustering results found. "
-            "Go to the **Clustering Explorer** tab, select ATECO codes and press **Run Clustering**."
-        )
+        _not_ready("No clustering results yet. Run clustering in the <b>Clustering Explorer</b> tab first.")
 
     # ── 2. GSE Profile Comparison ─────────────────────────────────────────────
     st.markdown("---")
@@ -2969,10 +2979,7 @@ def export_results_tab():
         _dl_btn("Download gse_comparison_export.zip",
                 "exp_dl_gse", _gse_zip, "gse_comparison_export.zip")
     else:
-        _not_ready(
-            "GSE export not prepared. "
-            "Go to the **GSE Profile Comparison** tab and click **Prepare Export ZIP**."
-        )
+        _not_ready("GSE export not prepared. Open the <b>GSE Profile Comparison</b> tab and click <b>Prepare Export ZIP</b>.")
 
     # ── 3. ARERA Profile Comparison ───────────────────────────────────────────
     st.markdown("---")
@@ -2984,10 +2991,7 @@ def export_results_tab():
         _dl_btn(f"Download {_fname}",
                 "exp_dl_arera", _arera_zip, _fname)
     else:
-        _not_ready(
-            "ARERA export not prepared. "
-            "Go to the **ARERA Profile Comparison** tab, select a power class and click **Prepare Export ZIP**."
-        )
+        _not_ready("ARERA export not prepared. Open the <b>ARERA Profile Comparison</b> tab, select a power class and click <b>Prepare Export ZIP</b>.")
 
     # ── 4. Outliers Detection ─────────────────────────────────────────────────
     st.markdown("---")
@@ -2998,11 +3002,6 @@ def export_results_tab():
         _dl_btn("Download outliers_detection_results.zip",
                 "exp_dl_outliers", _od_zip, "outliers_detection_results.zip")
     elif _od_res:
-        st.info(
-            "Outlier detection results are available but the export has not been prepared yet. "
-            "Go to the **Outliers Detection** tab and click **Prepare Export ZIP**."
-        )
-        # Allow preparing the ZIP directly from here
         if st.button("Prepare Outliers Export ZIP", key="exp_od_prepare_btn"):
             import zipfile as _zf, io as _io
             _r    = _od_res
@@ -3011,9 +3010,14 @@ def export_results_tab():
             _df_gaps = _r["df_gaps"]; _threshold = _r["threshold"]
             _q_cols  = [c for c in _X_df.columns if c.startswith("Q")]
             _x_labels = [f"{(i//4):02d}:{(i%4)*15:02d}" for i in range(len(_q_cols))]
+
+            _n_steps = 1 + len(_out_cls) + (1 if not _df_gaps.empty else 0) + 1
+            _s = 0
+            _p = st.progress(0, text="Building outliers export…")
             _zb = _io.BytesIO(); _errs = []
             with _zf.ZipFile(_zb, "w", _zf.ZIP_DEFLATED) as _z:
                 # Sizes chart
+                _s += 1; _p.progress(_s / _n_steps, text="Cluster size overview chart…")
                 try:
                     _colors_b = ["#e53935" if c in _out_cls else "#2e7d32" for c in _cl_sizes.index]
                     _fs = go.Figure(go.Bar(
@@ -3040,6 +3044,7 @@ def export_results_tab():
                     _errs.append(f"sizes chart: {e}")
                 # Profile charts
                 for _cl in _out_cls:
+                    _s += 1; _p.progress(_s / _n_steps, text=f"Profile chart — Cluster {_cl}…")
                     try:
                         _sub = _X_df[_X_df["Cluster"] == _cl][_q_cols]
                         _mean = _sub.mean().values
@@ -3075,6 +3080,7 @@ def export_results_tab():
                     except Exception as e:
                         _errs.append(f"profile cluster {_cl}: {e}")
                 # Excel
+                _s += 1; _p.progress(_s / _n_steps, text="Building Excel workbook…")
                 try:
                     _pod_to_cl = _X_df[["Cluster"]].reset_index()
                     _pod_to_cl.columns = ["POD", "Cluster"]
@@ -3112,13 +3118,12 @@ def export_results_tab():
                     _errs.append(f"Excel: {e}")
                 if _errs:
                     _z.writestr("_EXPORT_ISSUES.txt", "\n".join(f"- {e}" for e in _errs))
+            _p.progress(1.0, text="Outliers export ready!")
+            _p.empty()
             st.session_state["_od_export_zip"] = _zb.getvalue()
             st.rerun()
     else:
-        _not_ready(
-            "No outlier detection results found. "
-            "Go to the **Outliers Detection** tab and press **Perform Outlier Detection**."
-        )
+        _not_ready("No outlier detection results yet. Run detection in the <b>Outliers Detection</b> tab first.")
 
 
 @st.fragment
@@ -3496,11 +3501,17 @@ significantly from the majority of users.
             import zipfile as _zf
             import io as _io
 
+            _n_charts = 1 + len(_outlier_figs) + (1 if not _df_gaps.empty else 0) + 1  # sizes + profiles + gaps + excel
+            _od_step = 0
+            _od_prog = st.progress(0, text="Building outliers export…")
+
             _zb = _io.BytesIO()
             _errs = []
             with _zf.ZipFile(_zb, "w", _zf.ZIP_DEFLATED) as _z:
 
                 # Cluster size chart
+                _od_step += 1
+                _od_prog.progress(_od_step / _n_charts, text="Cluster size overview chart…")
                 try:
                     _z.writestr("cluster_sizes_overview.html",
                                 _fig_sizes.to_html(include_plotlyjs="cdn"))
@@ -3509,6 +3520,8 @@ significantly from the majority of users.
 
                 # Outlier profile charts
                 for _cl, _fig_p in _outlier_figs.items():
+                    _od_step += 1
+                    _od_prog.progress(_od_step / _n_charts, text=f"Profile chart — Cluster {_cl}…")
                     try:
                         _z.writestr(f"outlier_cluster_{_cl}_profile.html",
                                     _fig_p.to_html(include_plotlyjs="cdn"))
@@ -3517,6 +3530,8 @@ significantly from the majority of users.
 
                 # Gap chart
                 if not _df_gaps.empty:
+                    _od_step += 1
+                    _od_prog.progress(_od_step / _n_charts, text="Data gaps chart…")
                     try:
                         _z.writestr("data_gaps_per_pod.html",
                                     _fig_gaps.to_html(include_plotlyjs="cdn"))
@@ -3524,6 +3539,8 @@ significantly from the majority of users.
                         _errs.append(f"gaps chart: {e}")
 
                 # Outlier POD table — Excel
+                _od_step += 1
+                _od_prog.progress(_od_step / _n_charts, text="Building Excel workbook…")
                 try:
                     _xl = _io.BytesIO()
                     with pd.ExcelWriter(_xl, engine="openpyxl") as _wr:
@@ -3548,6 +3565,8 @@ significantly from the majority of users.
                     _z.writestr("_EXPORT_ISSUES.txt",
                                 "\n".join(f"- {e}" for e in _errs))
 
+            _od_prog.progress(1.0, text="Outliers export ready!")
+            _od_prog.empty()
             st.session_state["_od_export_zip"] = _zb.getvalue()
 
     if "_od_export_zip" in st.session_state:
@@ -3590,6 +3609,7 @@ def main():
 
     st.title("Electrical Profiles Data Explorer - PoliTo")
     st.caption("Energy Center Lab, DENERG, Politecnico di Torino — Author: Lorenzo Giannuzzo")
+    st.markdown('<div style="margin-top:-12px;"></div>', unsafe_allow_html=True)
 
     st.markdown("""
     <style>
@@ -3679,8 +3699,12 @@ def main():
         background-color: #1a3a6b !important;
         border-left: 4px solid #4a9eff !important;
     }
-    [data-testid="stWarning"] {
-        background-color: #2a3a20 !important;
+    [data-testid="stWarning"],
+    [data-testid="stAlert"][data-baseweb="notification"][kind="warning"],
+    div[class*="stAlert"][class*="warning"],
+    div[class*="Warning"] {
+        background-color: rgba(180, 80, 0, 0.30) !important;
+        background: rgba(180, 80, 0, 0.30) !important;
         border-left: 4px solid #f9a825 !important;
     }
     [data-testid="stError"] {
@@ -4132,9 +4156,21 @@ def main():
 
     _n_str = _fmt(n_base)
     if filter_parts:
-        st.info(f"**Active filters:** {' | '.join(filter_parts)} → **{_n_str} PODs** available")
+        st.markdown(
+            f'<div style="background:rgba(30,80,160,0.35);border-left:4px solid #4a9eff;'
+            f'padding:10px 16px;border-radius:4px;color:#e8f4fd;font-size:14px;">'
+            f'<b>Active filters:</b> {" | ".join(filter_parts)} → <b>{_n_str} PODs</b> available</div>'
+            f'<div style="margin-bottom:12px;"></div>',
+            unsafe_allow_html=True,
+        )
     else:
-        st.info(f"No global filters → **{_n_str} PODs** available")
+        st.markdown(
+            f'<div style="background:rgba(30,80,160,0.35);border-left:4px solid #4a9eff;'
+            f'padding:10px 16px;border-radius:4px;color:#e8f4fd;font-size:14px;">'
+            f'No global filters → <b>{_n_str} PODs</b> available</div>'
+            f'<div style="margin-bottom:12px;"></div>',
+            unsafe_allow_html=True,
+        )
 
     if n_no_profile > 0:
         st.caption(
