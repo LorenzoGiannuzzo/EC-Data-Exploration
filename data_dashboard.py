@@ -3391,12 +3391,34 @@ significantly from the majority of users.
         _df_display.insert(0, "Cluster", _df_display.pop("Cluster"))
         _df_display["Cluster"] = _df_display["Cluster"].apply(
             lambda x: f"Cluster {int(x)}" if pd.notna(x) else "")
+
+        # Add ATECO description (most specific level available)
+        def _best_ateco_desc(row):
+            for col in ["ATECO_L3", "ATECO_L2", "ATECO_L1"]:
+                if col in row and pd.notna(row[col]) and str(row[col]) not in ("N/A", ""):
+                    desc = lookup_ateco_description(str(row[col]))
+                    if desc:
+                        return desc
+            return ""
+        _df_display.insert(
+            _df_display.columns.get_loc("ATECO_L3") + 1
+            if "ATECO_L3" in _df_display.columns
+            else len(_df_display.columns),
+            "Description",
+            _df_display.apply(_best_ateco_desc, axis=1)
+        )
+
         # Merge gap info — all gap columns
         if not _df_gaps.empty:
             _df_display = _df_display.merge(
                 _df_gaps[["POD", "Days with data", "Expected days", "Missing days", "Missing %"]],
                 on="POD", how="left"
             )
+
+        # Round all numeric columns to 2 decimal places
+        for _nc in _df_display.select_dtypes(include="number").columns:
+            _df_display[_nc] = _df_display[_nc].round(2)
+
         st.dataframe(_df_display.style.set_properties(**{"text-align": "left"}),
                      hide_index=True, use_container_width=True)
 
@@ -3546,6 +3568,19 @@ def main():
         page_title="Data Exploration - PoliTo",
         page_icon=_page_icon,
         layout="wide",
+        menu_items={
+            "Get help": None,
+            "Report a bug": None,
+            "About": (
+                "### Data Exploration — PoliTo\n\n"
+                "Electrical load profile clustering and analysis dashboard.\n\n"
+                "---\n\n"
+                "**For support, contact:**\n\n"
+                "Lorenzo Giannuzzo\n\n"
+                "Energy Center Lab, DENERG, Politecnico di Torino\n\n"
+                "✉ lorenzo.giannuzzo@polito.it"
+            ),
+        },
     )
 
     # ── Logo ──────────────────────────────────────────────────────────────────
