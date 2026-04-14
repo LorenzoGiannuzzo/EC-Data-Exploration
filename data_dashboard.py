@@ -1917,7 +1917,7 @@ def compute_comparison_metrics(
     col_we: str = "GSE Weekend",
 ) -> dict:
     """Pearson r, RMSE, MAE between our profile and GSE weekday/weekend.
-    Profiles are in % units, so RMSE/MAE are in percentage points (pp).
+    Profiles are in % units, so RMSE/MAE are in percentage points (%).
     """
     metrics = {}
     for label, ref in [(f"vs {col_wd}", gse_wd), (f"vs {col_we}", gse_we)]:
@@ -2103,31 +2103,32 @@ def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: s
                             ))
 
                         fig2.update_layout(
-                            title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#e8f4fd")),
+                            title=dict(text=MONTH_NAMES[month], font=dict(size=12, color="#0d1f3c")),
                             xaxis=dict(
-                                tickfont=dict(size=8, color="#e8f4fd"),
-                                title_font=dict(size=8, color="#e8f4fd"),
+                                tickfont=dict(size=8, color="#1a3a6b"),
+                                title_font=dict(size=8, color="#1a3a6b"),
                                 tickangle=-45, dtick=3,
-                                gridcolor="#1e3a6b", showgrid=True,
+                                gridcolor="#d0dff0", showgrid=True,
                                 zeroline=False,
+                                linecolor="#1a3a6b",
                             ),
                             yaxis=dict(
                                 title="Average Daily Consumption [%]",
-                                title_font=dict(size=8, color="#e8f4fd"),
-                                tickfont=dict(size=8, color="#e8f4fd"),
-                                gridcolor="#1e3a6b", showgrid=True,
+                                title_font=dict(size=8, color="#1a3a6b"),
+                                tickfont=dict(size=8, color="#1a3a6b"),
+                                gridcolor="#d0dff0", showgrid=True,
                                 zeroline=False,
                                 rangemode="tozero",
                             ),
                             height=320,
                             margin=dict(t=35, b=100, l=60, r=10),
                             legend=dict(
-                                font=dict(size=8, color="#e8f4fd"),
+                                font=dict(size=8, color="#0d1f3c"),
                                 orientation="h", y=-0.55, x=0,
                                 bgcolor="rgba(0,0,0,0)",
                             ),
-                            plot_bgcolor="#0d2144", paper_bgcolor="#0d1f3c",
-                            font=dict(family="Arial, sans-serif", color="#e8f4fd"),
+                            plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+                            font=dict(family="Arial, sans-serif", color="#0d1f3c"),
                             showlegend=True,
                         )
                         st.plotly_chart(fig2, use_container_width=True,
@@ -2154,19 +2155,19 @@ def gse_comparison_tab(df_base: pd.DataFrame, df_meas: pd.DataFrame, pods_12m: s
                                 "PoliTo Profile": polito_label,
                                 "GSE Reference":  ref_col,
                                 "Pearson r":      round(float(r), 4),
-                                "RMSE (pp)":      round(rmse * 100, 4),
-                                "MAE (pp)":       round(mae * 100, 4),
+                                "RMSE (%)":      round(rmse * 100, 4),
+                                "MAE (%)":       round(mae * 100, 4),
                             })
 
             st.markdown("#### Similarity Metrics")
             st.caption(
                 "Correct pairing: **PoliTo avgM ↔ GSE M-column** (PDMM/PAUM) | "
                 "**PoliTo avgF ↔ GSE F-column** (PDMF/PAUF). "
-                "RMSE and MAE in percentage points (pp)."
+                "RMSE and MAE in percentage points (%)."
             )
             df_metrics = pd.DataFrame(all_metric_rows) if all_metric_rows else pd.DataFrame()
             if not df_metrics.empty:
-                st.dataframe(df_metrics, hide_index=True, use_container_width=True)
+                st.dataframe(df_metrics.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True)
                 # Excel download for metrics
                 _xl_met = io.BytesIO()
                 with pd.ExcelWriter(_xl_met, engine="openpyxl") as _w:
@@ -2480,7 +2481,7 @@ def _arera_daytype_chart(
             linecolor="#1a3a6b",
         ),
         yaxis=dict(
-            title="Average kWh / hour",
+            title="Average kWh",
             title_font=dict(size=8, color="#1a3a6b"),
             tickfont=dict(size=8, color="#1a3a6b"),
             gridcolor="#d0dff0", showgrid=True,
@@ -2489,7 +2490,7 @@ def _arera_daytype_chart(
         height=300,
         margin=dict(t=38, b=65, l=65, r=10),
         legend=dict(font=dict(size=8, color="#0d1f3c"), orientation="h", y=-0.48, x=0),
-        plot_bgcolor="#f0f5fc", paper_bgcolor="#ffffff",
+        plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
         font=dict(family="Arial, sans-serif", color="#0d1f3c"),
         showlegend=show_legend,
     )
@@ -2505,7 +2506,7 @@ def arera_comparison_tab(
     """ARERA profile comparison tab — kWh, two markets, per day type, per power class."""
     st.subheader("ARERA Profile Comparison")
     st.markdown(
-        f"Comparison of mean hourly load profiles [**kWh/h**] between PoliTo dataset "
+        f"Comparison of mean hourly load profiles [**kWh**] between PoliTo dataset "
         f"and ARERA 2024 reference data for **{ARERA_PROVINCE}**. "
         f"ARERA profiles are shown for **Maggior Tutela** and **Mercato Libero** separately. "
         f"PoliTo profiles are split by **residenza** and **contractual power class**. "
@@ -2640,7 +2641,7 @@ def arera_comparison_tab(
 
             # ── 3 boxes: one per day type ─────────────────────────────────────
             st.markdown(
-                f"#### {sel_month_lbl} — {sel_power_label} — kWh/h by day type"
+                f"#### {sel_month_lbl} — {sel_power_label} — kWh by day type"
             )
             day_cols = st.columns(3)
             for col_widget, (dtype_en, dtype_it) in zip(
@@ -2732,7 +2733,7 @@ def arera_comparison_tab(
                                     fig_m.update_layout(
                                         height=230,
                                         margin=dict(t=30, b=60, l=55, r=5),
-                                        plot_bgcolor="#f0f5fc",
+                                        plot_bgcolor="#ffffff",
                                         paper_bgcolor="#ffffff",
                                         font=dict(family="Arial, sans-serif", color="#0d1f3c"),
                                         xaxis=dict(tickfont=dict(size=7, color="#1a3a6b"),
@@ -2757,7 +2758,7 @@ def arera_comparison_tab(
                 col_order = ["Period", "Day Type", "Power Class", "ARERA Market", "Pearson r", "RMSE (%)", "MAE (%)"]
                 col_order = [c for c in col_order if c in df_met.columns]
                 df_met = df_met[col_order]
-                st.dataframe(df_met, hide_index=True, use_container_width=True)
+                st.dataframe(df_met.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True)
                 _xl_arera = io.BytesIO()
                 with pd.ExcelWriter(_xl_arera, engine="openpyxl") as _wa:
                     df_met.to_excel(_wa, index=False, sheet_name="Similarity_Metrics")
@@ -2891,7 +2892,7 @@ def distribution_overview_section(df_base, df_meas_filtered, df_unique, has_potc
         st.plotly_chart(fig_dist, use_container_width=True, key="main_consumption_dist",
                         config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
         with st.expander("Summary Statistics — Consumption"):
-            st.dataframe(summary_dist, hide_index=True, use_container_width=True)
+            st.dataframe(summary_dist.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True)
     else:
         st.warning("Not enough data to build consumption distribution chart.")
 
@@ -2919,9 +2920,11 @@ def distribution_overview_section(df_base, df_meas_filtered, df_unique, has_potc
 # ==============================================================================
 
 def main():
+    _icon_path = Path(__file__).parent / "images" / "logo_polito.png"
+    _page_icon = str(_icon_path) if _icon_path.exists() else "📊"
     st.set_page_config(
         page_title="Data Exploration - PoliTo",
-        page_icon="📊",
+        page_icon=_page_icon,
         layout="wide",
     )
 
@@ -3625,7 +3628,6 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                             for c in child_codes_l2:
                                 st.session_state[f"cb_l2_{c}"] = parent_val
                             st.session_state[f"_pv_l2par_{l1_code}"] = parent_val
-                            _frag_rerun()
                         st.session_state[f"_pv_l2par_{l1_code}"] = parent_val
 
                         with st.expander(
@@ -3715,7 +3717,6 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                             for c in child_codes_l3:
                                 st.session_state[f"cb_l3_{c}"] = parent_val_l3
                             st.session_state[f"_pv_l3par_{l2_code}"] = parent_val_l3
-                            _frag_rerun()
                         st.session_state[f"_pv_l3par_{l2_code}"] = parent_val_l3
 
                         with st.expander(
@@ -3907,7 +3908,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                         X_df, df_base, ateco_col, level_name)
                     st.plotly_chart(fig_comp, use_container_width=True,
                                     key=f"frag_comp_{level_name}")
-                    st.dataframe(comp_table, hide_index=True, use_container_width=True,
+                    st.dataframe(comp_table.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                                  key=f"frag_comptbl_{level_name}")
 
             parent_cols = []
@@ -3922,13 +3923,13 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                         X_df, df_base, par_col, f"{level_name} → {par_label}")
                     st.plotly_chart(fig_par, use_container_width=True,
                                     key=f"frag_comp_{level_name}_{par_col}")
-                    st.dataframe(tbl_par, hide_index=True, use_container_width=True,
+                    st.dataframe(tbl_par.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                                  key=f"frag_comptbl_{level_name}_{par_col}")
 
             with st.expander("ATECO → Cluster Breakdown (rows = ATECO, cols = Clusters)",
                              expanded=False):
                 bkd = build_ateco_cluster_breakdown(X_df, df_base, ateco_col, level_name)
-                st.dataframe(bkd, hide_index=True, use_container_width=True,
+                st.dataframe(bkd.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                              key=f"frag_bkd_{level_name}")
                 bkd_parents = []
                 if level_name == "L2" and "ATECO_L1" in df_base.columns:
@@ -3939,11 +3940,11 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                     st.markdown(f"**Breakdown by {par_lbl}:**")
                     bkd_par = build_ateco_cluster_breakdown(
                         X_df, df_base, par_c, f"{level_name} → {par_lbl}")
-                    st.dataframe(bkd_par, hide_index=True, use_container_width=True,
+                    st.dataframe(bkd_par.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                                  key=f"frag_bkd_{level_name}_{par_c}")
 
             stats_df = compute_cluster_stats(X_df)
-            st.dataframe(stats_df, hide_index=True, use_container_width=True,
+            st.dataframe(stats_df.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                          key=f"frag_stats_{level_name}")
 
             global_metrics = compute_global_metrics(X_df)
@@ -4067,7 +4068,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
 
         k_summary = {MONTH_NAMES[m]: (res["k"] if "error" not in res else "—")
                      for m, res in monthly_results.items()}
-        st.dataframe(pd.DataFrame([k_summary], index=["k"]), use_container_width=True)
+        st.dataframe(pd.DataFrame([k_summary], index=["k"]).style.set_properties(**{"text-align": "left"}), use_container_width=True)
 
         for m in range(1, 13):
             res_m = monthly_results[m]
@@ -4085,7 +4086,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                                 key=f"frag_monthly_{_mbkd_level}_{m}")
 
                 stats_m = compute_cluster_stats(X_m)
-                st.dataframe(stats_m, hide_index=True, use_container_width=True,
+                st.dataframe(stats_m.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True,
                              key=f"frag_monthly_stats_{_mbkd_level}_{m}")
                 global_m_vals = compute_global_metrics(X_m)
                 mc = st.columns(len(global_m_vals))
