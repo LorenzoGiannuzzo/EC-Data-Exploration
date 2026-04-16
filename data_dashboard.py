@@ -1294,7 +1294,7 @@ def build_cluster_ateco_breakdown(X_df, df_base, ateco_col, level_label):
     final_cols = [c for c in final_cols if c in pivot.columns]
     pivot = pivot[final_cols].drop(columns=["Cluster"])
 
-    return pivot
+    return pivot, cross
 
 
 def build_ateco_breakdown_html(pivot_df, level_label, k, centroid_chart_html=""):
@@ -1339,24 +1339,57 @@ def build_ateco_breakdown_html(pivot_df, level_label, k, centroid_chart_html="")
     return html
 
 
-def build_cluster_ateco_breakdown_html(pivot_df, level_label, k, centroid_chart_html=""):
-    """HTML export for Cluster → ATECO breakdown, with centroid chart BELOW."""
+def build_cluster_ateco_breakdown_html(pivot_df, level_label, k, centroid_chart_html="", cross_df=None):
+    """HTML export for Cluster → ATECO breakdown, with centroid chart BELOW and ranked ATECO summary."""
     html = (
         "<html><head><style>"
         "body{font-family:Arial,sans-serif;padding:20px;}"
-        "h2,h3{color:#333;}"
-        "table{border-collapse:collapse;width:100%;}"
+        "h2,h3,h4{color:#333;}"
+        "table{border-collapse:collapse;width:100%;margin-bottom:30px;}"
         "th{background:#2c3e50;color:white;padding:8px 10px;text-align:center;font-size:12px;}"
         "td{border:1px solid #ddd;padding:6px 10px;text-align:center;font-size:11px;}"
         "td:first-child{text-align:left;font-weight:bold;}"
         "tr:nth-child(even){background:#f9f9f9;}"
         "tr:hover{background:#e8f4fd;}"
         ".centroid-section{margin-top:40px;}"
+        ".summary-section{margin-top:30px;}"
+        ".rank-1{background:#fff3cd;font-weight:bold;}"
+        ".rank-2{background:#f0f0f0;}"
         "</style></head><body>"
         f"<h2>Cluster → ATECO Breakdown — {level_label} (k={k})</h2>"
         "<p>Each cell: count (% of that cluster's total PODs belonging to the ATECO code)</p>"
     )
     html += pivot_df.to_html(index=False, escape=False, na_rep="—")
+
+    # ── Ranked ATECO composition per cluster ──────────────────────────────────
+    if cross_df is not None and not cross_df.empty:
+        html += (
+            '<div class="summary-section">'
+            f"<h3>Dominant ATECO per Cluster — ranked by representation</h3>"
+            "<p>For each cluster, ATECO types sorted from most to least represented (count and % of cluster total).</p>"
+        )
+        for cl in sorted(cross_df["Cluster"].unique()):
+            cl_data = (
+                cross_df[cross_df["Cluster"] == cl]
+                .sort_values("Count", ascending=False)
+                .reset_index(drop=True)
+            )
+            total = int(cl_data["Total PODs"].iloc[0]) if "Total PODs" in cl_data.columns else cl_data["Count"].sum()
+            html += f'<h4>Cluster {cl} &nbsp;–&nbsp; {total} PODs</h4><table>'
+            html += "<tr><th>#</th><th>ATECO</th><th>N. PODs</th><th>% of cluster</th></tr>"
+            for i, row in cl_data.iterrows():
+                css = "rank-1" if i == 0 else ("rank-2" if i == 1 else "")
+                html += (
+                    f'<tr class="{css}">'
+                    f"<td>{i+1}</td>"
+                    f"<td style='text-align:left'>{row['AtecoLabel']}</td>"
+                    f"<td>{int(row['Count'])}</td>"
+                    f"<td>{row['Pct']:.1f}%</td>"
+                    "</tr>"
+                )
+            html += "</table>"
+        html += "</div>"
+
     if centroid_chart_html:
         html += (
             '<div class="centroid-section">'
@@ -4922,7 +4955,7 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                     bkd_own = build_ateco_cluster_breakdown(X_df, df_base, ateco_col, level_name)
                     bkd_own.to_excel(writer, index=False, sheet_name="ATECO_Breakdown")
 
-                    inv_bkd_exp = build_cluster_ateco_breakdown(X_df, df_base, ateco_col, level_name)
+                    inv_bkd_exp, _inv_cross = build_cluster_ateco_breakdown(X_df, df_base, ateco_col, level_name)
                     inv_bkd_exp.to_excel(writer, index=False, sheet_name="Cluster_ATECO_Breakdown")
 
                     bkd_par_exp = []
@@ -4964,11 +4997,12 @@ def ateco_clustering_section(df_base, profile_norm, df_unique, manual_k,
                 export_progress.progress(step / total_steps,
                                           text=f"Cluster→ATECO HTML {level_name}...")
                 try:
-                    inv_bkd_exp = build_cluster_ateco_breakdown(
+                    inv_bkd_exp, inv_cross = build_cluster_ateco_breakdown(
                         X_df, df_base, ateco_col, level_name)
                     inv_html = build_cluster_ateco_breakdown_html(
                         inv_bkd_exp, level_name, k,
                         centroid_chart_html=centroid_div,
+                        cross_df=inv_cross,
                     )
                     zf.writestr(f"{level_name}_k{k}_cluster_within_ateco_analysis.html", inv_html)
                 except Exception as e:
