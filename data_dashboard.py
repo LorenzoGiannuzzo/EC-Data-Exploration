@@ -33,6 +33,30 @@ def _fmt(n) -> str:
     return f"{int(n):,}".replace(",", "\u202f")
 
 
+def _minmax_normalize(arr):
+    """Independently min-max normalize a 1D array to [0, 1].
+
+    Returns None if input is None. Handles NaN values and constant arrays
+    (returns zeros for constant arrays).
+    """
+    if arr is None:
+        return None
+    arr = np.asarray(arr, dtype=float)
+    mask = ~np.isnan(arr)
+    if mask.sum() == 0:
+        return arr
+    vmin = float(np.nanmin(arr))
+    vmax = float(np.nanmax(arr))
+    rng = vmax - vmin
+    if rng <= 0 or not np.isfinite(rng):
+        out = np.zeros_like(arr)
+        out[~mask] = np.nan
+        return out
+    out = (arr - vmin) / rng
+    out[~mask] = np.nan
+    return out
+
+
 DATA_DIR = Path(__file__).parent / "data"
 
 MESI_IT = {
@@ -2348,6 +2372,871 @@ All GSE profiles are computed according to the official GSE normalisation method
             key="gse_download_btn",
         )
 
+    # ── Custom per-ATECO comparison + ranking ─────────────────────────────────
+    gse_custom_comparison_section(df_base, df_meas_ap)
+
+
+# ==============================================================================
+# CUSTOM GSE COMPARISON BY ATECO CODE
+# ==============================================================================
+
+def gse_quality_label(rmse_pct) -> tuple[str, str]:
+    """Quality label and color hex from RMSE expressed in percentage points.
+
+    Bands (lower = better):
+      RMSE < 5 %         → Good
+      5 % ≤ RMSE < 10 %  → Acceptable
+      10 % ≤ RMSE < 20 % → Not Comparable
+      RMSE ≥ 20 %        → Very Different
+    """
+    if rmse_pct is None:
+        return "—", "#888888"
+    try:
+        v = float(rmse_pct)
+    except (TypeError, ValueError):
+        return "—", "#888888"
+    if not np.isfinite(v):
+        return "—", "#888888"
+    if v < 5:
+        return "Good", "#1b5e20"
+    if v < 10:
+        return "Acceptable", "#f9a825"
+    if v < 20:
+        return "Not Comparable", "#ef6c00"
+    return "Very Different", "#c62828"
+
+
+def gse_reference_for_ateco_l1(l1_code) -> tuple[str | None, str | None, str | None]:
+    """Return (group_label, M_col, F_col) GSE column names appropriate for an ATECO L1.
+
+    Mapping:
+      DO  → ("Domestic", PDMM, PDMF)
+      IL  → no match (public lighting)
+      N/A → no match
+      anything else → ("Other (commercial)", PAUM, PAUF)
+    """
+    if l1_code is None or (isinstance(l1_code, float) and np.isnan(l1_code)):
+        return None, None, None
+    code_upper = str(l1_code).strip().upper()
+    if not code_upper or code_upper == "N/A":
+        return None, None, None
+    if code_upper == "DO":
+        return "Domestic", "PDMM", "PDMF"
+    if code_upper == "IL":
+        return None, None, None
+    return "Other (commercial)", "PAUM", "PAUF"
+
+
+def _compute_pair_metrics(arr_a, arr_b) -> dict | None:
+    """Compute Pearson r, RMSE, MAE between two profiles.
+
+    The two input arrays are expected to be in the % units already used by
+    `compute_our_normalized_profiles`, `compute_our_fascia_profiles` and
+    `compute_gse_monthly_hourly` — i.e. each hourly value is the share of
+    the monthly total in percent (~0.1–0.5 typical). To express RMSE / MAE
+    in **percentage points** consistent with the rest of the dashboard
+    (where thresholds 5 % / 10 % / 20 % apply), the absolute RMSE / MAE is
+    multiplied by 100 before being returned. Pearson r is scale-invariant
+    and is returned as-is.
+
+    Returns None if the comparison cannot be computed (None inputs, shape
+    mismatch, fewer than 2 valid points, or one of the profiles is constant).
+    """
+    if arr_a is None or arr_b is None:
+        return None
+    a = np.asarray(arr_a, dtype=float)
+    b = np.asarray(arr_b, dtype=float)
+    if a.shape != b.shape or a.size == 0:
+        return None
+    mask = ~(np.isnan(a) | np.isnan(b))
+    if mask.sum() < 2:
+        return None
+    if np.std(a[mask]) == 0 or np.std(b[mask]) == 0:
+        return None
+    r, _ = pearsonr(a[mask], b[mask])
+    rmse_raw = float(np.sqrt(np.mean((a[mask] - b[mask]) ** 2)))
+    mae_raw  = float(np.mean(np.abs(a[mask] - b[mask])))
+    return {
+        "r":    float(r),
+        "rmse": rmse_raw * 100.0,   # percentage points
+        "mae":  mae_raw  * 100.0,   # percentage points
+    }
+
+
+@st.fragment
+def gse_custom_comparison_section(df_base: pd.DataFrame, df_meas_ap: pd.DataFrame):
+    """Per-ATECO custom GSE comparison.
+
+    Lets the user pick ATECO codes at L1 / L2 / L3, computes the aggregated
+    PoliTo profile (avgM, avgF) for each selected code, compares it to the
+    matching GSE reference (PDMM/PDMF for domestic, PAUM/PAUF for other), and
+    produces:
+      • a similarity ranking sorted by combined annual Pearson r;
+      • per-ATECO monthly comparison charts and per-month metrics tables;
+      • an export ZIP (Excel + per-ATECO HTML overviews).
+    """
+    st.markdown("---")
+    st.subheader("Custom GSE Profile Comparison — by ATECO Code")
+    st.markdown(
+        "Select one or more ATECO codes at any of the three levels to compute "
+        "their aggregated PoliTo load profile and compare it against the "
+        "matching GSE reference: **domestic** codes (`DO`) → PDMM/PDMF, "
+        "**other** (commercial / industrial) codes → PAUM/PAUF, "
+        "**public lighting** (`IL`) and unclassified (`N/A`) → skipped "
+        "(no clear GSE reference). The output is a similarity ranking that "
+        "highlights which user typologies are best — and worst — approximated "
+        "by the GSE reference profiles."
+    )
+
+    df_gse = load_gse_profiles()
+    if df_gse is None:
+        st.error(f"GSE file `data/{GSE_FILE_NAME}` not found.")
+        return
+
+    GSE_REF = {
+        "Domestic": {
+            "weekday":     compute_gse_monthly_hourly(df_gse, "PDMM"),
+            "weekend":     compute_gse_monthly_hourly(df_gse, "PDMF"),
+            "weekday_col": "PDMM",
+            "weekend_col": "PDMF",
+        },
+        "Other (commercial)": {
+            "weekday":     compute_gse_monthly_hourly(df_gse, "PAUM"),
+            "weekend":     compute_gse_monthly_hourly(df_gse, "PAUF"),
+            "weekday_col": "PAUM",
+            "weekend_col": "PAUF",
+        },
+    }
+
+    # ── ATECO selection (3 cascading multiselects + Select/Deselect All) ────
+    st.markdown("#### ATECO Selection")
+
+    l1_counts = (
+        df_base.groupby("ATECO_L1", observed=True)["POD"].nunique()
+        .sort_values(ascending=False)
+    )
+    l1_options = [c for c in l1_counts.index if c != "N/A"]
+
+    def _fmt_with_count(c, counts):
+        desc = lookup_ateco_description(c)[:35] if lookup_ateco_description(c) else ""
+        n = int(counts.get(c, 0))
+        return f"{c} — {desc} ({n})" if desc else f"{c} ({n})"
+
+    def _frag_rerun():
+        try:
+            st.rerun(scope="fragment")
+        except Exception:
+            st.rerun()
+
+    # Compute downstream options BEFORE rendering so the Select-All buttons
+    # for L2/L3 know what to select. We also use them to prune stale entries
+    # from session state (e.g. when the user removes an L1 code, the L2
+    # session state may still contain children of the removed L1).
+    cur_l1 = list(st.session_state.get("gse_cust_l1", []))
+    cur_l1 = [c for c in cur_l1 if c in l1_options]
+    st.session_state["gse_cust_l1"] = cur_l1
+
+    if cur_l1:
+        df_l2_sub = df_base[df_base["ATECO_L1"].isin(cur_l1)]
+        l2_counts = (
+            df_l2_sub.groupby("ATECO_L2", observed=True)["POD"].nunique()
+            .sort_values(ascending=False)
+        )
+        l2_options = [c for c in l2_counts.index if c != "N/A"]
+    else:
+        l2_counts = pd.Series(dtype=int)
+        l2_options = []
+
+    cur_l2 = list(st.session_state.get("gse_cust_l2", []))
+    cur_l2 = [c for c in cur_l2 if c in l2_options]
+    st.session_state["gse_cust_l2"] = cur_l2
+
+    if cur_l2:
+        df_l3_sub = df_base[df_base["ATECO_L2"].isin(cur_l2)]
+        l3_counts = (
+            df_l3_sub.groupby("ATECO_L3", observed=True)["POD"].nunique()
+            .sort_values(ascending=False)
+        )
+        l3_options = [c for c in l3_counts.index if c != "N/A"]
+    else:
+        l3_counts = pd.Series(dtype=int)
+        l3_options = []
+
+    cur_l3 = list(st.session_state.get("gse_cust_l3", []))
+    cur_l3 = [c for c in cur_l3 if c in l3_options]
+    st.session_state["gse_cust_l3"] = cur_l3
+
+    col_l1, col_l2, col_l3 = st.columns(3)
+
+    # ── Level 1 ──
+    with col_l1:
+        st.markdown("**Level 1 (Section)**")
+        bsa1, bda1 = st.columns(2)
+        with bsa1:
+            if st.button("Select All", key="gse_cust_sa_l1",
+                         use_container_width=True,
+                         disabled=len(l1_options) == 0):
+                st.session_state["gse_cust_l1"] = list(l1_options)
+                _frag_rerun()
+        with bda1:
+            if st.button("Deselect All", key="gse_cust_da_l1",
+                         use_container_width=True,
+                         disabled=len(cur_l1) == 0):
+                st.session_state["gse_cust_l1"] = []
+                st.session_state["gse_cust_l2"] = []
+                st.session_state["gse_cust_l3"] = []
+                _frag_rerun()
+        selected_l1 = st.multiselect(
+            "Level 1 (Section)",
+            l1_options,
+            format_func=lambda c: _fmt_with_count(c, l1_counts),
+            key="gse_cust_l1",
+            label_visibility="collapsed",
+            help="Pick one or more ATECO sectors. Children at L2/L3 will appear in the next columns.",
+        )
+
+    # ── Level 2 ──
+    with col_l2:
+        st.markdown("**Level 2 (Division)**")
+        if not selected_l1:
+            st.caption("Select L1 codes first.")
+            selected_l2 = []
+        else:
+            bsa2, bda2 = st.columns(2)
+            with bsa2:
+                if st.button("Select All", key="gse_cust_sa_l2",
+                             use_container_width=True,
+                             disabled=len(l2_options) == 0):
+                    st.session_state["gse_cust_l2"] = list(l2_options)
+                    _frag_rerun()
+            with bda2:
+                if st.button("Deselect All", key="gse_cust_da_l2",
+                             use_container_width=True,
+                             disabled=len(cur_l2) == 0):
+                    st.session_state["gse_cust_l2"] = []
+                    st.session_state["gse_cust_l3"] = []
+                    _frag_rerun()
+            if l2_options:
+                selected_l2 = st.multiselect(
+                    "Level 2 (Division)",
+                    l2_options,
+                    format_func=lambda c: _fmt_with_count(c, l2_counts),
+                    key="gse_cust_l2",
+                    label_visibility="collapsed",
+                )
+            else:
+                st.caption("No L2 codes available for the selected L1.")
+                selected_l2 = []
+
+    # ── Level 3 ──
+    with col_l3:
+        st.markdown("**Level 3 (Class)**")
+        if not selected_l2:
+            st.caption("Select L2 codes first.")
+            selected_l3 = []
+        else:
+            bsa3, bda3 = st.columns(2)
+            with bsa3:
+                if st.button("Select All", key="gse_cust_sa_l3",
+                             use_container_width=True,
+                             disabled=len(l3_options) == 0):
+                    st.session_state["gse_cust_l3"] = list(l3_options)
+                    _frag_rerun()
+            with bda3:
+                if st.button("Deselect All", key="gse_cust_da_l3",
+                             use_container_width=True,
+                             disabled=len(cur_l3) == 0):
+                    st.session_state["gse_cust_l3"] = []
+                    _frag_rerun()
+            if l3_options:
+                selected_l3 = st.multiselect(
+                    "Level 3 (Class)",
+                    l3_options,
+                    format_func=lambda c: _fmt_with_count(c, l3_counts),
+                    key="gse_cust_l3",
+                    label_visibility="collapsed",
+                )
+            else:
+                st.caption("No L3 codes available for the selected L2.")
+                selected_l3 = []
+
+    if not (selected_l1 or selected_l2 or selected_l3):
+        st.info("Select at least one ATECO code to run the comparison.")
+        return
+
+    # ── Run / cache ─────────────────────────────────────────────────────────
+    sel_fp = (
+        tuple(sorted(selected_l1)),
+        tuple(sorted(selected_l2)),
+        tuple(sorted(selected_l3)),
+    )
+    cached_fp = st.session_state.get("_gse_cust_fp")
+    has_cached = cached_fp == sel_fp and "_gse_cust_results" in st.session_state
+
+    bc1, bc2, _ = st.columns([1, 1, 2])
+    with bc1:
+        run = st.button("▶ Compute Comparison", type="primary",
+                        key="gse_cust_run", use_container_width=True)
+    with bc2:
+        if has_cached:
+            st.button("Results cached ✓", disabled=True,
+                      key="gse_cust_cached_ind", use_container_width=True)
+        elif cached_fp is not None and cached_fp != sel_fp:
+            st.button("Selection changed — click Run", disabled=True,
+                      key="gse_cust_changed_ind", use_container_width=True)
+
+    if run:
+        items = []
+        if selected_l1:
+            items.extend([("L1", c, "ATECO_L1") for c in selected_l1])
+        if selected_l2:
+            items.extend([("L2", c, "ATECO_L2") for c in selected_l2])
+        if selected_l3:
+            items.extend([("L3", c, "ATECO_L3") for c in selected_l3])
+
+        ap_pods_set = set(df_meas_ap["POD"].astype(str).unique())
+
+        results = []
+        prog = st.progress(0, text="Computing custom comparisons…")
+        for i, (level, code, ateco_col) in enumerate(items):
+            prog.progress((i + 1) / len(items),
+                          text=f"{level} — {code} ({i + 1}/{len(items)})…")
+
+            pods = set(df_base[df_base[ateco_col] == code]["POD"].unique())
+            pods = pods & ap_pods_set
+
+            # Determine which GSE reference applies via ATECO_L1
+            if level == "L1":
+                l1_for_ref = code
+            else:
+                sample = df_base[df_base[ateco_col] == code]
+                l1_for_ref = sample.iloc[0]["ATECO_L1"] if len(sample) > 0 else None
+
+            ref_group, ref_m_col, ref_f_col = gse_reference_for_ateco_l1(l1_for_ref)
+            desc = lookup_ateco_description(code)
+
+            base = {
+                "Level":       level,
+                "ATECO Code":  code,
+                "Description": desc,
+                "L1":          l1_for_ref,
+                "N PODs":      len(pods),
+            }
+
+            if not pods:
+                results.append({**base, "Reference": "—", "skip": True,
+                                "skip_reason": "No PODs available for this code."})
+                continue
+
+            if ref_group is None:
+                results.append({
+                    **base, "Reference": "—", "skip": True,
+                    "skip_reason": (
+                        f"No GSE reference for L1 = '{l1_for_ref}' "
+                        "(public lighting / unclassified)."
+                    ),
+                })
+                continue
+
+            # PoliTo profiles for this set of PODs
+            avgM = compute_our_normalized_profiles(df_meas_ap, pods)
+            avgF = compute_our_fascia_profiles(df_meas_ap, pods)
+
+            ref_m_dict = GSE_REF[ref_group]["weekday"]
+            ref_f_dict = GSE_REF[ref_group]["weekend"]
+
+            # Per-month metrics
+            monthly = []
+            for m in range(1, 13):
+                row = {"Month": MONTH_NAMES[m]}
+                m_metrics = _compute_pair_metrics(avgM.get(m), ref_m_dict.get(m))
+                f_metrics = _compute_pair_metrics(avgF.get(m), ref_f_dict.get(m))
+                row[f"RMSE vs {ref_m_col} (%)"] = round(m_metrics["rmse"], 3) if m_metrics else None
+                row[f"MAE vs {ref_m_col} (%)"]  = round(m_metrics["mae"], 3)  if m_metrics else None
+                row[f"r vs {ref_m_col}"]        = round(m_metrics["r"], 4)    if m_metrics else None
+                row[f"RMSE vs {ref_f_col} (%)"] = round(f_metrics["rmse"], 3) if f_metrics else None
+                row[f"MAE vs {ref_f_col} (%)"]  = round(f_metrics["mae"], 3)  if f_metrics else None
+                row[f"r vs {ref_f_col}"]        = round(f_metrics["r"], 4)    if f_metrics else None
+                monthly.append(row)
+
+            # Annual stacked metrics (concatenate the 12 monthly hourly profiles
+            # into a single 12*24 = 288-point series and compute one r/RMSE/MAE).
+            valid_m = [m for m in range(1, 13)
+                       if avgM.get(m) is not None and ref_m_dict.get(m) is not None]
+            valid_f = [m for m in range(1, 13)
+                       if avgF.get(m) is not None and ref_f_dict.get(m) is not None]
+
+            if valid_m:
+                a = np.concatenate([avgM[m] for m in valid_m])
+                b = np.concatenate([ref_m_dict[m] for m in valid_m])
+                m_ann = _compute_pair_metrics(a, b)
+            else:
+                m_ann = None
+
+            if valid_f:
+                a = np.concatenate([avgF[m] for m in valid_f])
+                b = np.concatenate([ref_f_dict[m] for m in valid_f])
+                f_ann = _compute_pair_metrics(a, b)
+            else:
+                f_ann = None
+
+            r_vals = [x["r"] for x in (m_ann, f_ann) if x is not None]
+            combined_r = float(np.mean(r_vals)) if r_vals else None
+
+            rmse_vals = [x["rmse"] for x in (m_ann, f_ann) if x is not None]
+            combined_rmse = float(np.mean(rmse_vals)) if rmse_vals else None
+
+            results.append({
+                **base,
+                "Reference":      ref_group,
+                "M_col":          ref_m_col,
+                "F_col":          ref_f_col,
+                "skip":           False,
+                "monthly_metrics": monthly,
+                "r_M_annual":     (m_ann["r"] if m_ann else None),
+                "rmse_M_annual":  (m_ann["rmse"] if m_ann else None),
+                "mae_M_annual":   (m_ann["mae"] if m_ann else None),
+                "r_F_annual":     (f_ann["r"] if f_ann else None),
+                "rmse_F_annual":  (f_ann["rmse"] if f_ann else None),
+                "mae_F_annual":   (f_ann["mae"] if f_ann else None),
+                "combined_r":     combined_r,
+                "combined_rmse":  combined_rmse,
+                "avgM":           avgM,
+                "avgF":           avgF,
+                "ref_m_dict":     ref_m_dict,
+                "ref_f_dict":     ref_f_dict,
+            })
+
+        prog.progress(1.0, text="Done!")
+        prog.empty()
+        st.session_state["_gse_cust_results"] = results
+        st.session_state["_gse_cust_fp"] = sel_fp
+        st.session_state.pop("_gse_cust_export_zip", None)
+        has_cached = True
+
+    if not has_cached:
+        st.info("Configure the selection above and press **▶ Compute Comparison**.")
+        return
+
+    results = st.session_state["_gse_cust_results"]
+
+    if not results:
+        st.warning("No results.")
+        return
+
+    # ── Ranking table (overview) ────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Similarity Ranking")
+    st.caption(
+        "Codes ranked by **Combined Annual RMSE (%)** — the average of "
+        "(annual RMSE vs M-column, annual RMSE vs F-column). The annual "
+        "RMSE is computed on the stacked 12-month × 24-hour profile "
+        "(288 points) and is expressed in **percentage points** of monthly "
+        "consumption (same unit as the GSE reference profiles). Quality bands "
+        "(lower RMSE = better fit): "
+        "**Good** (< 5 %) · **Acceptable** (5–10 %) · "
+        "**Not Comparable** (10–20 %) · **Very Different** (≥ 20 %). "
+        "Pearson r is reported as a secondary indicator of shape similarity."
+    )
+
+    rank_rows = []
+    for res in results:
+        if res.get("skip"):
+            rank_rows.append({
+                "Level":       res["Level"],
+                "ATECO Code":  res["ATECO Code"],
+                "Description": res.get("Description") or "",
+                "N PODs":      res["N PODs"],
+                "Reference":   res["Reference"],
+                "Annual RMSE vs M (%)": "—",
+                "Annual RMSE vs F (%)": "—",
+                "Combined RMSE (%)":    "—",
+                "Annual r vs M":        "—",
+                "Annual r vs F":        "—",
+                "Quality":              "Skipped",
+                "Notes":                res.get("skip_reason", ""),
+                "_sort":                float("inf"),
+            })
+            continue
+
+        cr   = res.get("combined_r")
+        crms = res.get("combined_rmse")
+        ql, _ = gse_quality_label(crms)
+        rank_rows.append({
+            "Level":       res["Level"],
+            "ATECO Code":  res["ATECO Code"],
+            "Description": res.get("Description") or "",
+            "N PODs":      res["N PODs"],
+            "Reference":   res["Reference"],
+            "Annual RMSE vs M (%)": (round(res["rmse_M_annual"], 3)
+                                     if res.get("rmse_M_annual") is not None else "—"),
+            "Annual RMSE vs F (%)": (round(res["rmse_F_annual"], 3)
+                                     if res.get("rmse_F_annual") is not None else "—"),
+            "Combined RMSE (%)":    round(crms, 3) if crms is not None else "—",
+            "Annual r vs M":        (round(res["r_M_annual"], 4)
+                                     if res.get("r_M_annual") is not None else "—"),
+            "Annual r vs F":        (round(res["r_F_annual"], 4)
+                                     if res.get("r_F_annual") is not None else "—"),
+            "Quality":              ql,
+            "Notes":                "",
+            "_sort":                crms if crms is not None else float("inf"),
+        })
+
+    df_rank = (
+        pd.DataFrame(rank_rows)
+        .sort_values("_sort", ascending=True)
+        .drop(columns=["_sort"])
+        .reset_index(drop=True)
+    )
+    df_rank.insert(0, "Rank", range(1, len(df_rank) + 1))
+
+    st.dataframe(
+        df_rank.style.set_properties(**{"text-align": "left"}),
+        hide_index=True, use_container_width=True,
+    )
+
+    # ── Per-ATECO detail ────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Detail per ATECO Code")
+    st.caption(
+        "Open each block to see the 12 monthly comparison charts "
+        "(PoliTo avgM/avgF vs GSE M/F) and the per-month similarity metrics."
+    )
+
+    for res in results:
+        if res.get("skip"):
+            with st.expander(
+                f"{res['Level']} — {res['ATECO Code']} — Skipped",
+                expanded=False,
+            ):
+                st.warning(res.get("skip_reason", "Skipped."))
+            continue
+
+        crms = res.get("combined_rmse")
+        cr   = res.get("combined_r")
+        ql, _color = gse_quality_label(crms)
+        title = (
+            f"{res['Level']} — {res['ATECO Code']} — "
+            f"{(res.get('Description') or '')[:60]} "
+            f"({res['N PODs']} PODs) — Ref: {res['Reference']} — "
+            f"Combined RMSE = {round(crms, 3) if crms is not None else '—'} % "
+            f"({ql}) — r = {round(cr, 3) if cr is not None else '—'}"
+        )
+
+        with st.expander(title, expanded=False):
+            avgM       = res["avgM"]
+            avgF       = res["avgF"]
+            ref_m_dict = res["ref_m_dict"]
+            ref_f_dict = res["ref_f_dict"]
+            ref_m_col  = res["M_col"]
+            ref_f_col  = res["F_col"]
+
+            # Monthly grid: 3 rows × 4 cols
+            for row_start in range(0, 12, 4):
+                cols = st.columns(4)
+                for ci, m in enumerate(range(row_start + 1, row_start + 5)):
+                    if m > 12:
+                        break
+                    with cols[ci]:
+                        avgM_m  = avgM.get(m)
+                        avgF_m  = avgF.get(m)
+                        ref_m_m = ref_m_dict.get(m)
+                        ref_f_m = ref_f_dict.get(m)
+                        hour_labels = [f"{h:02d}:00" for h in range(24)]
+
+                        fig = go.Figure()
+                        if avgM_m is not None:
+                            fig.add_trace(go.Scatter(
+                                x=hour_labels, y=avgM_m, mode="lines+markers",
+                                name="PoliTo (avgM)",
+                                line=dict(width=2.5, color="#1f77b4"),
+                                marker=dict(size=2.5, color="#1f77b4"),
+                            ))
+                        if avgF_m is not None:
+                            fig.add_trace(go.Scatter(
+                                x=hour_labels, y=avgF_m, mode="lines+markers",
+                                name="PoliTo (avgF)",
+                                line=dict(width=2.5, color="#9467bd"),
+                                marker=dict(size=2.5, color="#9467bd"),
+                            ))
+                        if ref_m_m is not None:
+                            fig.add_trace(go.Scatter(
+                                x=hour_labels, y=ref_m_m, mode="lines+markers",
+                                name=ref_m_col,
+                                line=dict(width=2.5, color="#ff7f0e", dash="dash"),
+                                marker=dict(size=2.5, color="#ff7f0e"),
+                            ))
+                        if ref_f_m is not None:
+                            fig.add_trace(go.Scatter(
+                                x=hour_labels, y=ref_f_m, mode="lines+markers",
+                                name=ref_f_col,
+                                line=dict(width=2.5, color="#2ca02c", dash="dot"),
+                                marker=dict(size=2.5, color="#2ca02c"),
+                            ))
+                        fig.update_layout(
+                            title=dict(text=MONTH_NAMES[m],
+                                       font=dict(size=11, color="#0d1f3c")),
+                            xaxis=dict(
+                                tickfont=dict(size=7, color="#1a3a6b"),
+                                title_font=dict(size=7, color="#1a3a6b"),
+                                tickangle=-45, dtick=3,
+                                gridcolor="#d0dff0", showgrid=True, zeroline=False,
+                                linecolor="#1a3a6b",
+                            ),
+                            yaxis=dict(
+                                title="% monthly",
+                                title_font=dict(size=7, color="#1a3a6b"),
+                                tickfont=dict(size=7, color="#1a3a6b"),
+                                gridcolor="#d0dff0", showgrid=True, zeroline=False,
+                                rangemode="tozero",
+                            ),
+                            height=260,
+                            margin=dict(t=30, b=85, l=55, r=5),
+                            legend=dict(font=dict(size=7, color="#0d1f3c"),
+                                        orientation="h", y=-0.55, x=0,
+                                        bgcolor="rgba(0,0,0,0)"),
+                            plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+                            font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                            showlegend=True,
+                        )
+                        st.plotly_chart(
+                            fig, use_container_width=True,
+                            key=f"gse_cust_{res['Level']}_{res['ATECO Code']}_{m}",
+                            config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}},
+                        )
+
+            # Per-month metrics table with quality column
+            st.markdown("**Per-month similarity metrics:**")
+            df_month = pd.DataFrame(res["monthly_metrics"])
+
+            def _row_quality(row):
+                # Quality is driven by RMSE (lower = better) — average of the
+                # M-comparison and F-comparison RMSE values for that month.
+                rm = row.get(f"RMSE vs {ref_m_col} (%)")
+                rf = row.get(f"RMSE vs {ref_f_col} (%)")
+                vals = []
+                for v in (rm, rf):
+                    if v is None:
+                        continue
+                    try:
+                        fv = float(v)
+                        if np.isfinite(fv):
+                            vals.append(fv)
+                    except (TypeError, ValueError):
+                        continue
+                if not vals:
+                    return "—"
+                return gse_quality_label(float(np.mean(vals)))[0]
+
+            df_month["Quality (avg RMSE of M,F)"] = df_month.apply(_row_quality, axis=1)
+            st.dataframe(
+                df_month.style.set_properties(**{"text-align": "left"}),
+                hide_index=True, use_container_width=True,
+            )
+
+            # Annual summary
+            st.markdown("**Annual summary (stacked 12-month × 24-hour profile):**")
+            ann_data = {
+                "Comparison": [f"avgM ↔ {ref_m_col}", f"avgF ↔ {ref_f_col}"],
+                "Annual RMSE (%)": [
+                    round(res["rmse_M_annual"], 3) if res.get("rmse_M_annual") is not None else "—",
+                    round(res["rmse_F_annual"], 3) if res.get("rmse_F_annual") is not None else "—",
+                ],
+                "Annual MAE (%)": [
+                    round(res["mae_M_annual"], 3) if res.get("mae_M_annual") is not None else "—",
+                    round(res["mae_F_annual"], 3) if res.get("mae_F_annual") is not None else "—",
+                ],
+                "Annual Pearson r": [
+                    round(res["r_M_annual"], 4) if res.get("r_M_annual") is not None else "—",
+                    round(res["r_F_annual"], 4) if res.get("r_F_annual") is not None else "—",
+                ],
+                "Quality": [
+                    gse_quality_label(res["rmse_M_annual"])[0]
+                    if res.get("rmse_M_annual") is not None else "—",
+                    gse_quality_label(res["rmse_F_annual"])[0]
+                    if res.get("rmse_F_annual") is not None else "—",
+                ],
+            }
+            st.dataframe(
+                pd.DataFrame(ann_data).style.set_properties(**{"text-align": "left"}),
+                hide_index=True, use_container_width=True,
+            )
+
+    # ── Export ──────────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Export Custom Comparison")
+    st.caption("Excel with ranking + monthly + annual metrics, plus per-ATECO HTML overviews.")
+
+    if st.button("Prepare Custom Comparison Export ZIP", type="primary",
+                 key="gse_cust_export_btn"):
+        buf = io.BytesIO()
+        errors = []
+        n_steps = max(1, 1 + len(results))
+        step = 0
+        prog = st.progress(0, text="Building custom export…")
+
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            # Excel: ranking + monthly + annual
+            step += 1
+            prog.progress(step / n_steps, text="Excel workbook…")
+            try:
+                xl = io.BytesIO()
+                with pd.ExcelWriter(xl, engine="openpyxl") as writer:
+                    df_rank.to_excel(writer, sheet_name="Ranking", index=False)
+
+                    all_monthly = []
+                    for res in results:
+                        if res.get("skip"):
+                            continue
+                        for mrow in res["monthly_metrics"]:
+                            all_monthly.append({
+                                "Level":       res["Level"],
+                                "ATECO Code":  res["ATECO Code"],
+                                "Description": res.get("Description", ""),
+                                "Reference":   res["Reference"],
+                                **mrow,
+                            })
+                    if all_monthly:
+                        pd.DataFrame(all_monthly).to_excel(
+                            writer, sheet_name="Monthly_Metrics", index=False)
+
+                    ann_rows = []
+                    for res in results:
+                        if res.get("skip"):
+                            continue
+                        ann_rows.append({
+                            "Level":              res["Level"],
+                            "ATECO Code":         res["ATECO Code"],
+                            "Description":        res.get("Description", ""),
+                            "N PODs":             res["N PODs"],
+                            "Reference":          res["Reference"],
+                            "M_col":              res["M_col"],
+                            "F_col":              res["F_col"],
+                            "rmse_M_annual (%)":  res.get("rmse_M_annual"),
+                            "rmse_F_annual (%)":  res.get("rmse_F_annual"),
+                            "Combined RMSE (%)":  res.get("combined_rmse"),
+                            "mae_M_annual (%)":   res.get("mae_M_annual"),
+                            "mae_F_annual (%)":   res.get("mae_F_annual"),
+                            "r_M_annual":         res.get("r_M_annual"),
+                            "r_F_annual":         res.get("r_F_annual"),
+                            "Combined r":         res.get("combined_r"),
+                            "Quality": (
+                                gse_quality_label(res["combined_rmse"])[0]
+                                if res.get("combined_rmse") is not None else "—"
+                            ),
+                        })
+                    if ann_rows:
+                        pd.DataFrame(ann_rows).to_excel(
+                            writer, sheet_name="Annual_Summary", index=False)
+                zf.writestr("gse_custom_comparison_metrics.xlsx", xl.getvalue())
+            except Exception as e:
+                errors.append(f"Excel: {e}")
+
+            # Per-ATECO HTML overview (12 monthly charts on one page)
+            for res in results:
+                step += 1
+                prog.progress(step / n_steps, text=f"{res['ATECO Code']} HTML…")
+                if res.get("skip"):
+                    continue
+                try:
+                    safe_code = (str(res["ATECO Code"])
+                                 .replace(".", "_")
+                                 .replace("/", "_")
+                                 .replace(" ", "_"))
+                    avgM       = res["avgM"]
+                    avgF       = res["avgF"]
+                    ref_m_dict = res["ref_m_dict"]
+                    ref_f_dict = res["ref_f_dict"]
+
+                    overview_html = (
+                        "<html><head><style>"
+                        "body{font-family:Arial,sans-serif;padding:20px;background:#fff;}"
+                        "h1,h2{color:#333;}"
+                        ".grid{display:grid;grid-template-columns:repeat(3,1fr);"
+                        "gap:16px;margin-top:20px;}"
+                        "</style></head><body>"
+                        f"<h1>GSE Custom Comparison — {res['Level']} {res['ATECO Code']}</h1>"
+                        f"<p>{res.get('Description', '')} — "
+                        f"{res['N PODs']} PODs — Reference: {res['Reference']}</p>"
+                        f"<p><b>Combined Annual RMSE</b> = "
+                        f"{round(res['combined_rmse'], 3) if res.get('combined_rmse') is not None else '—'} % "
+                        f"({gse_quality_label(res.get('combined_rmse'))[0]}) — "
+                        f"<b>Combined r</b> = "
+                        f"{round(res['combined_r'], 4) if res.get('combined_r') is not None else '—'}</p>"
+                        '<div class="grid">'
+                    )
+                    for i_m, m in enumerate(range(1, 13)):
+                        avgM_m  = avgM.get(m)
+                        avgF_m  = avgF.get(m)
+                        ref_m_m = ref_m_dict.get(m)
+                        ref_f_m = ref_f_dict.get(m)
+                        hour_labels = [f"{h:02d}:00" for h in range(24)]
+
+                        f_h = go.Figure()
+                        if avgM_m is not None:
+                            f_h.add_trace(go.Scatter(
+                                x=hour_labels, y=avgM_m, mode="lines+markers",
+                                name="PoliTo (avgM)",
+                                line=dict(color="#1f77b4", width=2.5)))
+                        if avgF_m is not None:
+                            f_h.add_trace(go.Scatter(
+                                x=hour_labels, y=avgF_m, mode="lines+markers",
+                                name="PoliTo (avgF)",
+                                line=dict(color="#9467bd", width=2.5)))
+                        if ref_m_m is not None:
+                            f_h.add_trace(go.Scatter(
+                                x=hour_labels, y=ref_m_m, mode="lines+markers",
+                                name=res["M_col"],
+                                line=dict(color="#ff7f0e", dash="dash", width=2.5)))
+                        if ref_f_m is not None:
+                            f_h.add_trace(go.Scatter(
+                                x=hour_labels, y=ref_f_m, mode="lines+markers",
+                                name=res["F_col"],
+                                line=dict(color="#2ca02c", dash="dot", width=2.5)))
+                        f_h.update_layout(
+                            title=MONTH_NAMES[m], height=320,
+                            margin=dict(t=35, b=60, l=55, r=10),
+                            plot_bgcolor="#ffffff", paper_bgcolor="#ffffff",
+                            font=dict(family="Arial, sans-serif", color="#0d1f3c"),
+                        )
+                        overview_html += f_h.to_html(
+                            include_plotlyjs="cdn" if i_m == 0 else False,
+                            full_html=False,
+                        )
+                    overview_html += "</div></body></html>"
+                    zf.writestr(
+                        f"{res['Level']}_{safe_code}_monthly_overview.html",
+                        overview_html,
+                    )
+                except Exception as e:
+                    errors.append(f"{res['ATECO Code']} HTML: {e}")
+
+            if errors:
+                zf.writestr("_EXPORT_ISSUES.txt",
+                            "CUSTOM GSE EXPORT ISSUES\n" + "=" * 40 + "\n"
+                            + "\n".join(f"- {e}" for e in errors))
+
+        buf.seek(0)
+        prog.progress(1.0, text="Custom export ready!")
+        prog.empty()
+        st.session_state["_gse_cust_export_zip"] = buf.getvalue()
+        st.session_state["_gse_cust_export_errors"] = errors
+
+    if "_gse_cust_export_zip" in st.session_state:
+        if st.session_state.get("_gse_cust_export_errors"):
+            st.warning(
+                f"{len(st.session_state['_gse_cust_export_errors'])} issues during export. "
+                "See _EXPORT_ISSUES.txt in the ZIP."
+            )
+        st.download_button(
+            label="⬇️ Download Custom GSE Comparison ZIP",
+            data=st.session_state["_gse_cust_export_zip"],
+            file_name="gse_custom_comparison.zip",
+            mime="application/zip",
+            type="primary",
+            key="gse_cust_dl_btn",
+        )
+
 
 # ==============================================================================
 # ARERA PROFILE LOADING & COMPARISON
@@ -2484,6 +3373,7 @@ def _arera_daytype_chart(
     arera_ml_kwh: np.ndarray | None,   # second market (ML) or None
     show_legend: bool = False,
     market_labels: tuple = ("Maggior Tutela", "Mercato Libero"),
+    y_axis_title: str = "Average kWh",
 ) -> go.Figure:
     """One comparison chart for a single (month, day_type) pair."""
     hour_labels = [f"{h:02d}:00" for h in range(24)]
@@ -2526,7 +3416,7 @@ def _arera_daytype_chart(
             linecolor="#1a3a6b",
         ),
         yaxis=dict(
-            title="Average kWh",
+            title=y_axis_title,
             title_font=dict(size=8, color="#1a3a6b"),
             tickfont=dict(size=8, color="#1a3a6b"),
             gridcolor="#d0dff0", showgrid=True,
@@ -2548,11 +3438,15 @@ def arera_comparison_tab(
     df_meas: pd.DataFrame,
     pods_12m: set,
 ):
-    """ARERA profile comparison tab — kWh, two markets, per day type, per power class."""
+    """ARERA profile comparison tab — kWh or shape (min-max normalized), two markets, per day type, per power class."""
     st.subheader("ARERA Profile Comparison")
     st.markdown(
-        f"Comparison of mean hourly load profiles [**kWh**] between PoliTo dataset "
+        f"Comparison of mean hourly load profiles between PoliTo dataset "
         f"and ARERA 2024 reference data for **{ARERA_PROVINCE}**. "
+        f"Two comparison modes are available: **Load Intensity (kWh)** preserves "
+        f"the absolute energy magnitude, while **Shape (min-max normalized)** "
+        f"normalizes each profile independently to [0, 1] to compare only the "
+        f"daily load shape regardless of overall energy level. "
         f"ARERA profiles are shown for **Maggior Tutela** and **Mercato Libero** separately. "
         f"PoliTo profiles are split by **residenza** and **contractual power class**. "
         f"Only PODs with ≥12 months of AP data are included."
@@ -2583,24 +3477,50 @@ def arera_comparison_tab(
         df_meas_ap = df_meas.copy()
     ap_pods = set(df_meas_ap["POD"].astype(str).unique())
 
-    # ── Power class dropdown ──────────────────────────────────────────────────
-    power_labels = [pc["label"] for pc in ARERA_POWER_CLASSES]
-    sel_power_label = st.selectbox(
-        "Contractual Power Class",
-        power_labels,
-        index=0,
-        key="arera_power_sel",
-        help="Filters both ARERA reference profiles and PoliTo PODs by contractual power.",
-    )
-    sel_pc = next(pc for pc in ARERA_POWER_CLASSES if pc["label"] == sel_power_label)
-
-    # ── Month selector ────────────────────────────────────────────────────────
+    # ── Top-level selectors: Power | Month | Mode ─────────────────────────────
     MONTH_KEYS = [0] + list(range(1, 13))
     MONTH_LBLS = ["Annual Average"] + [MONTH_NAMES[m] for m in range(1, 13)]
-    sel_month_lbl = st.selectbox(
-        "Month", MONTH_LBLS, index=0, key="arera_month_sel"
-    )
+    power_labels = [pc["label"] for pc in ARERA_POWER_CLASSES]
+
+    sel_c1, sel_c2, sel_c3 = st.columns(3)
+    with sel_c1:
+        sel_power_label = st.selectbox(
+            "Contractual Power Class",
+            power_labels,
+            index=0,
+            key="arera_power_sel",
+            help="Filters both ARERA reference profiles and PoliTo PODs by contractual power.",
+        )
+    with sel_c2:
+        sel_month_lbl = st.selectbox(
+            "Month", MONTH_LBLS, index=0, key="arera_month_sel"
+        )
+    with sel_c3:
+        sel_mode = st.selectbox(
+            "Comparison mode",
+            ["Load Intensity (kWh)", "Shape (min-max normalized)"],
+            index=0,
+            key="arera_mode_sel",
+            help=(
+                "Load Intensity (kWh): compare profiles in their original kWh units, "
+                "preserving the energy magnitude.\n\n"
+                "Shape (min-max normalized): normalize each profile independently to "
+                "[0, 1] to compare only the daily load shape, removing differences "
+                "due to absolute consumption level."
+            ),
+        )
+
+    sel_pc = next(pc for pc in ARERA_POWER_CLASSES if pc["label"] == sel_power_label)
     sel_month = MONTH_KEYS[MONTH_LBLS.index(sel_month_lbl)]
+
+    # Mode-derived labels and suffix
+    is_shape = sel_mode.startswith("Shape")
+    if is_shape:
+        y_axis_label = "Normalized [0–1]"
+        mode_suffix = "shape"
+    else:
+        y_axis_label = "Average kWh"
+        mode_suffix = "intensity"
 
     # ── Load ARERA for selected power class ───────────────────────────────────
     df_arera = load_arera_for_power_class(sel_pc, ARERA_PROVINCE)
@@ -2632,11 +3552,11 @@ def arera_comparison_tab(
     )
 
     st.caption(
-        f"Power class **{sel_power_label}** — "
+        f"Power class **{sel_power_label}** | mode **{sel_mode}** — "
         f"DO.R: **{_fmt(len(pods_dor))}** PODs | DO.NR: **{_fmt(len(pods_donr))}** PODs"
     )
 
-    # ── Compute our profiles (cached per power class) ─────────────────────────
+    # ── Compute our profiles (cached per power class — mode-independent) ──────
     cache_key = f"_arera_our_profiles_{sel_power_label}"
     if cache_key not in st.session_state:
         with st.spinner(f"Computing kWh profiles for power class {sel_power_label}…"):
@@ -2650,13 +3570,6 @@ def arera_comparison_tab(
     MARKETS = sel_pc["markets"]
     DAY_TYPES_EN = ["Weekday", "Saturday", "Sunday"]
     DAY_TYPES_IT = list(ARERA_DAYTYPE_MAP.keys())
-
-    # Colour mapping: up to 2 ARERA markets
-    MARKET_COLORS = {
-        "Maggior Tutela": ("#ff7f0e", "dash"),
-        "Mercato Libero":  ("#2ca02c", "dot"),
-        "Tutti":           ("#d62728", "dash"),
-    }
 
     groups_cfg = [
         ("DO.R",  "Residente"),
@@ -2686,7 +3599,7 @@ def arera_comparison_tab(
 
             # ── 3 boxes: one per day type ─────────────────────────────────────
             st.markdown(
-                f"#### {sel_month_lbl} — {sel_power_label} — kWh by day type"
+                f"#### {sel_month_lbl} — {sel_power_label} — {sel_mode}"
             )
             day_cols = st.columns(3)
             for col_widget, (dtype_en, dtype_it) in zip(
@@ -2702,6 +3615,12 @@ def arera_comparison_tab(
                     mt_arr = mkt_arrs.get("Maggior Tutela") if mkt_arrs.get("Maggior Tutela") is not None else mkt_arrs.get("Tutti")
                     ml_arr = mkt_arrs.get("Mercato Libero")
 
+                    # Apply min-max normalization in shape mode (independently per profile)
+                    if is_shape:
+                        our_arr = _minmax_normalize(our_arr)
+                        mt_arr  = _minmax_normalize(mt_arr)
+                        ml_arr  = _minmax_normalize(ml_arr)
+
                     fig = _arera_daytype_chart(
                         sel_month, sel_month_lbl, dtype_en,
                         our_arr, mt_arr, ml_arr,
@@ -2710,10 +3629,11 @@ def arera_comparison_tab(
                             MARKETS[0] if len(MARKETS) >= 1 else "ARERA",
                             MARKETS[1] if len(MARKETS) >= 2 else None,
                         ),
+                        y_axis_title=y_axis_label,
                     )
                     st.plotly_chart(
                         fig, use_container_width=True,
-                        key=f"arera_{group_key}_{dtype_en}_{sel_month}_{sel_power_label}",
+                        key=f"arera_{group_key}_{dtype_en}_{sel_month}_{sel_power_label}_{mode_suffix}",
                         config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
                     export_figs[f"{dtype_en}_{sel_month_lbl}"] = fig
 
@@ -2723,34 +3643,54 @@ def arera_comparison_tab(
                 ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
                 for _dtype in _day_types_for_metrics:
                     for mkt_label in MARKETS:
-                        our_arr_m = our_dt.get(_dtype, {}).get(mk)
-                        ref_arr_m = arera_kwh.get(mkt_label, {}).get(_dtype, {}).get(mk)
-                        if our_arr_m is None or ref_arr_m is None:
+                        our_arr_m_raw = our_dt.get(_dtype, {}).get(mk)
+                        ref_arr_m_raw = arera_kwh.get(mkt_label, {}).get(_dtype, {}).get(mk)
+                        if our_arr_m_raw is None or ref_arr_m_raw is None:
                             continue
+
+                        if is_shape:
+                            # Min-max normalize each profile independently before metrics.
+                            # Pearson r is scale-invariant — identical to intensity mode —
+                            # but RMSE/MAE are now expressed in % of normalized range.
+                            our_arr_m = _minmax_normalize(np.asarray(our_arr_m_raw, dtype=float))
+                            ref_arr_m = _minmax_normalize(np.asarray(ref_arr_m_raw, dtype=float))
+                        else:
+                            our_arr_m = np.asarray(our_arr_m_raw, dtype=float)
+                            ref_arr_m = np.asarray(ref_arr_m_raw, dtype=float)
+
                         mask_m = ~(np.isnan(our_arr_m) | np.isnan(ref_arr_m))
                         if mask_m.sum() < 2:
                             continue
                         r_m, _   = pearsonr(our_arr_m[mask_m], ref_arr_m[mask_m])
                         rmse_m   = float(np.sqrt(np.mean((our_arr_m[mask_m] - ref_arr_m[mask_m])**2)))
                         mae_m    = float(np.mean(np.abs(our_arr_m[mask_m] - ref_arr_m[mask_m])))
-                        ref_mean = float(np.mean(ref_arr_m[mask_m]))
-                        cv_rmse  = (rmse_m / ref_mean * 100) if ref_mean > 0 else 0.0
-                        cv_mae   = (mae_m  / ref_mean * 100) if ref_mean > 0 else 0.0
+
+                        if is_shape:
+                            # Profiles are in [0, 1] — RMSE/MAE × 100 = % of normalized range
+                            rmse_pct = rmse_m * 100.0
+                            mae_pct  = mae_m  * 100.0
+                        else:
+                            # Intensity mode: CV-RMSE relative to ARERA reference mean
+                            ref_mean = float(np.mean(ref_arr_m[mask_m]))
+                            rmse_pct = (rmse_m / ref_mean * 100) if ref_mean > 0 else 0.0
+                            mae_pct  = (mae_m  / ref_mean * 100) if ref_mean > 0 else 0.0
+
                         all_metric_rows.append({
                             "Period":       ml_lbl,
                             "Day Type":     _dtype,
                             "Power Class":  sel_power_label,
                             "ARERA Market": mkt_label,
+                            "Mode":         "Shape" if is_shape else "Intensity",
                             "Pearson r":    round(float(r_m), 4),
-                            "RMSE (%)":     round(cv_rmse, 2),
-                            "MAE (%)":      round(cv_mae, 2),
+                            "RMSE (%)":     round(rmse_pct, 2),
+                            "MAE (%)":      round(mae_pct, 2),
                         })
 
             # ── Monthly overview ──────────────────────────────────────────────
             st.markdown("#### Full Monthly Overview")
             st.caption("Open a day type below to render the monthly charts.")
             for dtype_en, dtype_it in zip(DAY_TYPES_EN, DAY_TYPES_IT):
-                exp_key = f"arera_exp_{group_key}_{dtype_en}_{sel_power_label}"
+                exp_key = f"arera_exp_{group_key}_{dtype_en}_{sel_power_label}_{mode_suffix}"
                 with st.expander(f"{dtype_en}", expanded=False):
                     # Lazy: only build charts if expander was clicked open
                     if st.session_state.get(exp_key, False) or True:
@@ -2759,21 +3699,33 @@ def arera_comparison_tab(
                             for ci, mk in enumerate(MONTH_KEYS[row_start:row_start + 4]):
                                 ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
                                 with mcols[ci]:
+                                    our_arr_raw = our_dt.get(dtype_en, {}).get(mk)
                                     mkt_arrs_m = {
                                         mkt: arera_kwh[mkt].get(dtype_en, {}).get(mk)
                                         for mkt in MARKETS
                                     }
-                                    mt_m = mkt_arrs_m.get("Maggior Tutela") if mkt_arrs_m.get("Maggior Tutela") is not None else mkt_arrs_m.get("Tutti")
-                                    ml_m = mkt_arrs_m.get("Mercato Libero")
+                                    mt_m_raw = mkt_arrs_m.get("Maggior Tutela") if mkt_arrs_m.get("Maggior Tutela") is not None else mkt_arrs_m.get("Tutti")
+                                    ml_m_raw = mkt_arrs_m.get("Mercato Libero")
+
+                                    if is_shape:
+                                        our_arr_m = _minmax_normalize(our_arr_raw)
+                                        mt_m      = _minmax_normalize(mt_m_raw)
+                                        ml_m      = _minmax_normalize(ml_m_raw)
+                                    else:
+                                        our_arr_m = our_arr_raw
+                                        mt_m      = mt_m_raw
+                                        ml_m      = ml_m_raw
+
                                     fig_m = _arera_daytype_chart(
                                         mk, ml_lbl, dtype_en,
-                                        our_dt.get(dtype_en, {}).get(mk),
+                                        our_arr_m,
                                         mt_m, ml_m,
                                         show_legend=(mk == 0),
                                         market_labels=(
                                             MARKETS[0] if len(MARKETS) >= 1 else "ARERA",
                                             MARKETS[1] if len(MARKETS) >= 2 else None,
                                         ),
+                                        y_axis_title=y_axis_label,
                                     )
                                     fig_m.update_layout(
                                         height=230,
@@ -2790,17 +3742,30 @@ def arera_comparison_tab(
                                     )
                                     st.plotly_chart(
                                         fig_m, use_container_width=True,
-                                        key=f"arera_ov_{group_key}_{dtype_en}_{mk}_{sel_power_label}",
+                                        key=f"arera_ov_{group_key}_{dtype_en}_{mk}_{sel_power_label}_{mode_suffix}",
                                         config={"toImageButtonOptions": {"format": "png", "scale": 4, "width": 1600, "height": 900}})
                                     export_figs[f"{dtype_en}_{ml_lbl}"] = fig_m
 
             # ── Metrics table ─────────────────────────────────────────────────
             st.markdown("#### Similarity Metrics")
-            st.caption("Pearson r: shape similarity (1=perfect). RMSE/MAE in % (normalised by mean of ARERA reference profile).")
+            if is_shape:
+                st.caption(
+                    "Shape mode: profiles independently min-max normalized to [0, 1]. "
+                    "Pearson r measures shape similarity (1 = perfect, identical to intensity mode "
+                    "since r is scale-invariant). RMSE/MAE in % = absolute deviation × 100, "
+                    "i.e. % of normalized dynamic range."
+                )
+            else:
+                st.caption(
+                    "Intensity mode: profiles in original kWh. "
+                    "Pearson r measures shape similarity (1 = perfect). "
+                    "RMSE/MAE in % = CV-RMSE/CV-MAE, normalized by mean of ARERA reference profile."
+                )
             df_met = pd.DataFrame(all_metric_rows) if all_metric_rows else pd.DataFrame()
             if not df_met.empty:
                 # Ensure correct column order
-                col_order = ["Period", "Day Type", "Power Class", "ARERA Market", "Pearson r", "RMSE (%)", "MAE (%)"]
+                col_order = ["Period", "Day Type", "Power Class", "ARERA Market", "Mode",
+                             "Pearson r", "RMSE (%)", "MAE (%)"]
                 col_order = [c for c in col_order if c in df_met.columns]
                 df_met = df_met[col_order]
                 st.dataframe(df_met.style.set_properties(**{"text-align": "left"}), hide_index=True, use_container_width=True)
@@ -2811,9 +3776,9 @@ def arera_comparison_tab(
                 st.download_button(
                     label="⬇️ Download Metrics Excel",
                     data=_xl_arera.getvalue(),
-                    file_name=f"ARERA_similarity_metrics_{group_key}_{sel_power_label}.xlsx",
+                    file_name=f"ARERA_similarity_metrics_{group_key}_{sel_power_label}_{mode_suffix}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key=f"arera_metrics_dl_{group_key}_{sel_power_label}",
+                    key=f"arera_metrics_dl_{group_key}_{sel_power_label}_{mode_suffix}",
                 )
 
             arera_export_data[group_key] = {
@@ -2830,10 +3795,11 @@ def arera_comparison_tab(
     safe_pwr = sel_power_label.replace(" ", "_").replace(">", "gt").replace("≤", "le")
     st.caption(
         f"Exports current view: power class **{sel_power_label}**, "
-        f"month **{sel_month_lbl}** — HTML charts + Excel."
+        f"month **{sel_month_lbl}**, mode **{sel_mode}** — HTML charts + Excel."
     )
 
-    if st.button("Prepare ARERA Export ZIP", type="primary", key="arera_export_btn"):
+    if st.button("Prepare ARERA Export ZIP", type="primary",
+                 key=f"arera_export_btn_{mode_suffix}"):
         arera_buf  = io.BytesIO()
         arera_errs = []
         hour_labels = [f"{h:02d}:00" for h in range(24)]
@@ -2854,7 +3820,7 @@ def arera_comparison_tab(
                     step += 1
                     prog.progress(step / total_steps, text=f"Chart {fig_key}…")
                     try:
-                        fname = f"{safe_grp}_{safe_pwr}_{fig_key.replace(' ','_')}.html"
+                        fname = f"{safe_grp}_{safe_pwr}_{mode_suffix}_{fig_key.replace(' ','_')}.html"
                         zf.writestr(fname, fig.to_html(include_plotlyjs="cdn"))
                     except Exception as e:
                         arera_errs.append(f"{group_key} {fig_key}: {e}")
@@ -2866,6 +3832,7 @@ def arera_comparison_tab(
                     with pd.ExcelWriter(xl, engine="openpyxl") as writer:
                         if not metrics_df.empty:
                             metrics_df.to_excel(writer, index=False, sheet_name="Similarity_Metrics")
+                        # Profile data ALWAYS in raw kWh — preserve data integrity regardless of mode
                         rows = []
                         for mk in MONTH_KEYS:
                             ml_lbl = MONTH_LBLS[MONTH_KEYS.index(mk)]
@@ -2887,7 +3854,7 @@ def arera_comparison_tab(
                                         row[f"ARERA_{mkt} [kWh]"] = round(float(arr[h_idx]), 5) if arr is not None else None
                                     rows.append(row)
                         pd.DataFrame(rows).to_excel(writer, index=False, sheet_name="Profile_Data_kWh")
-                    zf.writestr(f"{safe_grp}_{safe_pwr}_arera_comparison.xlsx", xl.getvalue())
+                    zf.writestr(f"{safe_grp}_{safe_pwr}_{mode_suffix}_arera_comparison.xlsx", xl.getvalue())
                 except Exception as e:
                     arera_errs.append(f"{group_key} Excel: {e}")
 
@@ -2899,19 +3866,25 @@ def arera_comparison_tab(
         prog.empty()
         st.session_state["_arera_export_zip"] = arera_buf.getvalue()
         st.session_state["_arera_export_power"] = safe_pwr
+        st.session_state["_arera_export_mode"] = mode_suffix
         st.session_state["_arera_export_errors"] = arera_errs
 
     if "_arera_export_zip" in st.session_state:
         if st.session_state.get("_arera_export_errors"):
             st.warning(f"{len(st.session_state['_arera_export_errors'])} issues.")
+        _stored_pwr  = st.session_state.get("_arera_export_power", safe_pwr)
+        _stored_mode = st.session_state.get("_arera_export_mode", mode_suffix)
+        _suffix_parts = [p for p in [_stored_pwr, _stored_mode] if p]
+        _dl_fname = f"arera_comparison_{'_'.join(_suffix_parts)}.zip" if _suffix_parts else "arera_comparison.zip"
         st.download_button(
             label="⬇️ Download ARERA Comparison ZIP",
             data=st.session_state["_arera_export_zip"],
-            file_name=f"arera_comparison_{safe_pwr}.zip",
+            file_name=_dl_fname,
             mime="application/zip",
             type="primary",
-            key="arera_download_btn",
+            key=f"arera_download_btn_{mode_suffix}",
         )
+
 
 @st.fragment
 def distribution_overview_section(df_base, df_meas_filtered, df_unique, has_potcontr, filter_parts):
@@ -3014,13 +3987,25 @@ def export_results_tab():
     else:
         _not_ready("GSE export not prepared. Open the <b>GSE Profile Comparison</b> tab and click <b>Prepare Export ZIP</b>.")
 
+    # ── 2b. Custom GSE Comparison by ATECO ────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Custom GSE Comparison — by ATECO Code")
+    _gse_cust_zip = st.session_state.get("_gse_cust_export_zip")
+    if _gse_cust_zip:
+        _dl_btn("Download gse_custom_comparison.zip",
+                "exp_dl_gse_cust", _gse_cust_zip, "gse_custom_comparison.zip")
+    else:
+        _not_ready("Custom GSE comparison export not prepared. Open the <b>GSE Profile Comparison</b> tab, scroll to <b>Custom GSE Profile Comparison — by ATECO Code</b>, run the comparison and click <b>Prepare Custom Comparison Export ZIP</b>.")
+
     # ── 3. ARERA Profile Comparison ───────────────────────────────────────────
     st.markdown("---")
     st.markdown("#### ARERA Profile Comparison")
-    _arera_zip = st.session_state.get("_arera_export_zip")
-    _arera_pwr = st.session_state.get("_arera_export_power", "")
+    _arera_zip  = st.session_state.get("_arera_export_zip")
+    _arera_pwr  = st.session_state.get("_arera_export_power", "")
+    _arera_mode = st.session_state.get("_arera_export_mode", "")
     if _arera_zip:
-        _fname = f"arera_comparison_{_arera_pwr}.zip" if _arera_pwr else "arera_comparison.zip"
+        _suffix_parts = [p for p in [_arera_pwr, _arera_mode] if p]
+        _fname = f"arera_comparison_{'_'.join(_suffix_parts)}.zip" if _suffix_parts else "arera_comparison.zip"
         _dl_btn(f"Download {_fname}",
                 "exp_dl_arera", _arera_zip, _fname)
     else:
