@@ -20,6 +20,34 @@ PALETTE    = ["#4a9eff", "#2e7d32", "#e65100", "#9c27b0", "#00838f",
               "#6a1b9a", "#00695c", "#bf360c", "#283593", "#ad1457"]
 
 
+# ── Cluster color palette (sampled from Pearson RdBu_r) ──────────────────────
+def cluster_palette(k: int) -> list[str]:
+    """Return k discrete colors sampled from the same RdBu_r diverging scale
+    used by the Pearson heat-map, so the cluster charts share a visual
+    language with the correlation panel.
+
+    Sampling avoids the white midpoint (≈0.5) — which would be invisible on
+    the dark navy background — by walking the scale from ``edge_pad`` to
+    ``1 − edge_pad`` and skipping a window around 0.5.
+    """
+    import plotly.colors as pc
+    if k <= 0:
+        return []
+    if k == 1:
+        return ["#d6604d"]              # single warm-red default
+    edge_pad   = 0.05
+    inner_skip = 0.18                   # half-width of the dropped midband
+    half = k // 2
+    lefts  = [edge_pad + (0.5 - inner_skip - edge_pad) * i / max(half - 1, 1)
+              for i in range(half)]
+    rights_n = k - half
+    rights = [0.5 + inner_skip
+              + (1.0 - edge_pad - 0.5 - inner_skip) * i / max(rights_n - 1, 1)
+              for i in range(rights_n)]
+    positions = lefts + rights
+    return pc.sample_colorscale("RdBu_r", positions, colortype="rgb")
+
+
 # ── Number formatting (Lorenzo's preference: thousand separator = space) ─────
 def fmt_int(n: int | float) -> str:
     """`12638` → `"12 638"`. Used everywhere POD counts are shown."""
@@ -58,12 +86,14 @@ def centroid_chart(
 ) -> go.Figure:
     x_labels = [f"{(i // 4):02d}:{(i % 4) * 15:02d}" for i in range(96)]
     fig = go.Figure()
-    for i, (cl, profile) in enumerate(sorted(centroids.items())):
+    items = sorted(centroids.items())
+    colors = cluster_palette(len(items))
+    for i, (cl, profile) in enumerate(items):
         n = n_pods_per_cluster.get(cl, 0)
         fig.add_trace(go.Scatter(
             x=x_labels, y=profile, mode="lines",
             name=f"Cluster {cl} (n={fmt_int(n)})",
-            line=dict(color=PALETTE[i % len(PALETTE)], width=2),
+            line=dict(color=colors[i], width=2),
         ))
     fig.update_layout(
         title=dict(text=title, font=dict(color=LIGHT_TEXT, size=15), x=0.02),
@@ -80,10 +110,11 @@ def centroid_chart(
 # ── Cluster sizes ─────────────────────────────────────────────────────────────
 def cluster_sizes_chart(sizes: dict[int, int]) -> go.Figure:
     items = sorted(sizes.items())
+    colors = cluster_palette(len(items))
     fig = go.Figure(go.Bar(
         x=[f"Cluster {c}" for c, _ in items],
         y=[n for _, n in items],
-        marker_color=[PALETTE[i % len(PALETTE)] for i in range(len(items))],
+        marker_color=colors,
         text=[fmt_int(n) for _, n in items], textposition="outside",
         textfont=dict(color=LIGHT_TEXT),
     ))

@@ -33,12 +33,18 @@ POWER_RANGES: list[tuple[str, float, float | None]] = [
 _LABEL_TO_RANGE = {lbl: (lo, hi) for lbl, lo, hi in POWER_RANGES}
 
 
-def power_filter(key_prefix: str) -> tuple[list[list[float | None]] | None, bool]:
+def power_filter(
+    key_prefix: str, default_all: bool = True,
+) -> tuple[list[list[float | None]] | None, bool]:
     """Render the filter inside an expander; return ``(ranges, include_missing)``.
 
     ``ranges`` is None when the filter is disabled or no range is selected
     (= no power filtering), otherwise a list of ``[min_kw, max_kw]`` pairs
     ready for the ``PodFilter.power_ranges`` API field.
+
+    ``default_all`` controls the initial multiselect state: True (default,
+    legacy) pre-selects every bin so the filter is a no-op until the user
+    deselects something; False starts empty, forcing an explicit choice.
     """
     with st.expander("Contractual Power Filter", expanded=False):
         enabled = st.checkbox(
@@ -55,7 +61,7 @@ def power_filter(key_prefix: str) -> tuple[list[list[float | None]] | None, bool
         # it BEFORE the widget renders, and never pass `default=` alongside a
         # session-state-managed key (raises on some Streamlit versions).
         if _key not in st.session_state:
-            st.session_state[_key] = list(all_labels)
+            st.session_state[_key] = list(all_labels) if default_all else []
 
         c_a, c_b = st.columns([1, 1])
         with c_a:

@@ -19,7 +19,9 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from data_explorer import __version__
-from data_explorer.api.routers import arera, clustering, gse, metadata, overview
+from data_explorer.api.routers import (
+    arera, clustering, gse, load_profiler, metadata, overview,
+)
 from data_explorer.config import settings
 from data_explorer.db.queries import fetch_table_counts
 from data_explorer.db.session import get_session
@@ -49,6 +51,7 @@ app.add_middleware(
 # ── Routers ──────────────────────────────────────────────────────────────────
 app.include_router(metadata.router)
 app.include_router(overview.router)
+app.include_router(load_profiler.router)
 app.include_router(clustering.router)
 app.include_router(gse.router)
 app.include_router(arera.router)

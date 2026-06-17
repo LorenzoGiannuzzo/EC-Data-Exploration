@@ -99,7 +99,7 @@ def render():
                                                       "weekend": "Weekend"}[s],
                                index=0, key="gse_ds",
                                help="All Days matches the legacy dashboard "
-                                    "(GSE M/F profiles are normalised on the "
+                                    "(GSE M/F profiles are normalized on the "
                                     "full month). Weekdays/Weekend only "
                                     "restrict which days enter the average — "
                                     "the monthly/band denominators always "

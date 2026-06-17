@@ -249,3 +249,67 @@ class AreraDayPanel(BaseModel):
 class AreraCompareAllResponse(BaseModel):
     n_pods:  int
     panels:  list[AreraDayPanel]
+
+
+# ── /load-profiler/run ───────────────────────────────────────────────────────
+class LoadProfilerRequest(BaseModel):
+    """Selection criteria + output granularity for the Load Profiler."""
+    ateco_l1:    list[str] | None = None
+    ateco_l2:    list[str] | None = None
+    ateco_l3:    list[str] | None = None
+    power_ranges:          list[list[float | None]] | None = None
+    include_missing_power: bool = False
+    zones:       list[str] | None = Field(
+        default=None,
+        description="Market zone codes (NORD, CNOR, CSUD, SUD, CALA, SICI, "
+                    "SARD). Empty/None = no zone filter.",
+    )
+    min_months:  int = Field(default=12, ge=0, le=120)
+    tipologia:   str = "AP"
+    granularity: str = Field(
+        default="annual", pattern="^(daily|monthly|annual)$",
+        description="daily = 8760-hour probabilistic; monthly = 12 × "
+                    "day-type means; annual = day-type means.",
+    )
+
+
+class LoadProfilerSelection(BaseModel):
+    n_pods: int
+    after_coverage: int
+    after_ateco:    int | None = None
+    after_power:    int | None = None
+    after_zone:     int | None = None
+
+
+class LoadProfilerResponse(BaseModel):
+    selection:   LoadProfilerSelection
+    granularity: str
+    buckets:     list[dict]    # always returned (used for the plot)
+    annual:      list[dict] | None = None
+    daily_8760:  list[dict] | None = None
+
+
+# ── /load-profiler/zones ─────────────────────────────────────────────────────
+class ZoneAvailability(BaseModel):
+    code:      str
+    label:     str
+    n_pods:    int
+    available: bool
+
+
+class ZoneListResponse(BaseModel):
+    zones:        list[ZoneAvailability]
+    n_geocoded:   int  # total POD count with a resolved zone
+
+
+
+class AtecoAvailability(BaseModel):
+    code:        str
+    level:       int
+    n_pods:      int
+    description: str | None = None
+
+
+class AtecoAvailabilityResponse(BaseModel):
+    level:  int
+    codes:  list[AtecoAvailability]

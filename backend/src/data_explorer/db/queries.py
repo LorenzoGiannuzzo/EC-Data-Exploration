@@ -158,6 +158,64 @@ def fetch_pods_by_power(
     return {r[0] for r in session.execute(sql, params).all()}
 
 
+# ── POD selection by market zone ─────────────────────────────────────────────
+def fetch_pods_by_zones(
+    session: Session, zone_codes: list[str],
+) -> set[str]:
+    """Return PODs whose Comune resolves to one of the given market zones.
+
+    Resolution: `pod_metadata.d_locfo` → `comuni_centroids.regione` →
+    market zone (via the Python map in `core.market_zones`). PODs whose
+    Comune is not geocoded yet — or whose region is outside the 7 zones —
+    are excluded.
+    """
+    if not zone_codes:
+        return set()
+    from data_explorer.core.market_zones import regions_for_zone
+    regions: list[str] = []
+    for z in zone_codes:
+        regions.extend(regions_for_zone(z))
+    if not regions:
+        return set()
+    sql = text(
+        """
+        SELECT p.pod
+        FROM pod_metadata p
+        JOIN comuni_centroids c
+          ON UPPER(TRIM(p.d_locfo)) = c.comune_raw
+        WHERE c.regione = ANY(:regions)
+        """
+    )
+    return {r[0] for r in session.execute(sql, {"regions": regions}).all()}
+
+
+def fetch_zone_availability(session: Session) -> dict[str, int]:
+    """POD count per market zone, across all PODs that have a geocoded Comune.
+
+    Returns a mapping ``{zone_code: n_pods}`` populated only for zones that
+    actually have at least one POD. The frontend uses this to render the
+    "✓ available" tick next to each zone label and gray out the empty ones.
+    """
+    from data_explorer.core.market_zones import region_to_zone
+    sql = text(
+        """
+        SELECT c.regione, COUNT(DISTINCT p.pod) AS n
+        FROM pod_metadata p
+        JOIN comuni_centroids c
+          ON UPPER(TRIM(p.d_locfo)) = c.comune_raw
+        WHERE c.regione IS NOT NULL
+        GROUP BY c.regione
+        """
+    )
+    counts: dict[str, int] = {}
+    for region, n in session.execute(sql).all():
+        zone = region_to_zone(region)
+        if zone is None:
+            continue
+        counts[zone] = counts.get(zone, 0) + int(n)
+    return counts
+
+
 # ── POD selection by ATECO ────────────────────────────────────────────────────
 def fetch_pods_by_ateco(
     session: Session,
@@ -186,6 +244,110 @@ def fetch_ateco_codes(session: Session, level: int = 1) -> list[str]:
         f"WHERE {col} IS NOT NULL ORDER BY {col}"
     )
     return [r[0] for r in session.execute(sql).all()]
+
+
+def fetch_ateco_pod_counts(
+    session:   Session,
+    level:     int = 1,
+    tipologia: str = "AP",
+    min_months: int = 0,
+) -> dict[str, int]:
+    """POD count per ATECO code at the given level, after coverage filter.
+
+    Returns ``{code: n_pods_with_min_months_of_data}`` — the dict only
+    contains codes with at least one matching POD, so the frontend can use
+    it both to list "available" codes and to render the count badge inline.
+    When ``min_months == 0`` the count is the raw pod_metadata count
+    (coverage filter disabled).
+    """
+    col = {1: "ateco_l1", 2: "ateco_l2", 3: "ateco_l3"}.get(level)
+    if col is None:
+        raise ValueError(f"Invalid ATECO level: {level}")
+    if min_months <= 0:
+        sql = text(
+            f"SELECT {col} AS code, COUNT(*) AS n FROM pod_metadata "
+            f"WHERE {col} IS NOT NULL GROUP BY {col}"
+        )
+        rows = session.execute(sql).all()
+    else:
+        # Subquery: PODs with ≥ min_months distinct months of measurements
+        sql = text(
+            f"""
+            WITH covered AS (
+                SELECT pod
+                FROM measurements
+                WHERE tipologia = :tipologia
+                GROUP BY pod
+                HAVING COUNT(DISTINCT DATE_TRUNC('month', data_misura))
+                       >= :min_months
+            )
+            SELECT p.{col} AS code, COUNT(*) AS n
+            FROM pod_metadata p
+            JOIN covered c USING (pod)
+            WHERE p.{col} IS NOT NULL
+            GROUP BY p.{col}
+            """
+        )
+        rows = session.execute(sql, {"tipologia": tipologia,
+                                      "min_months": int(min_months)}).all()
+    return {r[0]: int(r[1]) for r in rows}
+
+
+def fetch_ateco_subcodes(
+    session:          Session,
+    parent_l1:        list[str] | None,
+    parent_l2:        list[str] | None,
+    target_level:     int,
+    tipologia:        str = "AP",
+    min_months:       int = 0,
+) -> dict[str, int]:
+    """ATECO codes at ``target_level`` whose POD descends from the given parents.
+
+    The hierarchy is read directly from ``pod_metadata.ateco_l1`` /
+    ``ateco_l2`` (derived during ingestion), so a POD is a child of L1='DO'
+    iff its own ateco_l1 column equals 'DO'. Returns ``{code: n_pods}`` after
+    the optional coverage filter; only codes with at least one matching POD
+    are included.
+    """
+    if target_level not in (2, 3):
+        raise ValueError(f"target_level must be 2 or 3 (got {target_level})")
+    parent_filters: list[str] = []
+    params: dict = {"tipologia": tipologia, "min_months": int(min_months)}
+    if parent_l1:
+        parent_filters.append("p.ateco_l1 = ANY(:parents_l1)")
+        params["parents_l1"] = list(parent_l1)
+    if parent_l2 and target_level == 3:
+        parent_filters.append("p.ateco_l2 = ANY(:parents_l2)")
+        params["parents_l2"] = list(parent_l2)
+    where_parents = " AND ".join(parent_filters) if parent_filters else "TRUE"
+    col = f"ateco_l{target_level}"
+
+    if min_months <= 0:
+        sql = text(
+            f"SELECT p.{col} AS code, COUNT(*) AS n "
+            f"FROM pod_metadata p "
+            f"WHERE p.{col} IS NOT NULL AND ({where_parents}) "
+            f"GROUP BY p.{col}"
+        )
+    else:
+        sql = text(
+            f"""
+            WITH covered AS (
+                SELECT pod
+                FROM measurements
+                WHERE tipologia = :tipologia
+                GROUP BY pod
+                HAVING COUNT(DISTINCT DATE_TRUNC('month', data_misura))
+                       >= :min_months
+            )
+            SELECT p.{col} AS code, COUNT(*) AS n
+            FROM pod_metadata p
+            JOIN covered c USING (pod)
+            WHERE p.{col} IS NOT NULL AND ({where_parents})
+            GROUP BY p.{col}
+            """
+        )
+    return {r[0]: int(r[1]) for r in session.execute(sql, params).all()}
 
 
 # ── Metadata fetch ────────────────────────────────────────────────────────────

@@ -132,3 +132,35 @@ def compare_arera(payload: dict) -> dict:
 
 def compare_arera_all(payload: dict) -> dict:
     return post("/arera/compare-all-day-types", payload)
+
+
+# ── Load Profiler ────────────────────────────────────────────────────────────
+@st.cache_data(ttl=300, show_spinner=False)
+def load_profiler_zones() -> dict:
+    return get("/load-profiler/zones")
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_profiler_ateco_availability(
+    level: int = 1, tipologia: str = "AP", min_months: int = 12,
+) -> dict:
+    return get("/load-profiler/ateco-availability", level=level,
+               tipologia=tipologia, min_months=min_months)
+
+
+@st.cache_data(ttl=300, show_spinner=False)
+def load_profiler_ateco_subcodes(
+    target_level: int, parent_l1: str = "", parent_l2: str = "",
+    tipologia: str = "AP", min_months: int = 12,
+) -> dict:
+    return get("/load-profiler/ateco-subcodes", target_level=target_level,
+               parent_l1=parent_l1, parent_l2=parent_l2,
+               tipologia=tipologia, min_months=min_months)
+
+
+def load_profiler_diagnose(payload: dict) -> dict:
+    return post("/load-profiler/diagnose", payload)
+
+
+def run_load_profiler(payload: dict) -> dict:
+    return post("/load-profiler/run", payload)

@@ -153,18 +153,70 @@ def find_optimal_k(
 
 
 # ── Centroids ─────────────────────────────────────────────────────────────────
+def _smooth_quarter_anomalies(
+    centroids: pd.DataFrame,
+    rel_threshold: float = 0.30,
+) -> pd.DataFrame:
+    """Interpolate sub-quarter values that drop far below their neighbours.
+
+    Italian DSO measurements store the daily profile in 96 quarter-hour
+    columns (q1..q96). On the spring DST switch the 02:00-02:59 hour does
+    not exist, so q9..q12 are often filed as 0 for that day; on the autumn
+    switch the same hour happens twice and gets summed, producing an
+    inflated value. Once averaged across the year the artefact is small,
+    but for some datasets it shows up as a sharp V-shaped dip around 02:00
+    in every centroid — physically implausible.
+
+    Detection — for each cluster centroid and each quarter q:
+        v_q < ``rel_threshold`` × mean(8 nearest non-self neighbours)
+    where the neighbours are the 4 quarters before and 4 after q (clipped
+    to [0, 95]). When the test fires we replace v_q with the local mean.
+    The threshold is conservative (30 %) and only catches genuine dips —
+    it leaves quiet-night values from real low-consumption clusters alone
+    when the surrounding hours are also quiet.
+    """
+    if centroids.empty:
+        return centroids
+    out = centroids.copy()
+    arr = out[Q_COLS].to_numpy(dtype=float, copy=True)
+    n_clusters, n_q = arr.shape  # n_q == 96
+    smoothed_any = False
+    for ci in range(n_clusters):
+        row = arr[ci]
+        for q in range(n_q):
+            lo, hi = max(0, q - 4), min(n_q, q + 5)
+            neighbours = np.concatenate((row[lo:q], row[q + 1:hi]))
+            if neighbours.size == 0:
+                continue
+            local_mean = float(neighbours.mean())
+            if local_mean <= 0:
+                continue
+            if row[q] < rel_threshold * local_mean:
+                arr[ci, q] = local_mean
+                smoothed_any = True
+    if smoothed_any:
+        out[Q_COLS] = arr
+    return out
+
+
 def compute_centroids(
     profiles_normalised: pd.DataFrame,
     clusters:            pd.Series,
 ) -> pd.DataFrame:
-    """Mean profile of each cluster (one row per cluster, q1..q96 columns)."""
+    """Mean profile of each cluster (one row per cluster, q1..q96 columns).
+
+    Applies :func:`_smooth_quarter_anomalies` to the centroids before
+    returning, so DST-related spikes/drops around 02:00 (and any other
+    quarter where the value is implausibly low compared to its
+    8-neighbour mean) are interpolated away.
+    """
     if profiles_normalised.empty or clusters.empty:
         return pd.DataFrame(columns=Q_COLS)
     df = profiles_normalised[Q_COLS].copy()
     df["_cluster"] = clusters
     centroids = df.groupby("_cluster", observed=True)[Q_COLS].mean()
     centroids.index.name = "cluster"
-    return centroids
+    return _smooth_quarter_anomalies(centroids)
 
 
 # ── Cluster metrics ───────────────────────────────────────────────────────────
@@ -243,7 +295,7 @@ def cluster_ateco_breakdown(
         raise ValueError(f"Metadata has no column {ateco_col!r}")
 
     df = (
-        clusters.rename("cluster").reset_index()
+        clusters.rename("cluster").rename_axis("pod").reset_index()
         .merge(metadata[["pod", ateco_col]], on="pod", how="left")
         .rename(columns={ateco_col: "ateco"})
     )

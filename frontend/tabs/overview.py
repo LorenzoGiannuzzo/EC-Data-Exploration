@@ -10,7 +10,7 @@ import streamlit as st
 
 import api
 from charts import (DARK_NAVY, GRID_LIGHT, LIGHT_NAVY, LIGHT_TEXT,
-                    PALETTE, fmt_int)
+                    PALETTE, cluster_palette, fmt_int)
 from helpers import ateco_desc
 
 
@@ -70,7 +70,7 @@ def _power_class_chart(by_class: list[dict]) -> go.Figure:
     counts = [c["n_pods"] for c in by_class]
     fig = go.Figure(go.Bar(
         x=labels, y=counts,
-        marker_color=[PALETTE[i % len(PALETTE)] for i in range(len(labels))],
+        marker_color=cluster_palette(len(labels)),
         text=[fmt_int(n) for n in counts], textposition="outside",
         textfont=dict(color=LIGHT_TEXT, size=11),
     ))
@@ -141,7 +141,7 @@ def _ateco_coverage_chart(info: dict) -> go.Figure:
         sort=False,
     )])
     title = (f"ATECO {info.get('name', '?')} — Catalogue Coverage [-]"
-              f"  (catalogue level {info.get('catalogue_level', '?')})")
+              f"  (catalog level {info.get('catalogue_level', '?')})")
     fig.update_layout(
         title=dict(text=title,
                    font=dict(color=LIGHT_TEXT, size=13), x=0.5, xanchor="center"),
@@ -269,9 +269,9 @@ def render():
     st.markdown("#### ATECO Catalogue Coverage")
     st.caption(
         "Coverage is reported at the three semantic levels stored in the "
-        "POD metadata — **Division** (catalogue level 2), **Class** "
-        "(catalogue level 4), and **Subcategory** (catalogue level 6) — "
-        "not at the literal catalogue levels 1/2/3 (which would correspond "
+        "POD metadata — **Division** (catalog level 2), **Class** "
+        "(catalog level 4), and **Subcategory** (catalog level 6) — "
+        "not at the literal catalog levels 1/2/3 (which would correspond "
         "to Section, Division, and Group)."
     )
     try:
@@ -299,7 +299,7 @@ def render():
                     st.dataframe(pd.DataFrame(rows), hide_index=True,
                                   use_container_width=True, height=240)
                 else:
-                    st.success(f"All catalogue {name.lower()} codes are "
+                    st.success(f"All catalog {name.lower()} codes are "
                                 "present in the dataset.")
 
             n_out = int(info.get("n_out_of_catalogue", 0))
@@ -314,7 +314,7 @@ def render():
                                   use_container_width=True, height=240)
                     st.caption(
                         "These codes appear in the POD metadata but are not "
-                        "part of the official ATECO catalogue at this "
+                        "part of the official ATECO catalog at this "
                         "semantic level (e.g. PoliTo tags such as DO, CO, "
                         "IL). They are excluded from the coverage "
                         "percentage above."
