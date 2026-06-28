@@ -90,20 +90,25 @@ def render():
 
     col_a, col_b = st.columns(2)
     with col_a:
-        min_months = st.number_input("Min Months", 1, 36, 12, key="gse_mm")
+        min_months = st.number_input("Min Months", 0, 36, 0, key="gse_mm",
+            help="0 ⇒ no coverage filter (every POD matching the ATECO "
+                 "selection contributes). Raise this only if you want to "
+                 "exclude poorly-covered PODs from the aggregate.")
     with col_b:
-        dayset = st.selectbox("Day Set",
-                               ["all", "weekday", "weekend"],
-                               format_func=lambda s: {"all": "All Days",
-                                                      "weekday": "Weekdays",
-                                                      "weekend": "Weekend"}[s],
-                               index=0, key="gse_ds",
-                               help="All Days matches the legacy dashboard "
-                                    "(GSE M/F profiles are normalized on the "
-                                    "full month). Weekdays/Weekend only "
-                                    "restrict which days enter the average — "
-                                    "the monthly/band denominators always "
-                                    "cover the whole month.")
+        # Legacy parity: `compute_our_normalized_profiles` / `compute_our_
+        # fascia_profiles` in the original dashboard never filter by
+        # day-of-week — the monorario normalization aggregates all days of
+        # the month, and the in-fascia normalization encodes the
+        # weekday/weekend distinction inside the F1/F2/F3 band definitions
+        # rather than as a row-level filter. We hardcode `all` here to match.
+        dayset = "all"
+        st.text_input("Day Set", value="All Days (legacy parity)",
+                      disabled=True, key="gse_ds_display",
+                      help="GSE monorario and fascia profiles are computed "
+                           "over the full month in the legacy dashboard. "
+                           "We mirror that behaviour exactly: every day of "
+                           "the month contributes to both numerator and "
+                           "denominator.")
 
     pod_filter["min_months"] = int(min_months)
 

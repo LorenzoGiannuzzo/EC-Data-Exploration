@@ -25,10 +25,27 @@ FASCIA_CODES = {"PDMF", "PAUF", "PIRF", "PACF", "MDMF", "MAUF"}
 
 def _hourly_sum_expr() -> str:
     """SQL expression list: 24 hourly kWh values built from the 96 quarter-hour
-    columns. Each h_N = (q[4N+1] + q[4N+2] + q[4N+3] + q[4N+4]) / 1000 (kWh)."""
+    columns. Each h_N = (q[4N+1] + q[4N+2] + q[4N+3] + q[4N+4]) / 1000 (kWh).
+
+    Each q_i goes through `COALESCE(NULLIF(q_i::text, 'NaN')::float8, 0)`,
+    which turns both NULL *and* the IEEE-754 NaN sentinel into 0. The plain
+    COALESCE() is not enough: in PostgreSQL NaN is not NULL, so it survives
+    COALESCE, propagates through any arithmetic, and a single NaN row is
+    enough to make the column-wide AVG() collapse to NaN. We learned this
+    the hard way on Lorenzo's dataset, where a handful of NaN entries in
+    Weekday and Sunday rows poisoned every aggregation for those day-types
+    while Saturday (NaN-free in the same bucket) computed fine.
+
+    The result is then wrapped in NULLIF(_, 0) so a quarter-hour that is
+    recorded as a true zero (the ingestion layer stores absent measurements
+    that way rather than as NULL) is reported as NULL, which makes downstream
+    AVG()s skip it instead of dragging the result toward zero.
+    """
+    def safe(n: int) -> str:
+        return f"COALESCE(NULLIF(q{n}::text, 'NaN')::float8, 0)"
     return ", ".join(
-        f"(COALESCE(q{4*h+1},0)+COALESCE(q{4*h+2},0)"
-        f"+COALESCE(q{4*h+3},0)+COALESCE(q{4*h+4},0))/1000.0 AS h{h}"
+        f"NULLIF(({safe(4*h+1)}+{safe(4*h+2)}"
+        f"+{safe(4*h+3)}+{safe(4*h+4)})/1000.0, 0) AS h{h}"
         for h in range(24)
     )
 
@@ -69,7 +86,7 @@ def _fetch_monorario(
     #   3. numer: avg kWh per hour per (pod, month) over dayset-selected days
     #   4. with_pct: avg_h / monthly_total * 100
     #   5. final: average pct across PODs per (month, hour)
-    sum_24 = " + ".join(f"h{h}" for h in range(24))
+    sum_24 = " + ".join(f"COALESCE(h{h}, 0)" for h in range(24))
     avg_per_hour = ", ".join(f"AVG(h{h}) AS avg_h{h}" for h in range(24))
     sql = text(
         f"""
@@ -80,6 +97,11 @@ def _fetch_monorario(
             FROM measurements
             WHERE tipologia = :tipologia AND pod = ANY(:pods)
         ),
+        -- Note: no row-level zero-filter here. The NULLIF inside
+        -- _hourly_sum_expr() already gives us hour-level missingness,
+        -- so AVG()s downstream naturally skip absent hours instead of
+        -- being dragged to zero. Filtering at row level would also
+        -- discard partial days where only a subset of hours is missing.
         monthly_total AS (
             SELECT pod, month_idx, SUM({sum_24}) AS tot_mo
             FROM per_row
@@ -152,12 +174,16 @@ def _fetch_fascia(
     """
     day_cond = _dayset_condition(dayset)
 
-    f1_day = "(" + "+".join(f"h{h}" for h in range(8, 19)) + ")"
-    f2_day_weekday = "(h7+" + "+".join(f"h{h}" for h in range(19, 23)) + ")"
-    f2_day_sat     = "(" + "+".join(f"h{h}" for h in range(7, 23)) + ")"
-    f3_day_weekday = "(" + "+".join(f"h{h}" for h in list(range(0, 7)) + [23]) + ")"
+    f1_day = "(" + "+".join(f"COALESCE(h{h},0)" for h in range(8, 19)) + ")"
+    f2_day_weekday = "(COALESCE(h7,0)+" + "+".join(
+        f"COALESCE(h{h},0)" for h in range(19, 23)) + ")"
+    f2_day_sat     = "(" + "+".join(
+        f"COALESCE(h{h},0)" for h in range(7, 23)) + ")"
+    f3_day_weekday = "(" + "+".join(
+        f"COALESCE(h{h},0)" for h in list(range(0, 7)) + [23]) + ")"
     f3_day_sat     = f3_day_weekday
-    f3_day_sun     = "(" + "+".join(f"h{h}" for h in range(0, 24)) + ")"
+    f3_day_sun     = "(" + "+".join(
+        f"COALESCE(h{h},0)" for h in range(0, 24)) + ")"
 
     pct_exprs = ", ".join(_hour_to_fascia_pct_expr(h) for h in range(24))
 
@@ -170,6 +196,9 @@ def _fetch_fascia(
             FROM measurements
             WHERE tipologia = :tipologia AND pod = ANY(:pods)
         ),
+        -- No row-level filter: NULLIF inside _hourly_sum_expr() already
+        -- gives us hour-level missingness, so AVG()s and band SUMs treat
+        -- absent hours correctly without us throwing away partial days.
         per_row_with_fascia AS (
             SELECT *,
                 CASE WHEN iso_dow BETWEEN 1 AND 5 THEN {f1_day} ELSE 0 END AS f1_d,
@@ -249,7 +278,20 @@ def _rows_to_long(rows) -> pd.DataFrame:
         var_name="hour_idx", value_name="value",
     )
     long["hour_idx"] = long["hour_idx"].str[1:].astype(int)
-    long["value"]    = long["value"].astype(float).fillna(0.0)
+    long["value"]    = long["value"].astype(float)
+    # Drop months where every hour is NaN (no real data after the
+    # zero-energy-row filter in the SQL). A blanket `.fillna(0.0)` here would
+    # turn those NaN-months into bogus flat zero lines in the chart.
+    valid_months = (
+        long.groupby("month_idx")["value"]
+            .apply(lambda s: s.notna().any())
+    )
+    long = long[long["month_idx"].isin(
+        valid_months.index[valid_months]
+    )].copy()
+    # Within still-valid months, sporadic NaNs are isolated holes — treat
+    # them as zeros so `_smooth_holes` interpolates them.
+    long["value"] = long["value"].fillna(0.0)
     long = long.set_index(["month_idx", "hour_idx"]).sort_index()
     return _smooth_holes(long)
 

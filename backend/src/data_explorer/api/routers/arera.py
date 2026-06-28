@@ -11,10 +11,12 @@ from data_explorer.api.deps import resolve_pod_set
 from data_explorer.api.schemas import (
     AreraCompareAllRequest, AreraCompareAllResponse, AreraCompareRequest,
     AreraCompareResponse, AreraDayPanel, AreraKey, AreraKeyList,
-    AreraPowerClassList,
+    AreraMonthlyBundle, AreraPowerClassList,
 )
 from data_explorer.core.arera import (
-    compare_to_arera, fetch_arera_reference, fetch_our_arera_profile,
+    compare_to_arera, fetch_arera_reference,
+    fetch_arera_reference_monthly_all, fetch_our_arera_profile,
+    fetch_our_arera_profile_monthly_all,
 )
 from data_explorer.db.session import get_session
 
@@ -89,12 +91,21 @@ def _filter_pods_by_power_class(
         errors="coerce",
     )
     df = df.dropna(subset=["kw"])
+    # ── Bucket convention: LEFT-CLOSED (lo ≤ x < hi) ────────────────────────
+    # ARERA's own scheme is right-closed (lo < x ≤ hi), so a 3.0 kW
+    # contract — the most common Italian residential value — formally sits
+    # in *1.5-3 kW*. The legacy PoliTo dashboard always treated boundary
+    # values as belonging to the *upper* bucket instead (3.0 kW ⇒ *3-4.5 kW*),
+    # both because it matches the way users read the label and because it
+    # keeps the bulk of residentials in a single bucket for the comparison.
+    # We follow the legacy convention here so the aggregate POD counts and
+    # the resulting profile shapes match the original dashboard exactly.
     buckets = {
-        "≤ 1.5 kW": (df["kw"] > 0)   & (df["kw"] <= 1.5),
-        "1.5–3 kW": (df["kw"] > 1.5) & (df["kw"] <= 3),
-        "3–4.5 kW": (df["kw"] > 3)   & (df["kw"] <= 4.5),
-        "4.5–6 kW": (df["kw"] > 4.5) & (df["kw"] <= 6),
-        "> 6 kW":   (df["kw"] > 6),
+        "≤ 1.5 kW": (df["kw"] > 0)    & (df["kw"] <  1.5),
+        "1.5–3 kW": (df["kw"] >= 1.5) & (df["kw"] <  3),
+        "3–4.5 kW": (df["kw"] >= 3)   & (df["kw"] <  4.5),
+        "4.5–6 kW": (df["kw"] >= 4.5) & (df["kw"] <  6),
+        "> 6 kW":   (df["kw"] >= 6),
     }
     mask = buckets.get(power_class)
     if mask is None:
@@ -143,13 +154,22 @@ def compare_all_day_types(
 ):
     """Compare the PoliTo profile against ARERA for *all three* day types
     (Weekday, Saturday, Sunday) in a single call. Front-ends use this to
-    render three side-by-side charts."""
+    render three side-by-side charts.
+
+    When the request is for the annual average (``month == 0``) the
+    response also includes a ``monthly`` breakdown: one
+    :class:`AreraMonthlyBundle` per calendar month, each with its own
+    three-panel Weekday/Saturday/Sunday set. This mirrors the legacy
+    dashboard's "Full Monthly Overview" section without firing dozens of
+    separate API calls from the front-end.
+    """
     pods, _ = resolve_pod_set(db, req.filter)
     power_class = _normalise_power_class(req.power_class)
     pods = _filter_pods_by_power_class(db, pods, power_class)
     if not pods:
         raise HTTPException(400, detail="No PODs match the filter for this power class.")
 
+    # ── Top section: aggregated panels for the requested month/annual ───────
     panels: list[AreraDayPanel] = []
     for dt in ("Weekday", "Saturday", "Sunday"):
         ours = fetch_our_arera_profile(
@@ -167,4 +187,47 @@ def compare_all_day_types(
             reference_profile=[float(ref.get(h, 0.0)) for h in range(24)],
             metrics=compare_to_arera(ours, ref),
         ))
-    return AreraCompareAllResponse(n_pods=len(pods), panels=panels)
+
+    # ── Bottom section: monthly breakdown (only for the annual request) ─────
+    monthly_bundles: list[AreraMonthlyBundle] | None = None
+    if req.month == 0:
+        # 3 SQL round-trips for ours (one per day-type), 3 for the reference
+        # — each returns up to 12 months in a single call.
+        ours_by_dt: dict[str, dict[int, "pd.Series"]] = {}
+        refs_by_dt: dict[str, dict[int, "pd.Series"]] = {}
+        for dt in ("Weekday", "Saturday", "Sunday"):
+            ours_by_dt[dt] = fetch_our_arera_profile_monthly_all(
+                db, pods, day_type=dt, tipologia=req.filter.tipologia,
+            )
+            refs_by_dt[dt] = fetch_arera_reference_monthly_all(
+                db, power_class=power_class, market=req.market,
+                residenza=req.residenza, day_type=dt, province=req.province,
+            )
+        monthly_bundles = []
+        for m in range(1, 13):
+            month_panels: list[AreraDayPanel] = []
+            for dt in ("Weekday", "Saturday", "Sunday"):
+                ours_m = ours_by_dt[dt].get(m)
+                ref_m  = refs_by_dt[dt].get(m)
+                month_panels.append(AreraDayPanel(
+                    day_type=dt,
+                    our_profile=(
+                        [float(ours_m.get(h, 0.0)) for h in range(24)]
+                        if ours_m is not None else [0.0] * 24
+                    ),
+                    reference_profile=(
+                        [float(ref_m.get(h, 0.0)) for h in range(24)]
+                        if ref_m is not None else [0.0] * 24
+                    ),
+                    metrics=compare_to_arera(
+                        ours_m if ours_m is not None else pd.Series(dtype=float),
+                        ref_m  if ref_m  is not None else pd.Series(dtype=float),
+                    ),
+                ))
+            monthly_bundles.append(AreraMonthlyBundle(
+                month_idx=m, panels=month_panels,
+            ))
+
+    return AreraCompareAllResponse(
+        n_pods=len(pods), panels=panels, monthly=monthly_bundles,
+    )

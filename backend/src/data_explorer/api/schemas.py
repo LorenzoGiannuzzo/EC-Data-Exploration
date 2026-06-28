@@ -246,9 +246,19 @@ class AreraDayPanel(BaseModel):
     metrics:           dict[str, float | None]
 
 
+class AreraMonthlyBundle(BaseModel):
+    """One month's worth of Weekday/Saturday/Sunday panels."""
+    month_idx: int = Field(ge=1, le=12, description="1..12 (calendar month).")
+    panels:    list[AreraDayPanel]
+
+
 class AreraCompareAllResponse(BaseModel):
-    n_pods:  int
-    panels:  list[AreraDayPanel]
+    n_pods:   int
+    panels:   list[AreraDayPanel]
+    # Populated only when the request asked for the annual average (month=0).
+    # Each entry is a calendar month with its own 3-panel breakdown, mirroring
+    # the legacy dashboard's "Full Monthly Overview" section.
+    monthly:  list[AreraMonthlyBundle] | None = None
 
 
 # ── /load-profiler/run ───────────────────────────────────────────────────────
@@ -304,10 +314,11 @@ class ZoneListResponse(BaseModel):
 
 
 class AtecoAvailability(BaseModel):
-    code:        str
-    level:       int
-    n_pods:      int
-    description: str | None = None
+    code:         str
+    level:        int
+    n_pods:       int       # ← PODs matching coverage + tipologia filters
+    n_pods_total: int = 0   # ← raw count from pod_metadata (no coverage)
+    description:  str | None = None
 
 
 class AtecoAvailabilityResponse(BaseModel):

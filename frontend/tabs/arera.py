@@ -122,10 +122,11 @@ def render():
     with title_c:
         st.subheader("ARERA Profile Comparison")
         st.caption(
-            "Compare the aggregated PoliTo hourly load profile against the ."
-            "official ARERA reference. **Only domestic users** "
-            "(any `DO`, `DO.01`, `DO.02`, etc.) are eligible because the ARERA "
-            "reference dataset is itself only for households. The three "
+            "Compare the aggregated PoliTo hourly load profile against the "
+            "official ARERA reference, **residenza-by-residenza** (legacy "
+            "dashboard parity). Pick *Residente* or *Non Residente* and the "
+            "POD set is restricted to the matching `ateco_l2` automatically "
+            "(`DO.02` = Residente, `DO.01` = Non Residente). The three "
             "day-type profiles (Weekday, Saturday, Sunday) are shown together."
         )
     status_slot = status_c.empty()
@@ -157,8 +158,24 @@ def render():
 
     col3, col4 = st.columns(2)
     with col3:
-        residenze = sorted({k["residenza"] for k in mk_keys})
-        residenza = st.selectbox("Residence Type", residenze, key="arera_res")
+        # Legacy parity: ARERA comparisons are *always* residenza-consistent.
+        # The original dashboard splits the POD population by FDESC-derived
+        # ATECO_L2 (DO.R / DO.NR) and compares each group against the matching
+        # ARERA reference. Mixing both groups against the "Tutti" reference
+        # produces apples-to-oranges aggregates, so we hide that option here.
+        candidate_res = sorted({k["residenza"] for k in mk_keys})
+        residenze = [r for r in candidate_res if r != "Tutti"]
+        if not residenze:
+            st.warning("No residenza-specific reference profiles are loaded "
+                       "for this selection; the comparison is paused.")
+            return
+        residenza = st.selectbox(
+            "Residence Type", residenze, key="arera_res",
+            help="ARERA distinguishes Residente from Non Residente domestics. "
+                 "We mirror the legacy dashboard and split your PODs by the "
+                 "matching ATECO L2 code (Residente ⇒ `DO.02`, "
+                 "Non Residente ⇒ `DO.01`).",
+        )
     with col4:
         provinces = sorted({k["province"] for k in mk_keys
                             if k["residenza"] == residenza})
@@ -173,26 +190,38 @@ def render():
         )
     with col6:
         min_months = st.number_input("Minimum Months of Data per POD",
-                                      1, 36, 12, key="arera_mm")
+                                      0, 36, 0, key="arera_mm",
+                                      help="0 ⇒ no coverage filter (every "
+                                           "POD matching the ATECO selection "
+                                           "contributes). Raise this only to "
+                                           "drop poorly-covered PODs.")
 
-    allowed_l2 = [c for c in codes_l2 if c == "DO" or c.startswith("DO.")]
-    default_l2 = sorted(allowed_l2)
-    ateco_l2 = st.multiselect(
-        "ATECO L2 Filter (Household codes)",
-        options=sorted(allowed_l2),
-        default=default_l2,
-        format_func=lambda c: fmt_label(c, descs),
-        key="arera_l2",
-    )
+    # ── Derive the ATECO L2 filter from the residenza choice ────────────────
+    # Lorenzo's Postgres ingestion preserved the pre-FDESC ATECO L2 codes
+    # (DO.01 / DO.02) rather than the FDESC-derived DO.R / DO.NR labels the
+    # legacy dashboard works with. The two map directly though:
+    #     DO.02 ↔ Residente
+    #     DO.01 ↔ Non Residente
+    # So the residenza dropdown drives the L2 filter directly — no separate
+    # multiselect is needed (and exposing one would only let the user
+    # accidentally rebuild a mixed-residenza set).
+    RESIDENZA_TO_L2 = {"Residente": "DO.02", "Non Residente": "DO.01"}
+    target_l2 = RESIDENZA_TO_L2.get(residenza)
+    if target_l2 is None:
+        st.error(f"Unknown residenza '{residenza}' — no L2 mapping defined.")
+        return
 
     pod_filter = {
-        "ateco_l2":   ateco_l2 or default_l2,
+        "ateco_l2":   [target_l2],
         "min_months": int(min_months),
         "tipologia":  "AP",
     }
     try:
         preview = api.pod_set_preview(pod_filter)
-        st.info(f"**{fmt_int(preview['n_pods'])} PODs** match the ATECO filter.")
+        n_pods_ateco = int(preview["n_pods"])
+        st.info(f"**{fmt_int(n_pods_ateco)} PODs** match `ateco_l2 = "
+                f"{target_l2}` ({residenza}), before the ARERA power-class "
+                f"bucket below.")
     except api.BackendError as e:
         st.error(f"Preview failed: {e}.")
         return
@@ -200,6 +229,7 @@ def render():
     if st.button("▶ Run Comparison", type="primary", key="arera_run"):
         market_list = markets_available if market == ALL_MARKETS_LABEL else [market]
         panels_per_market: list[list[dict]] = []
+        monthly_per_market: list[list[dict]] = []
         n_pods = 0
         with status_slot.status("Aggregating profiles in PostgreSQL & comparing.",
                                  expanded=False) as s:
@@ -214,6 +244,7 @@ def render():
                         "province":    province,
                     })
                     panels_per_market.append(res["panels"])
+                    monthly_per_market.append(res.get("monthly") or [])
                     n_pods = max(n_pods, res["n_pods"])
                 except api.BackendError as e:
                     st.warning(f"Market '{mk}': {e}.")
@@ -225,14 +256,29 @@ def render():
 
         panels = (_average_panels(panels_per_market)
                   if len(panels_per_market) > 1 else panels_per_market[0])
+        # ── Average monthly breakdowns across markets too (same recipe) ────
+        monthly: list[dict] = []
+        if any(monthly_per_market):
+            by_month: dict[int, list[list[dict]]] = {}
+            for mk_bundles in monthly_per_market:
+                for bundle in (mk_bundles or []):
+                    m = int(bundle["month_idx"])
+                    by_month.setdefault(m, []).append(bundle["panels"])
+            for m in sorted(by_month):
+                merged = (_average_panels(by_month[m])
+                          if len(by_month[m]) > 1 else by_month[m][0])
+                monthly.append({"month_idx": m, "panels": merged})
+
         st.session_state["arera_last_result"] = {
-            "panels":      panels,
-            "n_pods":      n_pods,
-            "market_list": market_list,
-            "power_class": power_class,
-            "market":      market,
-            "residenza":   residenza,
-            "month_pick":  int(month_pick),
+            "panels":        panels,
+            "monthly":       monthly,
+            "n_pods":        n_pods,
+            "n_pods_ateco":  n_pods_ateco,
+            "market_list":   market_list,
+            "power_class":   power_class,
+            "market":        market,
+            "residenza":     residenza,
+            "month_pick":    int(month_pick),
         }
 
     # ── Render the last stored result ─────────────────────────────────────
@@ -240,15 +286,28 @@ def render():
     if not stored:
         return
 
-    panels      = stored["panels"]
-    n_pods      = stored["n_pods"]
-    market_list = stored["market_list"]
-    power_class = stored["power_class"]
-    market      = stored["market"]
-    residenza   = stored["residenza"]
-    month_pick  = stored["month_pick"]
+    panels         = stored["panels"]
+    n_pods         = stored["n_pods"]
+    n_pods_ateco   = stored.get("n_pods_ateco")
+    market_list    = stored["market_list"]
+    power_class    = stored["power_class"]
+    market         = stored["market"]
+    residenza      = stored["residenza"]
+    month_pick     = stored["month_pick"]
 
     st.metric("PODs in the Aggregate:", fmt_int(n_pods))
+    # Surface the power-class filter effect explicitly. The buckets here use
+    # the legacy PoliTo dashboard convention (lo ≤ x < hi), so a 3.0 kW
+    # residential POD belongs to "3-4.5 kW" rather than to "1.5-3 kW".
+    if n_pods_ateco and n_pods_ateco > n_pods:
+        kept_pct = n_pods / n_pods_ateco * 100
+        st.caption(
+            f"Of the **{fmt_int(n_pods_ateco)}** ATECO-matching PODs, "
+            f"**{fmt_int(n_pods)}** ({kept_pct:.1f} %) have a contractual "
+            f"power in the **{power_class}** bucket. The bucket boundaries "
+            f"are left-closed (`lo ≤ x < hi`), so e.g. an exactly 3.0 kW "
+            f"contract sits in *3–4.5 kW*, not in *1.5–3 kW*."
+        )
     if len(market_list) > 1:
         st.caption(f"Averaged across {len(market_list)} markets: "
                    f"{', '.join(market_list)}.")
@@ -273,3 +332,34 @@ def render():
                   f"m{month_pick}.json".replace(" ", "_"),
         mime="application/json",
     )
+
+    # ── Full Monthly Overview (only when the request was for the annual) ──
+    monthly_bundles = stored.get("monthly") or []
+    if month_pick == 0 and monthly_bundles:
+        from charts import arera_monthly_grid_chart
+        st.markdown("#### Full Monthly Overview")
+        st.caption(
+            "Same comparison, broken down by calendar month. Open a day-type "
+            "expander to see the 12-panel grid."
+        )
+        # Restructure: {day_type: {month_idx: profile}} for both ours/ref
+        for day_type in ("Weekday", "Saturday", "Sunday"):
+            our_by_month: dict[int, list[float]] = {}
+            ref_by_month: dict[int, list[float]] = {}
+            for bundle in monthly_bundles:
+                m = int(bundle["month_idx"])
+                # Each bundle.panels has 3 entries, one per day_type
+                for p in bundle["panels"]:
+                    if p.get("day_type") != day_type:
+                        continue
+                    our_by_month[m] = p.get("our_profile") or []
+                    ref_by_month[m] = p.get("reference_profile") or []
+            with st.expander(f"{day_type} — monthly breakdown", expanded=False):
+                st.plotly_chart(
+                    arera_monthly_grid_chart(
+                        our_by_month, ref_by_month, day_type=day_type,
+                    ),
+                    use_container_width=True,
+                    key=f"arera_monthly_{day_type}_{power_class}_"
+                        f"{market}_{residenza}".replace(" ", "_"),
+                )
