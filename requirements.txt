@@ -1,0 +1,23 @@
+# synthgen — synthetic load profile generation
+# # Tested on Python 3.12.2 with the exact versions given as the lower bounds
+# below. The upper bounds stop at the next major release of each package,
+# since none of those has been run against this code.
+# # The list is short on purpose. The pipeline reads semicolon separated CSV and
+# Excel, keeps its cache in Parquet, writes CSV, and draws its figures with
+# Matplotlib. Nothing else is used.
+
+numpy>=1.26.4,<2.0
+pandas>=2.2.0,<3.0
+matplotlib>=3.8.2,<4.0
+PyYAML>=6.0.2,<7.0
+
+#Lorenzo Giannuzzo: ── engines pandas needs, which nothing here imports by name ─────────────────
+# Neither of the two appears in an import statement anywhere in the package,
+# because pandas loads them itself: pyarrow to read and write the Parquet cache
+# written by the pre-processing stage, openpyxl to read the monthly metadata
+# workbooks. Removing them because they look unused breaks the pipeline on its
+# first read, not at import time, which is the worst place to find out.
+# # openpyxl alone is enough for this archive: its 29 metadata files are all
+# .xlsx. An archive carrying the older .xls format would also need xlrd>=2.0.
+pyarrow>=17.0.0,<18.0
+openpyxl>=3.1

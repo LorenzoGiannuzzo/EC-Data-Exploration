@@ -1,0 +1,242 @@
+# =============================================================================
+# synthgen — configuration
+#
+# Synthetic load profile generation by user typology. Every threshold that also
+# appears in the SLP pipeline is kept at the value tuned there, so that the two
+# read the same data the same way; the ones that differ are marked.
+# =============================================================================
+
+data:
+  #Lorenzo Giannuzzo: Root of the monthly folders (ago24/, Ago25/, ...), relative to this file.
+  root: "data"
+  meas_glob: "misure*.csv"
+  meta_glob: "Metadati*.xls*"
+  sep: ";"
+  encoding: "utf-8-sig"
+  date_format: "%d/%m/%Y"
+  reading_unit: "Wh"          #Lorenzo Giannuzzo: the export is in Wh; everything downstream is kWh
+  power_unit: "kW"
+
+  #Lorenzo Giannuzzo: Rows to keep. A POD-day carries several quantities:
+  #   AP   active energy withdrawn      <- the consumption curve
+  #   RLP  inductive reactive withdrawn
+  #   AN   active energy injected       <- marks the POD as a prosumer
+  #   RLN, RCN  reactive injected
+  keep_kind: "AP"
+  inject_kind: "AN"
+
+  #Lorenzo Giannuzzo: The meter constant. It is 1 for 4,840 of the 4,954 PODs of ago24, and 20, 25
+  # or 40 for the 114 metered through a current transformer. Those are the
+  # largest points of the dataset: without K their peak sits at 3 to 5 percent of
+  # their own contractual power, with K it sits at 100 percent, which is what a
+  # point sized on its own commitment looks like. K is read per row, since one
+  # POD changes it inside a single month, and it is negative only on the injected
+  # rows, where the sign carries the direction rather than a scale.
+  apply_k: true
+  k_col: "K"
+
+  #Lorenzo Giannuzzo: Q97 to Q100 are zero padding, not the extra quarter-hours of the October DST
+  # day. Only the first 96 are read.
+  n_quarters: 96
+
+  meas_cols:
+    pod: "POD"
+    date: "DataMisura"
+    kind: "Tipologia"
+    power: "PotenzaContrattuale"
+  meta_cols:
+    pod: "POD"
+    ateco: "CCATETE"            #Lorenzo Giannuzzo: e.g. 47.11.10, or DO.01 / DO.02 for domestic
+    power: "D_POTC"             #Lorenzo Giannuzzo: contractual power, decimal point here and
+                                #Lorenzo Giannuzzo: decimal comma in the measurement file
+    tariff: "D_TIPTA"           #Lorenzo Giannuzzo: TD = domestic, BTA1..BTA6 = non domestic
+    tariff_desc: "D_49DES"
+    deactivated: "D_DTSMO"      #Lorenzo Giannuzzo: non empty -> the point was decommissioned
+
+preprocessing:
+  #Lorenzo Giannuzzo: Gap handling, in quarter-hours. Same rule as the SLP pipeline.
+  gap_short_max: 4              #Lorenzo Giannuzzo: <= 1 h -> linear interpolation
+  gap_medium_max: 16            #Lorenzo Giannuzzo: <= 4 h -> self-similarity, then the day is dropped
+  #Lorenzo Giannuzzo: Zero runs, in hours.
+  zero_run_hours: 24
+  zero_run_min_recurrences: 3
+  #Lorenzo Giannuzzo: Outliers: contractual power is the only criterion.
+  power_margin: 1.5
+  min_contractual_power: 0.1
+  #Lorenzo Giannuzzo: Quality flags the source carries. The SLP pipeline ignores them; here a
+  # reconstructed day is kept but marked, so that the effect of excluding it can
+  # be measured rather than assumed.
+  drop_reconstructed: false
+  drop_incomplete_intervals: false
+  seasons:
+    winter: [11, 12, 1, 2, 3]
+    mid:    [4, 5, 10]
+    summer: [6, 7, 8, 9]
+  holidays_as_sunday: true
+
+eligibility:
+  #Lorenzo Giannuzzo: One year of data, as requested: 364 distinct valid days after preprocessing.
+  # The SLP pipeline asks for 250 because it does not need a full year; the
+  # transition matrices do, since a month absent from the estimate is a month the
+  # generator cannot produce.
+  min_valid_days: 364
+  min_days_per_month: 20        #Lorenzo Giannuzzo: a month below this does not count as covered
+  #Lorenzo Giannuzzo: Left false on purpose. The archive holds February, April and May in 2024 only
+  # and December in 2025 only, so demanding every calendar month of a single point
+  # amounts to demanding the whole 23 month window, and 2,749 points that do hold a
+  # year of data fail on that alone. Calendar coverage is a property the estimation
+  # pool has to have, and it is checked there, on the typology rather than on the
+  # point.
+  require_all_months: false
+
+estimation:
+  #Lorenzo Giannuzzo: The pool the chain is estimated on, which is not the eligibility list. The
+  # transitions of a point with two hundred well spread days are as valid as those
+  # of a point with four hundred, and discarding them narrows the estimate without
+  # making it any cleaner.
+  min_valid_days: 180
+  min_pods: 10                  #Lorenzo Giannuzzo: below this a typology is not estimable
+  min_pod_days_per_month: 200   #Lorenzo Giannuzzo: a month thinner than this is flagged on the model
+  n_bins: 20                    #Lorenzo Giannuzzo: positive levels, plus the zero state. Wide bins
+                                #Lorenzo Giannuzzo: let the value swing inside one, which shows up as a
+                                # load factor well below the metered one
+  n_blocks: 24                  #Lorenzo Giannuzzo: blocks the transitions condition on. Six blocks of
+                                #Lorenzo Giannuzzo: four hours let an opening time fall anywhere inside
+                                # the block, so the mean day came out right and every
+                                # single day came out mushy
+  shrinkage: 30                 #Lorenzo Giannuzzo: a row of n transitions keeps weight n / (n + 30)
+  n_emission_quantiles: 25
+  max_size_strata: 3            #Lorenzo Giannuzzo: adaptive: one stratum per 30 points, capped here.
+                                #Lorenzo Giannuzzo: Raise it for typologies with many points: the
+                                # narrower the stratum, the less a small point can
+                                # draw the level of a large one
+
+generation:
+  #Lorenzo Giannuzzo: Every generated point shifts its own clock by up to this many quarter-hours,
+  # drawn once and held for the whole year. Without it all the points of a stratum
+  # share one matrix, so they all open at the average hour of the stratum and the
+  # generated population is far more uniform than the real one.
+  profile_shift_quarters: 6
+
+  #Lorenzo Giannuzzo: Whether a generated point walks on the table of one real point, mixed into
+  # the table of its stratum, or on the stratum alone. Left unset, `generate.py`
+  # reads it as false and the individual branch never runs: the whole population
+  # then walks on the average of shops open twelve hours a day and of points that
+  # never switch off, which is neither, and the load factor above 0.6, the two
+  # modes of the diversity at 0.75 and 0.95 and the square fronts of the metered
+  # weeks are all absent from what comes out.
+  # Left off again after a first trial. The mixing weight in `walk` is
+  # tot / (tot + personal_shrinkage), and a real point with a year of data brings
+  # several hundred transitions to each (block, level) cell, so the weight comes
+  # out around 0.95: the individual table does not nudge the stratum, it replaces
+  # it. And that table is indexed on the block of hours alone, with no regime, no
+  # season, no day type and no momentum, so switching this on trades the whole
+  # conditioning for the hourly habit of one point. The mean day paid for it,
+  # its total variation going from 0.056 to 0.099 and the nine panels of the
+  # seasonal figure collapsing onto one another. Turn it back on once the mixing
+  # tilts the stratum row instead of overriding it.
+  personal_chain: false
+
+  #Lorenzo Giannuzzo: Weight of that individual table against the stratum: a level the point was
+  # seen leaving n times keeps n / (n + k) of its own behaviour and takes the
+  # rest from the stratum. Lower it to let a point speak more for itself, raise
+  # it to keep the stratum in charge.
+  personal_shrinkage: 30
+
+  #Lorenzo Giannuzzo: How decided the walk of one point is. Each generated point draws one exponent
+  # from this range, holds it for the year, and every transition row it walks on
+  # is raised to it before being drawn from. At one the row is the estimated one
+  # and the point wanders. Above one the row concentrates on its likeliest
+  # destination, so the point opens at the same hour every morning, holds the
+  # level it reached, and its Monday resembles its Tuesday. The spread of the
+  # range is what gives the population its variety of habits, from the point that
+  # never deviates to the one that never repeats.
+  #
+  # Left at [1.0, 1.0], which reproduces the previous behaviour exactly, stream
+  # for stream. Sweep it against the three numbers it moves, which the validation
+  # now reports: day to day repeatability, autocorrelation at 24 hours and the
+  # ramp percentiles. On a hand built model an exponent of 3 took repeatability
+  # from 0.43 to 0.39 and the autocorrelation from 0.31 to 0.47, monotonically in
+  # between, so the direction is safe and the amount is a question for the data.
+  regularity: [1.0, 4.0]
+
+  #Lorenzo Giannuzzo: Exceptions to the line above, one typology per line. The exponent helps or
+  # hurts depending on how much of the year a typology spends drawing nothing,
+  # because concentrating the row makes the walk linger wherever it is, and zero
+  # is where it lingers. Two typologies have been measured:
+  #
+  #   47, nothing drawn on 3% of days   [1, 4] load factor 0.340 against a
+  #                                     metered 0.337, median daily energy at
+  #                                     0.74 of the metered one. Worth it.
+  #   01, nothing drawn on 31% of days  [1, 4] median daily energy at 0.24 and
+  #                                     the year spent at zero 0.685 against a
+  #                                     metered 0.333. Off, it is 0.66 and 0.572.
+  #                                     Not worth it.
+  #
+  # The four below are the typologies whose zero_day_share in
+  # results/models/manifest.csv sits above 0.20, switched off by extrapolation
+  # from those two points. That extrapolation has not been tested: run each of
+  # them both ways and correct the line. Quote the code or YAML reads 01 as one.
+  regularity_by_typology:
+    "01": [1.0, 1.0]     #Lorenzo Giannuzzo: agriculture,  31% of days at zero, measured
+    "41": [1.0, 1.0]     #Lorenzo Giannuzzo: construction, 31%, untested
+    "98": [1.0, 1.0]     #Lorenzo Giannuzzo: 26%, untested
+    "52": [1.0, 1.0]     #Lorenzo Giannuzzo: 23%, untested
+    "domestic": [1.0, 1.0]   #Lorenzo Giannuzzo: 20%, measured, see below
+
+  #Lorenzo Giannuzzo: What the domestic typology settled, once the closure class and the relative
+  # regime cuts were in place and the exponent was the only thing left moving.
+  # Metered figures first, then the three settings, on 50 profiles at seed 42:
+  #
+  #                      metered   off    on    on, zero held out
+  #   median daily kWh     1.307   1.253  0.314  0.518
+  #   year at zero         0.004   0.082  0.382  0.175
+  #   load factor          0.211   0.122  0.218  0.183
+  #   99th percentile kW   1.520   1.478  1.645  1.515
+  #   mean day TV              -   0.031  0.057  0.056
+  #
+  # Holding state zero out of the sharpening halved the damage, which says that
+  # part of what the exponent bought on the load factor really was the plateau
+  # and part of it was the walk deciding to stop. What is left of the cost is the
+  # exponent sharpening towards the low levels as well, so a quiet day comes out
+  # quieter. Off wins on three of the five and loses on one, and it loses on the
+  # one that can be written down as a known limit: a load factor of 0.122 against
+  # 0.211 is a defect that can be stated, a median daily energy at a quarter of
+  # the metered one is not.
+  #
+  # The load factor is not the exponent's to fix in any case. It answers to rho,
+  # the persistence inside a bin, which on a hand built model moved it from 0.245
+  # to 0.357 with nothing else touched, and rho is estimated in `estimate.py` by
+  # pooling the within-bin ranks over every point of the stratum, which mixes the
+  # persistence of one point with the difference of size between points. That is
+  # where to go next, not here.
+
+  #Lorenzo Giannuzzo: Where inside a bin the point sits, as a share of the within-bin variance held
+  # by the point rather than left to the hour. The emission of a bin is the
+  # distribution of what every point of the stratum was read at while it was in
+  # it, so its low end belongs to the small points and its high end to the large
+  # ones, and letting the position wander over all of it gives a point that is
+  # small at nine and large at ten.
+  #
+  # Left at zero, and to be treated with suspicion. On the same hand built model
+  # it moved the load factor the wrong way, from 0.25 down to 0.21, and cost
+  # repeatability as well, which is the opposite of what it was added for. That
+  # model is a caricature with six states, so it does not settle the question,
+  # but nothing here has yet earned this knob being switched on. Sweep it before
+  # believing it. The load factor answers instead, and strongly, to rho: on the
+  # same test it went from 0.245 at rho 0.3 to 0.357 at rho 0.995. rho is
+  # estimated in `estimate.py` by pooling the within-bin ranks over every point of
+  # the stratum, which mixes the persistence of one point with the difference of
+  # size between points, and that is where the load factor should be chased next.
+  level_identity: 0.0
+
+output:
+  cache_dir: "cache/synthgen"
+  results_dir: "results"
+
+  #Lorenzo Giannuzzo: the estimated models, kept beside `results` rather than
+  # inside it. Estimation is the expensive stage and its
+  # output is the only artefact generation cannot rebuild for
+  # itself, so clearing the results of a run must not be able
+  # to remove it.
+  models_dir: "models"

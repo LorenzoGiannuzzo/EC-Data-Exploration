@@ -1,0 +1,30 @@
+# synthgen — what version control does not carry
+#
+# Three kinds of thing are excluded: what the environment builds, what the
+# pipeline can rebuild for itself, and what is too large or too sensitive to
+# belong in a repository.
+
+#Lorenzo Giannuzzo: Environment and tooling
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+*.swp
+
+#Lorenzo Giannuzzo: The measurement archive. Supplied by the data owner and delivered separately;
+# several gigabytes, and not the project's to redistribute.
+data/
+
+#Lorenzo Giannuzzo: Rebuildable from the stage that produced it. `cache/` is rebuilt by Stage 1,
+# `results/` by whichever stage wrote it. `models/` is deliberately not listed
+# here: Stage 3 could rebuild it, but the estimated models are part of the
+# delivery and are therefore versioned with the code.
+cache/
+results/
+
+#Lorenzo Giannuzzo: Working files
+*.zip
+inventario.txt
