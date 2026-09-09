@@ -4,10 +4,3 @@ paper_results/*/*.png
 paper_results/*/*.txt
 __pycache__/
 *.pyc
-
-data/
-cache/
-results/
-data/
-slp/paper_results/
-.idea/

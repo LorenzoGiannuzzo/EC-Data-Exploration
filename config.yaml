@@ -1,0 +1,89 @@
+# =============================================================================
+# SLP framework — configuration
+#
+# Every parameter below appears in the paper. The comment gives the section
+# and the symbol, so that what is declared in the text and what is run here
+# cannot drift apart.
+# =============================================================================
+
+data:
+  # Root of the monthly folders (ago24/, Ago25/, ...). Relative to slp/.
+  root: "../data"
+  # Calendar year of the analysis. Section 2.2, [YYYY].
+  year: 2025
+  # Column names as they appear in the source files. Matching is
+  # case-insensitive, so 'POD' and 'pod' both work.
+  meta_cols:
+    pod: "POD"
+    ateco: "CCATETE"          # e.g. 47.11.10, DO.01
+    tariff_desc: "D_49DES"
+    user_category: "FDESC"
+    ateco_desc: "TATE3DES"
+  meas_cols:
+    pod: "POD"
+    date: "DataMisura"
+    power: "PotenzaContrattuale"   # null if absent; the outlier filter is then skipped
+  date_format: "%d/%m/%Y"
+
+preprocessing:                 # Section 2.2
+  # Gap handling, in quarter-hours.
+  gap_short_max: 4             # <= 1 h  -> linear interpolation
+  gap_medium_max: 16           # <= 4 h  -> self-similarity (same QH, day type, season, same POD)
+                               #  > 4 h  -> the day is discarded
+  # Zero runs, in hours. Longer runs are genuine only if calendrically coherent.
+  zero_run_hours: 24
+  zero_run_min_recurrences: 3  # how many coherent occurrences make a run genuine
+  # Completeness thresholds.
+  min_valid_days: 300
+  require_all_seasons: true
+  # Outliers: the single criterion is contractual power. Section 2.2.
+  power_margin: 1.5            # a reading above margin x contractual power is a fault
+  # Day types and seasons. The grid of Section 2.4 is built on these.
+  seasons:                     # month -> season label
+    winter: [11, 12, 1, 2, 3]
+    mid:    [4, 5, 10]
+    summer: [6, 7, 8, 9]
+  # Italian national holidays are treated as Sunday.
+  holidays_as_sunday: true
+
+clustering:                    # Section 2.3
+  sample_size: 30000           # [M]
+  n_codewords: null            # [D]; null -> search over the range below
+  codewords_range: [4, 24]
+  replicas: 10                 # [R]
+  zero_replacement: 1.0e-6     # delta, CLR
+  scale_weight: 0.5            # lambda
+  n_profiles: null             # [K]; null -> search
+  profiles_range: [4, 20]
+  min_group_size: null         # [n_min]; null -> max(30, 3K)
+  random_state: 42
+  fast: false                  # true -> MiniBatchKMeans while exploring, Ward for the final run
+
+labels:                        # Section 2.2 / 2.6
+  # WARNING: in this dataset the DB-style column names do not match NACE levels.
+  #   ateco_l1 = 2 digits  = NACE Division   <- the paper's "division level"
+  #   ateco_l2 = 4 digits  = NACE Class
+  #   ateco_l3 = 6 digits  = NACE Subcategory
+  level: 1                     # 1 -> division (base case, matches the paper)
+  sensitivity_level: 2         # 2 -> class
+  min_class_size: 30           # classes below this are excluded from the metrics
+  min_class_multiple_of_k: 3   # enforced as max(min_class_size, multiple x K)
+  # Domestic codes. In this dataset the mapping is inverted w.r.t. expectation.
+  domestic:
+    "DO.01": "Non Residente"
+    "DO.02": "Residente"
+
+generation:                    # Section 2.4
+  normalise_kwh_year: 1000
+
+comparison:                    # Section 2.5
+  dtw_band_hours: 2
+  assimilability_percentile: 95
+  percentile_sensitivity: [90, 99]
+  time_bands: "arera"          # F1/F2/F3 as defined by ARERA
+
+output:
+  cache_dir: "cache"
+  results_dir: "paper_results"
+  figure_format: "png"
+  figure_dpi: 300

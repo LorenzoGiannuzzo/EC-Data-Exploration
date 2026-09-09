@@ -1,0 +1,183 @@
+# =============================================================================
+# SLP framework — configuration
+#
+# Every parameter below appears in the paper. The comment gives the section
+# and the symbol, so that what is declared in the text and what is run here
+# cannot drift apart.
+# =============================================================================
+
+data:
+  # Root of the monthly folders (ago24/, Ago25/, ...). Relative to slp/.
+  root: "../data"
+  # Analysis period. Every month found under `root` is used: the dataset spans
+  # feb24 to dic25 with gaps (no dic24, feb25, apr25, mag25), and no calendar
+  # year is complete. What each POD must cover is declared under preprocessing,
+  # namely a minimum number of valid days and every season of the grid; the
+  # period itself is not truncated to a year, which would only discard data.
+  year: null                     # null -> every month available
+  window: null                   # [[year, month], ...] to restrict explicitly
+
+  # Column names as they appear in the source files. Matching is
+  # case-insensitive, so 'POD' and 'pod' both work.
+  meta_cols:
+    pod: "POD"
+    ateco: "CCATETE"          # e.g. 47.11.10, DO.01
+    tariff_desc: "D_49DES"
+    user_category: "FDESC"
+    ateco_desc: "TATE3DES"
+  meas_cols:
+    pod: "POD"
+    date: "DataMisura"
+    power: "PotenzaContrattuale"   # null if absent; the outlier filter is then skipped
+    kind: "Tipologia"              # the quantity a row records
+  # Rows to keep. The file holds several quantities per POD-day:
+  #   AP  active energy withdrawn      <- the consumption curve
+  #   RLP inductive reactive withdrawn
+  #   AN  active energy injected       <- marks a POD as a prosumer
+  #   RLN, RCN  reactive injected
+  # Without this filter the reactive row is read as a second day.
+  keep_kind: "AP"
+  # Unit of the Q columns. The export is in Wh; everything downstream is kWh.
+  reading_unit: "Wh"             # Wh | kWh
+  power_unit: "kW"               # kW | W
+  date_format: "%d/%m/%Y"
+
+preprocessing:                 # Section 2.2
+  # Gap handling, in quarter-hours.
+  gap_short_max: 4             # <= 1 h  -> linear interpolation
+  gap_medium_max: 16           # <= 4 h  -> self-similarity (same QH, day type, season, same POD)
+                               #  > 4 h  -> the day is discarded
+  # A day needs enough non-zero quarter-hours to have a shape at all. One
+  # reading in 96 is an impulse, not an operating pattern: normalised it becomes
+  # a spike carrying 100% of the day, which is as far from every real form as a
+  # point can be, and Ward spends whole codewords on such days. They are valid
+  # observations and are kept as days, exactly like the days at zero, but they
+  # do not enter the dictionary.
+  min_nonzero_quarters: 12      # 2 hours out of 24
+  # Zero runs, in hours. Longer runs are genuine only if calendrically coherent.
+  zero_run_hours: 24
+  zero_run_min_recurrences: 3  # how many coherent occurrences make a run genuine
+  # Completeness thresholds. The paper asks for 82% of the year; with 304
+  # calendar days available in 2024 that is 250, not 300.
+  min_valid_days: 250
+  require_all_seasons: true
+  # Outliers: the single criterion is contractual power. Section 2.2.
+  power_margin: 1.5            # a reading above margin x contractual power is a fault
+  min_contractual_power: 0.1   # PODs at or below this carry no usable threshold
+  # How a daily curve is turned into a shape.
+  #   unit_integral  s = p / sum(p), so every shape sums to one and is a
+  #                  distribution over the day. Required by Eq. 2, by the JSD of
+  #                  Eq. 8, and by the comparison of Section 2.5, where the
+  #                  national profiles are normalised on energy.
+  #   min_max        s = (p - min) / (max - min), so every shape runs from 0 to 1
+  #                  and the peak is always 1. Isolates the outline and discards
+  #                  how much energy sits under the curve. Eq. 2 no longer
+  #                  recomposes, the day weights of Eq. 4 lose their basis, and
+  #                  the JSD is undefined; kept as an alternative to be compared
+  #                  rather than argued about.
+  shape_normalisation: "unit_integral"   # unit_integral | min_max
+  # Compared against min_max on this dataset: unit_integral holds the wider
+  # margin over the mean curves (8.6x against 3.3x). min_max separates the
+  # users no better and lifts the rival, since stretching every curve to
+  # full scale makes the mean curves more distinguishable too.
+  # Day types and seasons. The grid of Section 2.4 is built on these.
+  seasons:                     # month -> season label
+    winter: [11, 12, 1, 2, 3]
+    mid:    [4, 5, 10]
+    summer: [6, 7, 8, 9]
+  # Italian national holidays are treated as Sunday.
+  holidays_as_sunday: true
+
+clustering:                    # Section 2.3
+  # How the dictionary is built. Ward needs the distance between every pair of
+  # shapes, which is quadratic in memory: on 2.5M shapes that is tens of TB.
+  #   summarised_ward  every shape is summarised, in one linear pass, into
+  #                    n_micro micro-clusters; Ward then runs on those, weighted
+  #                    by cardinality. Every shape takes part, and the memory
+  #                    Ward needs is n_micro^2, known in advance.   [default]
+  #   sample_ward      Ward on a stratified sample of `sample_size`, the rest
+  #                    assigned by nearest centroid. Kept for comparison.
+  #   minibatch        exploratory only; the paper declares Ward.
+  # Over what the dictionary is built.
+  #   global      one vocabulary for every day of the year.
+  #   per_season  one vocabulary per season, and the frequency vector carries
+  #               D coordinates per season rather than D in all.
+  #
+  # The distinction is not cosmetic. Shapes are normalised to unit integral, so a
+  # flat winter day and a flat summer day are the same shape: what separates them
+  # is the day weight, not the curve. Under a global dictionary they land in one
+  # codeword and their frequencies add up, and the seasonality is lost from the
+  # vector, surviving only in the seasonal_amplitude feature. Per season it
+  # becomes a coordinate of its own.
+  # The price is D coordinates per season instead of D: more structural zeros,
+  # which is the ground on which D=20 collapsed.
+  dictionary_scope: "global"     # global | per_season
+  # The unit of observation of the first stage.
+  #   day    every POD-day is one shape. The mixture of days is what the second
+  #          stage reads, and it is what an average destroys.        [default]
+  #   month  every POD-month is one shape, the energy-weighted mean of its days.
+  #          The dictionary is built on smoother curves, but weekday and weekend
+  #          are averaged together inside it and the intra-month mixture is gone;
+  #          what survives is seasonality, which the scale features already carry.
+  #          Each user then distributes 18 months rather than 546 days.
+  # Generation (Section 2.4) is unaffected either way: it averages the metered
+  # days over the regulatory grid regardless of what the dictionary was built on.
+  shape_unit: "day"            # day | month
+  dictionary_method: "summarised_ward"
+  n_micro: 4000               # Ward on 4000 points needs ~0.06 GB; 10000 needs ~0.4
+  batch_size: 50000            # rows per pass of the summariser
+  sample_size: 20000           # [M], used only by sample_ward
+  # [D]. Fixed rather than left to the silhouette, which grows with D almost
+  # monotonically and is in any case computed on the micro-clusters, already
+  # compact by construction: it indicates, it does not decide. The paper's third
+  # criterion rules here, that every codeword admit a verbal description, and it
+  # is read off dictionary.png. Set to null to let the silhouette choose.
+  n_codewords: 12
+  dictionary_resolution: "quarter_hourly"  # hourly | quarter_hourly
+  codewords_range: [10, 30]     # the range over which validity_D.csv is reported
+  replicas: 10                 # [R]
+  # delta, CLR. The paper asks for a threshold below the resolution of the
+  # day weights, which is 1/n_days ~ 0.002 over this period. Tested from
+  # 1e-6 to 2e-3 the partition does not move, so the choice is not
+  # load-bearing; it is varied in Section 3.5 all the same.
+  zero_replacement: 1.0e-4     # delta, CLR
+  # lambda. Not a free parameter: it decides whether the profiles resolve
+  # behaviour or magnitude. What settles the balance is not lambda alone but
+  # the variance each block carries, and the CLR block loses its variance
+  # when one form dominates the population. The run prints both.
+  scale_weight: 0.50            # lambda
+  n_profiles: 8             # [K]; null -> search
+  profiles_range: [4, 20]
+  min_group_size: null         # [n_min]; null -> max(30, 3K
+  random_state: 42
+  fast: false                  # true -> MiniBatchKMeans while exploring, Ward for the final run
+
+labels:                        # Section 2.2 / 2.6
+  # WARNING: in this dataset the DB-style column names do not match NACE levels.
+  #   ateco_l1 = 2 digits  = NACE Division   <- the paper's "division level"
+  #   ateco_l2 = 4 digits  = NACE Class
+  #   ateco_l3 = 6 digits  = NACE Subcategory
+  level: 1                     # 1 -> division (base case, matches the paper)
+  sensitivity_level: 2         # 2 -> class
+  min_class_size: 30           # classes below this are excluded from the metrics
+  min_class_multiple_of_k: 3   # enforced as max(min_class_size, multiple x K)
+  # Domestic codes. In this dataset the mapping is inverted w.r.t. expectation.
+  domestic:
+    "DO.01": "Non Residente"
+    "DO.02": "Residente"
+
+generation:                    # Section 2.4
+  normalise_kwh_year: 1000
+  grid: season                 # season (default) or month
+
+comparison:                    # Section 2.5
+  dtw_band_hours: 2
+  assimilability_percentile: 95
+  percentile_sensitivity: [90, 99]
+  time_bands: "arera"          # F1/F2/F3 as defined by ARERA
+
+output:
+  cache_dir: "cache"
+  results_dir: "paper_results"
+  figure_format: "png"
+  figure_dpi: 300

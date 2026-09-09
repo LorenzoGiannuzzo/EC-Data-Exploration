@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Paper pipeline update">
+      <change afterPath="$PROJECT_DIR$/slp/common/assignment.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/common/calendar.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/common/national.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/comparison.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/figures.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/mapping.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/slp/mapping_figures.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/slp/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/generation.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/generation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Deep-Reinforcement-Learning" beforeDir="false" afterPath="$PROJECT_DIR$/../Deep-Reinforcement-Learning" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_COMMON_BRANCH" value="monolithic_structure" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="ROOT_SYNC" value="SYNC" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;LorenzoGiannuzzo&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/LorenzoGiannuzzo/EC-Data-Exploration.git&quot;,
+    &quot;accountId&quot;: &quot;bf46d7ae-b586-47fc-a5e9-9909db8e3d89&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="39viErbbF0Cd9xLKO9ez7pXGUNR" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;Python.compare_normalisation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_exploration.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_rows.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_units.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_windows.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Paper__pipeline&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/lorenzo.giannuzzo/PycharmProjects/Data Exploration&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp\common" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\backend\src\data_explorer\core" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\backend\src\data_explorer\api\routers" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\frontend\tabs" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\frontend\components" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\frontend" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="data_exploration" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Data Exploration" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_exploration.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.data_exploration" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="" />
+      <created>1771582836920</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1771582836920</updated>
+    </task>
+    <task id="LOCAL-00001" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1771609489060</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1771609489060</updated>
+    </task>
+    <task id="LOCAL-00002" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1772186871137</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1772186871137</updated>
+    </task>
+    <task id="LOCAL-00003" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1772186883952</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1772186883952</updated>
+    </task>
+    <task id="LOCAL-00004" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1772186905115</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772186905115</updated>
+    </task>
+    <task id="LOCAL-00005" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1772211365668</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1772211365668</updated>
+    </task>
+    <task id="LOCAL-00006" summary="First Push and Commit on Data Exploration">
+      <option name="closed" value="true" />
+      <created>1775677663884</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1775677663885</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Dashboard GSE and ARERA profile comparison, PoliTo Rembranding as well">
+      <option name="closed" value="true" />
+      <created>1776092850265</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1776092850265</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Further refinements">
+      <option name="closed" value="true" />
+      <created>1776152884656</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1776152884656</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Further refinements">
+      <option name="closed" value="true" />
+      <created>1776155062009</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1776155062009</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Further refinements 2">
+      <option name="closed" value="true" />
+      <created>1776157669213</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1776157669214</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Further refinements 3">
+      <option name="closed" value="true" />
+      <created>1776159789963</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1776159789963</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Further refinements 4">
+      <option name="closed" value="true" />
+      <created>1776160723788</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1776160723788</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Further refinements 5, outliers detection added and export section added">
+      <option name="closed" value="true" />
+      <created>1776166449969</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1776166449969</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Further refinements 6">
+      <option name="closed" value="true" />
+      <created>1776168345912</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1776168345912</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Further refinements 7">
+      <option name="closed" value="true" />
+      <created>1776171409173</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1776171409174</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Cluster results refinement">
+      <option name="closed" value="true" />
+      <created>1776331651634</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1776331651634</updated>
+    </task>
+    <task id="LOCAL-00017" summary="refinement">
+      <option name="closed" value="true" />
+      <created>1777389419960</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1777389419960</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Dockerization and &quot;Ready-To-Deploy&quot;infrastructure creation">
+      <option name="closed" value="true" />
+      <created>1781514126295</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1781514126295</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Dockerization and Almost final service">
+      <option name="closed" value="true" />
+      <created>1781686154966</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1781686154967</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Repo update">
+      <option name="closed" value="true" />
+      <created>1782636153697</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1782636153697</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Paper pipeline update">
+      <option name="closed" value="true" />
+      <created>1784644952340</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1784644952340</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="First Push and Commit on Data Exploration" />
+    <MESSAGE value="Dashboard GSE and ARERA profile comparison, PoliTo Rembranding as well" />
+    <MESSAGE value="Further refinements" />
+    <MESSAGE value="Further refinements 2" />
+    <MESSAGE value="Further refinements 3" />
+    <MESSAGE value="Further refinements 4" />
+    <MESSAGE value="Further refinements 5, outliers detection added and export section added" />
+    <MESSAGE value="Further refinements 6" />
+    <MESSAGE value="Further refinements 7" />
+    <MESSAGE value="Cluster results refinement" />
+    <MESSAGE value="refinement" />
+    <MESSAGE value="Dockerization and &quot;Ready-To-Deploy&quot;infrastructure creation" />
+    <MESSAGE value="Dockerization and Almost final service" />
+    <MESSAGE value="Repo update" />
+    <MESSAGE value="Paper pipeline update" />
+    <option name="LAST_COMMIT_MESSAGE" value="Paper pipeline update" />
+  </component>
+</project>
