@@ -4,19 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Paper pipeline update">
-      <change afterPath="$PROJECT_DIR$/slp/common/assignment.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/common/calendar.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/common/national.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/comparison.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/figures.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/mapping.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/mapping_figures.py" afterDir="false" />
+    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Profiles constructor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/slp/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/generation.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/generation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Deep-Reinforcement-Learning" beforeDir="false" afterPath="$PROJECT_DIR$/../Deep-Reinforcement-Learning" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/mapping_figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/mapping_figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -32,6 +22,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="delivery/synthgen-clean" />
+      </map>
+    </option>
     <option name="RECENT_COMMON_BRANCH" value="monolithic_structure" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="ROOT_SYNC" value="SYNC" />
@@ -68,17 +63,17 @@
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;Paper__pipeline&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/lorenzo.giannuzzo/PycharmProjects/Data Exploration&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/lorenzo.giannuzzo/PycharmProjects/Data Exploration/slp&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration" />
       <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp" />
       <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp\common" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration" />
+      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\synthgen" />
       <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\backend\src\data_explorer\core" />
-      <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\backend\src\data_explorer\api\routers" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration" />
@@ -113,6 +108,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.data_exploration" />
         <item itemvalue="Python.data_exploration" />
       </list>
     </recent_temporary>
@@ -301,7 +297,39 @@
       <option name="project" value="LOCAL" />
       <updated>1784644952340</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Paper pipeline update">
+      <option name="closed" value="true" />
+      <created>1788429104568</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1788429104568</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Profiles constructor">
+      <option name="closed" value="true" />
+      <created>1788443546784</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1788443546784</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Profiles constructor">
+      <option name="closed" value="true" />
+      <created>1788444129138</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1788444129138</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Profiles constructor">
+      <option name="closed" value="true" />
+      <created>1788515156511</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1788515156511</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -320,6 +348,7 @@
     <MESSAGE value="Dockerization and Almost final service" />
     <MESSAGE value="Repo update" />
     <MESSAGE value="Paper pipeline update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Paper pipeline update" />
+    <MESSAGE value="Profiles constructor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Profiles constructor" />
   </component>
 </project>

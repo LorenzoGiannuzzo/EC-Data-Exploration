@@ -11,6 +11,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from figures import INK, GRID, ACCENT, WARM, NEUTRAL, save as _save  # noqa: E402
 
+from common import calendar as C  # noqa: E402
 from common.config import load_config  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
@@ -1114,12 +1115,28 @@ def _row_figure(rows: list, title: str, right_label: str, left_title: str,
     x = np.arange(96) / 4.0
     for i, row in enumerate(rows):
         ax = axes[i][0]
+        #Lorenzo Giannuzzo: deliberately not called `name`. That is the parameter holding
+        #the file name of the whole figure, and a loop variable of the same name overwrote
+        #it, so the figure was saved under the name of the last national profile drawn.
+        for curve, national_name, dist in row.get("overlay", []):
+            #Lorenzo Giannuzzo: dashed and warm, so that it never reads as one more
+            #behaviour. It is published, not measured, and the distinction is the whole
+            #point of putting the two in the same panel.
+            ax.plot(x, curve, color=WARM, lw=1.3, ls="--", alpha=0.95, zorder=3)
+            #Lorenzo Giannuzzo: on an opaque patch, because the corner it sits in is free
+            #in some panels and crossed by the evening peak in others, and the label has to
+            #stay readable in both without being moved by hand per row.
+            ax.annotate(f"{national_name}  (TV {dist:.2f})", xy=(0.98, 0.94),
+                        xycoords="axes fraction", ha="right", va="top",
+                        fontsize=6.4, color=WARM,
+                        bbox=dict(facecolor="white", edgecolor="none", pad=1.2,
+                                  alpha=0.85))
         for curve, weight, colour in row["curves"]:
             #Lorenzo Giannuzzo: the width still carries the share, but the range starts
             #thinner and grows less. A single curve at weight one, which is every row of
             #the aggregation figure, was coming out as a heavy black band that hid the
             #shape it was drawn to show.
-            ax.plot(x, curve, color=colour, lw=0.7 + 1.4 * weight, alpha=0.95)
+            ax.plot(x, curve, color=colour, lw=0.6 + 1.0 * weight, alpha=0.95)
         ax.set_xlim(0, 24)
         ax.set_xticks([0, 6, 12, 18, 24])
         ax.grid(color=GRID, lw=0.5)
@@ -1163,9 +1180,134 @@ def _row_figure(rows: list, title: str, right_label: str, left_title: str,
     save(fig, name, part)
 
 
-def fig_profiles_with_classes(top: int = 6) -> None:
+COMP = None  # resolved lazily, the comparison stage may not have run
+
+
+def _nearest_national(max_distance: float = 0.15) -> dict:
+    """For each behaviour, the closest national profile, when there is a close one.
+
+    The distance is the one the comparison stage already computes, so the pairing shown
+    here is the pairing Section 2.5 reports and not a second opinion formed in the figure.
+    A behaviour with nothing within `max_distance` is left without a national curve rather
+    than paired with the least distant of a bad set: drawing the nearest whatever the
+    distance would suggest a correspondence exists in every row, which is the claim the
+    paper is testing.
+    """
+    path = _CFG.results_dir("comparison") / "b1_ddslp_vs_national.csv"
+    if not path.exists():
+        print("  fig16: comparison output absent, national curves omitted")
+        return {}
+    b1 = pd.read_csv(path)
+    if "setting" in b1.columns and (b1["setting"] == "S1_monthly").any():
+        b1 = b1[b1["setting"] == "S1_monthly"]
+    out, rejected = {}, []
+    for ddslp, sub in b1.groupby("ddslp"):
+        best = sub.loc[sub["total_variation"].idxmin()]
+        g = int(str(ddslp).split("_")[-1])
+        if float(best["total_variation"]) <= max_distance:
+            out[g] = (str(best["national"]), float(best["total_variation"]))
+        else:
+            rejected.append(f"DD-SLP {g}: {best['national']} at "
+                            f"{float(best['total_variation']):.3f}")
+    if rejected:
+        #Lorenzo Giannuzzo: the rejections are printed with their distances so that the
+        #threshold can be judged against the numbers instead of guessed at.
+        print(f"  fig16: nothing within {max_distance:.2f} for "
+              + "; ".join(rejected))
+    return out
+
+
+_CALENDAR = None
+
+
+def _calendar() -> pd.DataFrame:
+    """The season and day-type calendar of the metering year, built once.
+
+    The year is taken from the metered days rather than from the configuration. The
+    configuration key is optional and was empty here, which turned every call into
+    int(None) and took the whole figure down with a TypeError that named neither the
+    key nor the stage. Reading it from the data cannot be out of step with the days the
+    curves were averaged over, which is the property that actually matters.
+    """
+    global _CALENDAR
+    if _CALENDAR is None:
+        days = pd.read_parquet(CACHE / "days.parquet")
+        year = int(pd.to_datetime(days["date"]).dt.year.mode().iloc[0])
+        _CALENDAR = C.build_calendar(year, C.season_map_from_days(days))
+    return _CALENDAR
+
+
+def _cell_months(season: str) -> list[int]:
+    cal = _calendar()
+    return sorted(cal.loc[cal["season"] == season, "date"].dt.month.unique())
+
+
+def _gse_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
+    path = CACHE / "gse.parquet"
+    if not path.exists():
+        return None
+    gse = pd.read_parquet(path)
+    #Lorenzo Giannuzzo: the published name may arrive carrying a prefix, so the column is
+    #looked for among the tokens of the label rather than by matching the label whole.
+    col = next((t for t in str(name).replace("_", " ").split() if t in gse.columns), None)
+    if col is None:
+        return None
+    cal = _calendar()
+    sel_days = cal[(cal["season"] == season) & (cal["daytype"] == daytype)]
+    stamp = pd.to_datetime(dict(year=gse.year, month=gse.month, day=gse.day)).dt.date
+    sel = gse[stamp.isin(sel_days["date"].dt.date)]
+    if sel.empty:
+        return None
+    prof = sel.groupby("hour")[col].mean().reindex(range(24))
+    if prof.isna().any() or prof.sum() <= 0:
+        return None
+    return (prof / prof.sum()).to_numpy()
+
+
+def _arera_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
+    """The ARERA curve for the power class and residency named in the label.
+
+    The workbooks are tabulated by month, so the cell is assembled by averaging the months
+    the calendar assigns to the season, which is the same grid the generation stage uses.
+    """
+    cached = sorted(CACHE.glob("arera_*.parquet"))
+    cached = [p for p in cached if "provenance" not in p.name]
+    if not cached:
+        return None
+    tab = pd.read_parquet(cached[0])
+
+    label = str(name).replace("ARERA", "").strip()
+    cls = next((c for c in sorted(tab["power_class"].unique(), key=len, reverse=True)
+                if label.startswith(str(c))), None)
+    if cls is None:
+        return None
+    residency = label[len(str(cls)):].strip()
+    sel = tab[(tab["power_class"] == cls) & (tab["daytype"] == daytype)
+              & (tab["month"].isin(_cell_months(season)))]
+    if residency:
+        match = sel[sel["residency"].str.strip().str.casefold() == residency.casefold()]
+        if not match.empty:
+            sel = match
+    if sel.empty:
+        return None
+    prof = sel.groupby("hour")["kWh"].mean().reindex(range(24))
+    if prof.isna().any() or prof.sum() <= 0:
+        return None
+    return (prof / prof.sum()).to_numpy()
+
+
+def _national_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
+    """The published curve on the requested cell, as a share of the daily energy."""
+    if "ARERA" in str(name).upper():
+        return _arera_curve(name, season, daytype)
+    return _gse_curve(name, season, daytype)
+
+
+def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
     """M2 with the behaviour shown: what each profile looks like and who is in it."""
     curves = _curves_by_profile()
+    nearest = _nearest_national(max_distance)
+    unresolved: list[str] = []
     m = _membership()
     comp = pd.crosstab(m["group"], m["activity"])
     comp = comp.div(comp.sum(axis=1), axis=0)
@@ -1181,13 +1323,34 @@ def fig_profiles_with_classes(top: int = 6) -> None:
     for g in sorted(c for c in comp.index if c in curves):
         share = comp.loc[g]
         share = share[share >= 0.005].sort_values(ascending=False).head(top)
+        #Lorenzo Giannuzzo: the published curve is put on the same daily energy as the
+        #behaviour before being drawn, so that the panel compares the shape of the day and
+        #not the amplitude. The amplitude is a separate question and the comparison stage
+        #answers it in its own terms.
+        overlay = []
+        if g in nearest:
+            nat_name, dist = nearest[g]
+            nat = _national_curve(nat_name, *CURVE_CELL)
+            if nat is None:
+                #Lorenzo Giannuzzo: said out loud rather than skipped. The first version
+                #returned None on any name it could not resolve and drew nothing, which
+                #is indistinguishable from "no national profile is close" and sent me
+                #looking for a threshold problem that was not there.
+                unresolved.append(nat_name)
+            else:
+                daily = curves[g].sum()
+                overlay = [(np.repeat(nat, 4) / 4.0 * daily, nat_name, dist)]
         rows.append({
             "label": f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
             "curves": [(curves[g], 1.0, INK)],
+            "overlay": overlay,
             "bars": [(activity_label(c), float(v), palette.get(c, NEUTRAL))
                      for c, v in share.items()],
             "effective": _effective(comp.loc[g].to_numpy()),
         })
+    if unresolved:
+        print("  fig16: national curve not reconstructed for "
+              + ", ".join(sorted(set(unresolved))))
     _row_figure(rows,
                 "What each behaviour looks like, and which activity classes it gathers",
                 "Effective\nclasses",
