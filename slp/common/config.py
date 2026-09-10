@@ -13,6 +13,24 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 
+#Lorenzo Giannuzzo: one folder per stage of the framework figure, in pipeline order. The
+#numeric prefixes are what keep that order in a file browser, which the stage names alone
+#would not: alphabetically the comparison would come first and the pre-processing fourth.
+#A reader holding the paper open should reach the artefact behind any statement by walking
+#the tree in the order the method is described.
+STAGE_FOLDERS: dict[str, str] = {
+    "preprocessing": "1_preprocessing",
+    "clustering": "2_clustering",
+    "generation": "3_standard_lp_generation",
+    "comparison": "4_lp_comparison",
+    "mapping": "5_lp_mapping",
+}
+
+#Lorenzo Giannuzzo: the mapping stage splits further because the paper reports its three
+#metrics in three separate sections, and a reader following Section 3.3 should not have to
+#pick the aggregation tables out of a directory holding all three.
+MAPPING_PARTS: tuple[str, ...] = ("multiplicity", "aggregation", "coverage")
+
 
 @dataclass
 class Config:
@@ -41,9 +59,26 @@ class Config:
         p.mkdir(parents=True, exist_ok=True)
         return p
 
-    def results_dir(self, stage: str) -> Path:
-        """paper_results/<stage>_results/, created on demand."""
-        p = ROOT / self.raw["output"]["results_dir"] / f"{stage}_results"
+    def results_dir(self, stage: str, part: str | None = None) -> Path:
+        """Results folder of a stage, created on demand.
+
+        A stage outside the framework keeps the old `<stage>_results` name rather than
+        raising, so that a helper or an exploratory script that writes somewhere of its
+        own does not have to be registered here to run.
+        """
+        base = ROOT / self.raw["output"]["results_dir"]
+        p = base / STAGE_FOLDERS.get(stage, f"{stage}_results")
+        if part is not None:
+            if stage != "mapping" or part not in MAPPING_PARTS:
+                raise KeyError(f"{part!r} is not a part of stage {stage!r}; "
+                               f"expected one of {MAPPING_PARTS} under 'mapping'")
+            p = p / part
+        p.mkdir(parents=True, exist_ok=True)
+        return p
+
+    def figures_dir(self, stage: str, part: str | None = None) -> Path:
+        """Where the figures of a stage go, one level below its tables."""
+        p = self.results_dir(stage, part) / "figures"
         p.mkdir(parents=True, exist_ok=True)
         return p
 

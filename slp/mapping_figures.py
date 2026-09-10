@@ -11,15 +11,31 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from figures import INK, GRID, ACCENT, WARM, NEUTRAL, save as _save  # noqa: E402
 
+from common.config import load_config  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent
-RES = ROOT / "paper_results" / "mapping_results"
-FIG = RES / "figures"
+_CFG = load_config()
+
+#Lorenzo Giannuzzo: every path resolves through the configuration, so that renaming a
+#results folder is one edit in config.py and not a hunt through five stages. The three
+#mapping metrics read and write under their own sub-folder, matching the sections of the
+#paper that report them.
+RES = _CFG.results_dir("mapping")
+PART_DIR = {p: _CFG.results_dir("mapping", p)
+            for p in ("multiplicity", "aggregation", "coverage")}
+GEN = _CFG.results_dir("generation")
+CLU = _CFG.results_dir("clustering")
+CACHE = _CFG.cache_dir
 
 
-def save(fig, name: str) -> None:
-    FIG.mkdir(parents=True, exist_ok=True)
+def save(fig, name: str, part: str | None = None) -> None:
+    #Lorenzo Giannuzzo: a figure lands in the folder of the metric it illustrates, and the
+    #ones built on the contingency table itself land at the root of the stage, because that
+    #table is the common origin of all three metrics and belongs to none of them.
+    out = (PART_DIR[part] if part else RES) / "figures"
+    out.mkdir(parents=True, exist_ok=True)
     for ext in ("png", "pdf"):
-        fig.savefig(FIG / f"{name}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
+        fig.savefig(out / f"{name}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  {name}")
 
@@ -57,6 +73,9 @@ ACTIVITY_NAME = {
     "22": "Rubber and plastics",
     "25": "Metal products",
     "33": "Machinery repair",
+    "35": "Electricity and gas",
+    "36": "Water supply",
+    "38": "Waste management",
     "41": "Building construction",
     "43": "Specialised construction",
     "45": "Motor vehicle trade",
@@ -122,8 +141,8 @@ def fig_contingency() -> None:
 
 def fig_multiplicity() -> None:
     """M1: how many profiles each activity class spans, with bootstrap intervals."""
-    d = pd.read_csv(RES / "m1_multiplicity_pod.csv").sort_values("M1_effective")
-    e = pd.read_csv(RES / "m1_multiplicity_energy.csv").set_index("activity")
+    d = pd.read_csv(PART_DIR["multiplicity"] / "m1_multiplicity_pod.csv").sort_values("M1_effective")
+    e = pd.read_csv(PART_DIR["multiplicity"] / "m1_multiplicity_energy.csv").set_index("activity")
     y = np.arange(len(d))
 
     fig, ax = plt.subplots(figsize=(7.2, 0.30 * len(d) + 1.8))
@@ -145,13 +164,13 @@ def fig_multiplicity() -> None:
     ax.set_title("M1, class multiplicity\n"
                  "a class above one is not predicted by its activity code",
                  loc="left", fontsize=9.5, pad=8)
-    save(fig, "fig7_m1_multiplicity")
+    save(fig, "fig7_m1_multiplicity", "multiplicity")
 
 
 def fig_aggregation() -> None:
     """M2: how many activity classes each profile subsumes."""
-    d = pd.read_csv(RES / "m2_aggregation_pod.csv").sort_values("M2_effective")
-    e = pd.read_csv(RES / "m2_aggregation_energy.csv").set_index("profile")
+    d = pd.read_csv(PART_DIR["aggregation"] / "m2_aggregation_pod.csv").sort_values("M2_effective")
+    e = pd.read_csv(PART_DIR["aggregation"] / "m2_aggregation_energy.csv").set_index("profile")
     y = np.arange(len(d))
 
     fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.2),
@@ -184,7 +203,7 @@ def fig_aggregation() -> None:
     ax.set_title("Raw count against effective concentration", loc="left", fontsize=9.5)
 
     fig.tight_layout()
-    save(fig, "fig8_m2_aggregation")
+    save(fig, "fig8_m2_aggregation", "aggregation")
 
 
 def fig_coverage() -> None:
@@ -197,7 +216,7 @@ def fig_coverage() -> None:
     actually hiding under it. The second is the one that matters, because a profile may
     legitimately span many activity classes if they all consume alike.
     """
-    d = pd.read_csv(RES / "m3_coverage_pod.csv").sort_values("M3_ddslp_effective")
+    d = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv").sort_values("M3_ddslp_effective")
     y = np.arange(len(d))
     off = 0.16
 
@@ -231,16 +250,33 @@ def fig_coverage() -> None:
     ax.legend(loc="lower right", fontsize=8)
     ax.set_title("M3, declared coverage against real coverage",
                  loc="left", fontsize=10, pad=8)
-    save(fig, "fig9_m3_coverage")
+    save(fig, "fig9_m3_coverage", "coverage")
 
 
-REQUIRED = ("contingency_pod.csv", "m1_multiplicity_pod.csv",
-            "m2_aggregation_pod.csv", "m3_coverage_pod.csv")
+#Lorenzo Giannuzzo: the required inputs now live in different folders, so the check
+#carries the folder with the name. Checking them all against the stage root would report
+#every file as missing the moment the tables moved into their metric sub-folders.
+REQUIRED = ((RES, "contingency_pod.csv"),
+            (PART_DIR["multiplicity"], "m1_multiplicity_pod.csv"),
+            (PART_DIR["aggregation"], "m2_aggregation_pod.csv"),
+            (PART_DIR["coverage"], "m3_coverage_pod.csv"))
+
+
+def missing_inputs() -> list[str]:
+    #Lorenzo Giannuzzo: the check lives here and is called from the figures stage rather
+    #than reimplemented there. The tables sit in three different folders now, so a caller
+    #joining REQUIRED onto a single root gets it wrong, and it did.
+    return [str((d / f).relative_to(RES.parents[1]))
+            for d, f in REQUIRED if not (d / f).exists()]
+
+
+def inputs_ready() -> bool:
+    return not missing_inputs()
 
 
 def main() -> None:
     print(f"\n{'='*78}\n  FIGURES, Section 2.6\n{'='*78}")
-    missing = [f for f in REQUIRED if not (RES / f).exists()]
+    missing = missing_inputs()
     if missing:
         print(f"  mapping output not found in {RES}")
         print(f"  missing: {', '.join(missing)}")
@@ -261,7 +297,9 @@ def main() -> None:
         print(f"  ! fig13 needs the generation output: {exc}")
     fig_declared_against_actual()
     fig_reach_beyond_declared()
-    print(f"\n  figures in {FIG}\n")
+    fig_profiles_with_classes()
+    fig_classes_across_profiles()
+    print(f"\n  figures under {RES}\n")
 
 
 if __name__ == "__main__":
@@ -282,7 +320,7 @@ SPREAD = ["#0b3c5d", "#328cc1", "#7fb2d4", "#e2a33c", "#c1440e", "#7d5ba6"]
 def fig_multiplicity_composition() -> None:
     """M1 seen as composition: where each activity class actually goes."""
     ct = pd.read_csv(RES / "contingency_pod.csv", index_col=0)
-    m1 = pd.read_csv(RES / "m1_multiplicity_pod.csv").set_index("activity")
+    m1 = pd.read_csv(PART_DIR["multiplicity"] / "m1_multiplicity_pod.csv").set_index("activity")
     share = ct.div(ct.sum(axis=1), axis=0)
     order = m1.reindex(share.index)["M1_effective"].sort_values()
     share = share.loc[order.index]
@@ -320,13 +358,13 @@ def fig_multiplicity_composition() -> None:
     ax.set_title("M1, where each activity class actually goes\n"
                  "a class that its code predicted would be one solid bar",
                  loc="left", fontsize=10, pad=10)
-    save(fig, "fig10_m1_composition")
+    save(fig, "fig10_m1_composition", "multiplicity")
 
 
 def fig_aggregation_composition(top: int = 6) -> None:
     """M2 seen as composition: what each profile is actually made of, by energy."""
     ct = pd.read_csv(RES / "contingency_energy.csv", index_col=0).fillna(0.0)
-    m2 = pd.read_csv(RES / "m2_aggregation_energy.csv").set_index("profile")
+    m2 = pd.read_csv(PART_DIR["aggregation"] / "m2_aggregation_energy.csv").set_index("profile")
     share = ct.div(ct.sum(axis=0), axis=1)                      # columns sum to 1
     big = share.sum(axis=1).sort_values(ascending=False).index[:top]
     keep = share.loc[big]
@@ -369,12 +407,12 @@ def fig_aggregation_composition(top: int = 6) -> None:
     ax.set_title("M2, what each data-driven profile is made of\n"
                  "weighted by energy, so the count of small points cannot dominate",
                  loc="left", fontsize=10, pad=10)
-    save(fig, "fig11_m2_composition")
+    save(fig, "fig11_m2_composition", "aggregation")
 
 
 def fig_coverage_gap() -> None:
     """M3 as the gap it is: one profile declared, several behaviours delivered."""
-    d = pd.read_csv(RES / "m3_coverage_pod.csv").sort_values("M3_ddslp_effective")
+    d = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv").sort_values("M3_ddslp_effective")
     d = d[d["n_pod"] >= 50]
     y = np.arange(len(d))
 
@@ -417,7 +455,7 @@ def fig_coverage_gap() -> None:
     ax.legend(loc="lower right", fontsize=8)
     ax.set_title("M3, the distance between what is declared and what is delivered",
                  loc="left", fontsize=10, pad=10)
-    save(fig, "fig12_m3_gap")
+    save(fig, "fig12_m3_gap", "coverage")
 
 
 # ===========================================================================
@@ -430,8 +468,9 @@ def fig_coverage_gap() -> None:
 #  regulation applies to a category, drawn over the behaviours that sit beneath
 #  it, each as wide as the share of the category it carries.
 # ===========================================================================
-GEN = ROOT / "paper_results" / "generation_results"
-CACHE = ROOT / "cache"
+#Lorenzo Giannuzzo: GEN and CACHE are defined once at the top of the module. They were
+#redefined here as well, and since this block runs later it quietly won, sending the
+#figure back to the folder name the results tree no longer uses.
 SEASON_LABEL = {"mid": "Autumn/Spring"}
 
 
@@ -644,7 +683,7 @@ def fig_behaviours_under_national(national: str = "PDMM",
                  fontsize=10.5, x=0.012, y=1.0 - 0.24 / fig_h, ha="left")
     bottom_gs = outer[1].subgridspec(1, len(share), wspace=0.75)
     _draw_composition_panels(fig, bottom_gs, share, palette)
-    save(fig, "fig13_behaviours_under_national")
+    save(fig, "fig13_behaviours_under_national", "coverage")
 
 
 def _describe_behaviours(curves: pd.DataFrame, share: pd.Series) -> pd.DataFrame:
@@ -656,12 +695,8 @@ def _describe_behaviours(curves: pd.DataFrame, share: pd.Series) -> pd.DataFrame
     the reader is the numbers the interpretation would rest on.
     """
     kw = [f"kW{i}" for i in range(1, 97)]
-    real = None
-    for folder in ("clustering_results", "clustering"):
-        path = ROOT / "paper_results" / folder / "groups.csv"
-        if path.exists():
-            real = pd.read_csv(path).set_index("group")
-            break
+    path = CLU / "groups.csv"
+    real = pd.read_csv(path).set_index("group") if path.exists() else None
 
     rows = []
     for g in share.index:
@@ -888,7 +923,7 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
     ax.set_title("What each published profile declares, against who it is applied to\n"
                  "a profile whose label described its users would be a single bar",
                  loc="center", fontsize=10, pad=22, linespacing=1.5)
-    save(fig, "fig14_declared_against_actual")
+    save(fig, "fig14_declared_against_actual", "coverage")
 
 
 # ===========================================================================
@@ -1003,4 +1038,197 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
                  "the figure on the right is the share that falls outside "
                  "the category the profile is applied to",
                  loc="center", fontsize=10, pad=22, linespacing=1.5)
-    save(fig, "fig15_reach_beyond_declared")
+    save(fig, "fig15_reach_beyond_declared", "coverage")
+
+
+# ===========================================================================
+#  The two metrics with the curves beside them.
+#
+#  M1 and M2 are read from dot plots and a contingency table, and a reader who
+#  has followed them still has not seen the behaviour any of the numbers refer
+#  to. These two figures put the curve next to the count: what a profile looks
+#  like beside the classes it gathers, and what an activity class fragments into
+#  beside the profiles it fragments across.
+#
+#  One cell carries the curves, the winter working day, which holds the largest
+#  share of the annual energy in every profile of the case study. Three seasons
+#  would triple the height for a point about composition rather than seasonality.
+# ===========================================================================
+CURVE_CELL = ("winter", "weekday")
+
+
+def _effective(counts: np.ndarray) -> float:
+    #Lorenzo Giannuzzo: the same exponential of the Shannon entropy the mapping stage
+    #computes. It is recomputed here from the same table rather than read back from the
+    #CSV so that the figure cannot show a number the panel beside it contradicts.
+    c = np.asarray(counts, float)
+    c = c[c > 0]
+    if c.sum() <= 0:
+        return float("nan")
+    p = c / c.sum()
+    return float(np.exp(-(p * np.log(p)).sum()))
+
+
+def _curves_by_profile(season: str = CURVE_CELL[0],
+                       daytype: str = CURVE_CELL[1]) -> dict:
+    curves = pd.read_csv(GEN / "profiles.csv")
+    kw = [f"kW{i}" for i in range(1, 97)]
+    sub = curves[(curves["season"] == season) & (curves["daytype"] == daytype)]
+    return {int(r.profile): sub.loc[r.Index, kw].to_numpy(float)
+            for r in sub.itertuples()}
+
+
+def _membership() -> pd.DataFrame:
+    """One row per point: its behaviour and its activity class."""
+    users = pd.read_parquet(CACHE / "users.parquet")
+    groups = pd.read_parquet(CACHE / "groups.parquet")
+    full = groups.merge(users[["pod", "ateco_l1"]].rename(columns={"ateco_l1": "activity"}),
+                        on="pod", how="left")
+    full = full[full["activity"].notna()]
+    if "below_n_min" in full:
+        full = full[~full["below_n_min"]]
+    return full
+
+
+def _row_figure(rows: list, title: str, right_label: str, left_title: str,
+                right_title: str, name: str, part: str) -> None:
+    """One row per subject: the curves on the left, the composition on the right.
+
+    `rows` carries, per subject: its label, the curves to draw with their weights and
+    colours, the bars to draw with their labels, and the effective number to print at
+    the edge. The two figures below differ in what a subject is and in what the bars
+    count, and in nothing else, so they share this.
+    """
+    n = len(rows)
+    head = 0.62
+    fig_h = 1.42 * n + head + 0.45
+    fig, axes = plt.subplots(n, 2, figsize=(11.0, fig_h),
+                             gridspec_kw={"width_ratios": [1.0, 1.35], "hspace": 0.55,
+                                          "wspace": 0.30},
+                             squeeze=False)
+    #Lorenzo Giannuzzo: one vertical scale for every curve. Per-panel scales made a
+    #profile that is flat to within two per cent look as structured as one that doubles
+    #over the day, which is the opposite of what the column is there to show.
+    for i in range(1, n):
+        axes[i][0].sharey(axes[0][0])
+    x = np.arange(96) / 4.0
+    for i, row in enumerate(rows):
+        ax = axes[i][0]
+        for curve, weight, colour in row["curves"]:
+            #Lorenzo Giannuzzo: the width still carries the share, but the range starts
+            #thinner and grows less. A single curve at weight one, which is every row of
+            #the aggregation figure, was coming out as a heavy black band that hid the
+            #shape it was drawn to show.
+            ax.plot(x, curve, color=colour, lw=0.7 + 1.4 * weight, alpha=0.95)
+        ax.set_xlim(0, 24)
+        ax.set_xticks([0, 6, 12, 18, 24])
+        ax.grid(color=GRID, lw=0.5)
+        ax.set_axisbelow(True)
+        ax.tick_params(labelsize=6.5)
+        ax.set_ylabel(row["label"], fontsize=7.8, color=INK)
+        if i == 0:
+            ax.set_title(left_title, fontsize=8.5, loc="left", color=INK)
+        if i == n - 1:
+            ax.set_xlabel("Time of day [h]", fontsize=8)
+
+        ax = axes[i][1]
+        bars = row["bars"]
+        y = np.arange(len(bars))[::-1]
+        vals = np.array([v for _l, v, _c in bars]) * 100
+        ax.barh(y, vals, height=0.68,
+                color=[c for _l, _v, c in bars], edgecolor="white", lw=0.4)
+        for yy, v in zip(y, vals):
+            ax.text(v + 1.6, yy, f"{v:.0f}", va="center", fontsize=6.4, color=INK)
+        ax.set_yticks(y)
+        ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6)
+        ax.set_xlim(0, min(105, vals.max() * 1.22))
+        ax.set_ylim(-0.7, max(len(bars) - 0.3, 0.5))
+        ax.grid(axis="x", color=GRID, lw=0.5)
+        ax.set_axisbelow(True)
+        ax.tick_params(axis="x", labelsize=6.5)
+        ax.tick_params(axis="y", length=0)
+        for sp in ("top", "right", "left"):
+            ax.spines[sp].set_visible(False)
+        if i == 0:
+            ax.set_title(right_title, fontsize=8.5, loc="left", color=INK)
+        ax.annotate(f"{row['effective']:.1f}", xy=(1.045, 0.5),
+                    xycoords="axes fraction", fontsize=9.5, fontweight="bold",
+                    color=WARM, va="center", annotation_clip=False)
+    axes[0][1].annotate(right_label, xy=(1.045, 1.30), xycoords="axes fraction",
+                        fontsize=7.6, fontweight="bold", color=WARM, va="bottom",
+                        annotation_clip=False)
+    fig.suptitle(title, fontsize=10.5, x=0.012, y=1.0 - 0.10 / fig_h, ha="left",
+                 va="top")
+    fig.tight_layout(rect=[0, 0, 0.955, 1.0 - head / fig_h])
+    save(fig, name, part)
+
+
+def fig_profiles_with_classes(top: int = 6) -> None:
+    """M2 with the behaviour shown: what each profile looks like and who is in it."""
+    curves = _curves_by_profile()
+    m = _membership()
+    comp = pd.crosstab(m["group"], m["activity"])
+    comp = comp.div(comp.sum(axis=1), axis=0)
+    sizes = m["group"].value_counts()
+
+    #Lorenzo Giannuzzo: only as many classes get a colour as the palette holds. Cycling
+    #past its end put the same blue on Domestic and on Public administration in the same
+    #panel, which is worse than sending the rarer of the two to grey.
+    ranked = comp.sum(axis=0).sort_values(ascending=False)
+    palette = {c: CLASSES[i] for i, c in enumerate(ranked.index[:len(CLASSES)])}
+
+    rows = []
+    for g in sorted(c for c in comp.index if c in curves):
+        share = comp.loc[g]
+        share = share[share >= 0.005].sort_values(ascending=False).head(top)
+        rows.append({
+            "label": f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
+            "curves": [(curves[g], 1.0, INK)],
+            "bars": [(activity_label(c), float(v), palette.get(c, NEUTRAL))
+                     for c, v in share.items()],
+            "effective": _effective(comp.loc[g].to_numpy()),
+        })
+    _row_figure(rows,
+                "What each behaviour looks like, and which activity classes it gathers",
+                "Effective\nclasses",
+                f"Curve, {_pretty(CURVE_CELL[0])} {CURVE_CELL[1]} [kW]",
+                "Share of the points in the behaviour [%]",
+                "fig16_profiles_with_classes", "aggregation")
+
+
+#Lorenzo Giannuzzo: the eligibility threshold is the one the mapping stage pools rare
+#classes at, so the classes drawn here are exactly the classes the metrics are computed
+#on. A higher figure looked reasonable and left only the domestic class standing.
+def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> None:
+    """M1 with the behaviours shown: what a single activity class fragments into."""
+    curves = _curves_by_profile()
+    m = _membership()
+    comp = pd.crosstab(m["activity"], m["group"])
+    comp = comp[[c for c in comp.columns if c in curves]]
+    sizes = comp.sum(axis=1)
+
+    #Lorenzo Giannuzzo: the classes shown are the most fragmented ones, which are the ones
+    #the argument is about, but only among those large enough for the fragmentation to be
+    #a property of the class rather than of a handful of points.
+    eligible = comp.loc[sizes >= min_pods]
+    eff = eligible.apply(lambda r: _effective(r.to_numpy()), axis=1)
+    chosen = eff.sort_values(ascending=False).head(top_classes).index
+
+    palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(sorted(curves))}
+    rows = []
+    for c in chosen:
+        row = comp.loc[c]
+        share = (row / row.sum()).sort_values(ascending=False)
+        share = share[share > 0]
+        rows.append({
+            "label": f"{activity_label(c)}\n({int(sizes[c])} PODs)",
+            "curves": [(curves[g], float(share[g]), palette[g]) for g in share.index],
+            "bars": [(f"DD-SLP {g}", float(v), palette[g]) for g, v in share.items()],
+            "effective": float(eff[c]),
+        })
+    _row_figure(rows,
+                "What a single activity class fragments into",
+                "Effective\nprofiles",
+                f"Behaviours it spans, {_pretty(CURVE_CELL[0])} {CURVE_CELL[1]} [kW]",
+                "Share of the class [%]",
+                "fig17_classes_across_profiles", "multiplicity")

@@ -21,10 +21,13 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import calendar as C  # noqa: E402
 
+from common.config import load_config  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent
-CACHE = ROOT / "cache"
-RES = ROOT / "paper_results" / "comparison_results"
-FIG = RES / "figures"
+_CFG = load_config()
+CACHE = _CFG.cache_dir
+RES = _CFG.results_dir("comparison")
+FIG = _CFG.figures_dir("comparison")
 
 INK = "#1b1b1b"
 GRID = "#d9d9d9"
@@ -315,8 +318,14 @@ def main() -> None:
     # that stage has not been run, which is the only case in which they cannot exist.
     try:
         import mapping_figures
-        if all((mapping_figures.RES / f).exists() for f in mapping_figures.REQUIRED):
+        if mapping_figures.inputs_ready():
             mapping_figures.main()
+        else:
+            # Named rather than skipped in silence. The tables moved into one folder per
+            # metric, and a wrong path here would otherwise look exactly like a mapping
+            # stage that has not been run yet.
+            print("  mapping figures skipped, missing: "
+                  + ", ".join(mapping_figures.missing_inputs()))
     except Exception as exc:
         print(f"  ! mapping figures not produced: {type(exc).__name__}: {exc}")
 

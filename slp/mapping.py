@@ -38,10 +38,19 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from common import assignment  # noqa: E402
+from common.config import load_config  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
-CACHE = ROOT / "cache"
-OUT = ROOT / "paper_results" / "mapping_results"
+_CFG = load_config()
+CACHE = _CFG.cache_dir
+
+#Lorenzo Giannuzzo: the contingency tables stay at the root of the stage because all three
+#metrics descend from them and none of the three owns them. Each metric then writes into
+#its own folder, which is the folder a reader following its section of the paper opens.
+OUT = _CFG.results_dir("mapping")
+OUT_M1 = _CFG.results_dir("mapping", "multiplicity")
+OUT_M2 = _CFG.results_dir("mapping", "aggregation")
+OUT_M3 = _CFG.results_dir("mapping", "coverage")
 
 ACTIVITY_LEVEL = "ateco_l1"     # ateco_l1 | ateco_l2 | ateco_l3
 N_MIN = 25                      # a class below this is pooled into the residual
@@ -194,7 +203,6 @@ def real_coverage(m: pd.DataFrame, users: pd.DataFrame,
 # ------------------------------------------------------------------------------- main
 def main() -> None:
     t0 = time.time()
-    OUT.mkdir(parents=True, exist_ok=True)
     print(f"\n{'='*78}\n  MAPPING, Section 2.6\n{'='*78}")
 
     users = pd.read_parquet(CACHE / "users.parquet")
@@ -209,13 +217,15 @@ def main() -> None:
                 values=m["E"], aggfunc="sum").to_csv(OUT / "contingency_energy.csv")
 
     for weight in ("pod", "energy"):
-        multiplicity(m, weight).to_csv(OUT / f"m1_multiplicity_{weight}.csv", index=False)
-        aggregation(m, weight).to_csv(OUT / f"m2_aggregation_{weight}.csv", index=False)
-        real_coverage(m, users, weight).to_csv(OUT / f"m3_coverage_{weight}.csv",
+        multiplicity(m, weight).to_csv(OUT_M1 / f"m1_multiplicity_{weight}.csv",
+                                       index=False)
+        aggregation(m, weight).to_csv(OUT_M2 / f"m2_aggregation_{weight}.csv",
+                                      index=False)
+        real_coverage(m, users, weight).to_csv(OUT_M3 / f"m3_coverage_{weight}.csv",
                                                index=False)
 
-    m1 = pd.read_csv(OUT / "m1_multiplicity_pod.csv")
-    m2 = pd.read_csv(OUT / "m2_aggregation_pod.csv")
+    m1 = pd.read_csv(OUT_M1 / "m1_multiplicity_pod.csv")
+    m2 = pd.read_csv(OUT_M2 / "m2_aggregation_pod.csv")
     K = m["profile"].nunique()
     C = m["activity_grouped"].nunique()
     print(f"\n  K = {K} profiles, C = {C} activity classes")
@@ -224,13 +234,10 @@ def main() -> None:
     print(f"  M2, profile -> activity classes  median {m2['M2_effective'].median():.2f}"
           f" of {C}   ({m2['M2_evenness'].median()*100:.0f}% of the maximum spread)")
 
-    try:
-        import mapping_figures
-        mapping_figures.main()
-    except Exception as exc:
-        print(f"\n  ! figures not produced: {type(exc).__name__}: {exc}")
-
-    print(f"\n  results in {OUT}   ({time.time()-t0:.0f}s)\n")
+    #Lorenzo Giannuzzo: the figures are not drawn here. They were being drawn three times
+    #a run, once by this stage, once by the figures stage and once more on the way past,
+    #and a failure in one of them was reported three times over.
+    print(f"\n  results under {OUT}   ({time.time()-t0:.0f}s)\n")
 
 
 if __name__ == "__main__":

@@ -50,9 +50,12 @@ from common.cache import check_manifest  # noqa: E402
 from common.config import load_config  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
-CACHE = ROOT / "cache"
+_CFG = load_config()
+CACHE = _CFG.cache_dir
 DATA = ROOT.parent / "data"
-OUT = ROOT / "paper_results" / "comparison_results"
+#Lorenzo Giannuzzo: resolved through the configuration like every other stage, so
+#that the results tree is described in one place and renaming a folder is one edit.
+OUT = _CFG.results_dir("comparison")
 
 PROVINCE = "Trento"
 REFERENCE_YEAR = 2025          # the year the GSE workbook refers to
@@ -533,7 +536,6 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
 # --------------------------------------------------------------------------------- main
 def main() -> None:
     t0 = time.time()
-    OUT.mkdir(parents=True, exist_ok=True)
     print(f"\n{'='*78}\n  COMPARISON, Section 2.5\n{'='*78}")
 
     # the profiles audited here have to come from the configuration now in
