@@ -6,7 +6,13 @@ __pycache__/
 # Regenerated results. Tables and summaries are rebuilt by any run and are
 # large, so they stay out of the history; figures are committed, because they
 # are what the manuscript carries and what a reader without the data can look
-# at. Everything not matched below therefore passes, PNG and PDF included.
+# at. Each format lives in its own directory, figures/png and figures/pdf, and
+# both pass: what is excluded here is matched by extension, so a new kind of
+# table is kept out without touching this file, while a new kind of figure is
+# not silently lost.
+#
+# NOTE: a rule in the repository root wins over this file. If paper_results is
+# excluded there, nothing below can bring the figures back.
 paper_results/**/*.csv
 paper_results/**/*.txt
 paper_results/**/*.parquet

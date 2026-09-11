@@ -76,9 +76,17 @@ class Config:
         p.mkdir(parents=True, exist_ok=True)
         return p
 
-    def figures_dir(self, stage: str, part: str | None = None) -> Path:
-        """Where the figures of a stage go, one level below its tables."""
+    def figures_dir(self, stage: str, part: str | None = None,
+                    fmt: str | None = None) -> Path:
+        """Where the figures of a stage go, one level below its tables.
+
+        Each format sits in its own sub-folder. A manuscript pulls the PNGs and a
+        camera-ready submission pulls the PDFs, and keeping them apart means either can
+        be selected, zipped or ignored as a whole rather than by extension.
+        """
         p = self.results_dir(stage, part) / "figures"
+        if fmt is not None:
+            p = p / fmt
         p.mkdir(parents=True, exist_ok=True)
         return p
 

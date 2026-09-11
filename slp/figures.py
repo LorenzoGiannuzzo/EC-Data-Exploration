@@ -64,9 +64,12 @@ mpl.rcParams.update({
 
 
 def save(fig, name: str) -> None:
-    FIG.mkdir(parents=True, exist_ok=True)
+    #Lorenzo Giannuzzo: one directory per format, as in the mapping figures, so that the
+    #whole PNG set or the whole PDF set can be selected at once instead of by extension.
     for ext in ("png", "pdf"):
-        fig.savefig(FIG / f"{name}.{ext}", dpi=300, bbox_inches="tight",
+        out = FIG / ext
+        out.mkdir(parents=True, exist_ok=True)
+        fig.savefig(out / f"{name}.{ext}", dpi=300, bbox_inches="tight",
                     facecolor="white")
     plt.close(fig)
     print(f"  {name}")

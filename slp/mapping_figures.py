@@ -42,10 +42,12 @@ CACHE = _CFG.cache_dir
 def save(fig, name: str, part: str | None = None) -> None:
     #Lorenzo Giannuzzo: a figure lands in the folder of the metric it illustrates, and the
     #ones built on the contingency table itself land at the root of the stage, because that
-    #table is the common origin of all three metrics and belongs to none of them.
-    out = (PART_DIR[part] if part else RES) / "figures"
-    out.mkdir(parents=True, exist_ok=True)
+    #table is the common origin of all three metrics and belongs to none of them. Within
+    #that folder each format has its own directory, so the two sets can be handled whole.
+    base = (PART_DIR[part] if part else RES) / "figures"
     for ext in ("png", "pdf"):
+        out = base / ext
+        out.mkdir(parents=True, exist_ok=True)
         fig.savefig(out / f"{name}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"  {name}")
