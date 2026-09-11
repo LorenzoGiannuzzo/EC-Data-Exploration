@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Profiles constructor">
+    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="General code updates">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/slp/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/common/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/common/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/slp/mapping_figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/mapping_figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
     </list>
@@ -332,7 +329,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788515156511</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="General code updates">
+      <option name="closed" value="true" />
+      <created>1789122135485</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1789122135486</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -352,6 +357,7 @@
     <MESSAGE value="Repo update" />
     <MESSAGE value="Paper pipeline update" />
     <MESSAGE value="Profiles constructor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Profiles constructor" />
+    <MESSAGE value="General code updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="General code updates" />
   </component>
 </project>

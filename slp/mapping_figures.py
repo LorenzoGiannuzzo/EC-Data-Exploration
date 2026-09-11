@@ -310,7 +310,11 @@ def main() -> None:
         print(f"  ! fig13 needs the generation output: {exc}")
     fig_declared_against_actual()
     fig_reach_beyond_declared()
-    fig_profiles_with_classes()
+    #Lorenzo Giannuzzo: one figure per day type. The published profiles are paired with a
+    #behaviour cell by cell, so a catalogue curve that matches on a working day and misses
+    #on a Sunday shows up only if the Sunday is drawn.
+    for daytype in DAYTYPES:
+        fig_profiles_with_classes(daytype=daytype)
     fig_classes_across_profiles()
     fig_national_without_match()
     print(f"\n  figures under {RES}\n")
@@ -1125,7 +1129,20 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
 #figure is about which users share a behaviour, and the three working days already carry
 #most of the annual energy; showing six cells would double the width for a contrast the
 #day-type figures of Section 2.5 make better.
-CURVE_CELLS = [("winter", "weekday"), ("mid", "weekday"), ("summer", "weekday")]
+CURVE_SEASONS = ["winter", "mid", "summer"]
+DAYTYPES = ["weekday", "saturday", "sunday"]
+CURVE_CELLS = [(s, "weekday") for s in CURVE_SEASONS]
+
+
+def cells_for(daytype: str) -> list:
+    """The three seasonal cells of one day type.
+
+    Kept as a function rather than a second constant because the figure is drawn once per
+    day type. Nine cells in one figure would be four times as wide as the panels are tall
+    and unreadable at page size, and the comparison the reader makes is within a day type,
+    not across the diagonal of a nine-panel grid.
+    """
+    return [(s, daytype) for s in CURVE_SEASONS]
 YLABEL = "Power normalized to an annual consumption of 1,000 kWh [kW]"
 
 
@@ -1478,10 +1495,12 @@ def _row_figure(rows: list, title: str, right_title: str,
     save(fig, name, part)
 
 
-def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
+def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
+                              daytype: str = "weekday") -> None:
     """M2 with the behaviour shown: what each profile looks like and who is in it."""
-    per_cell = _curves_by_profile()
-    nearest = _nearest_per_cell(per_cell, CURVE_CELLS, max_distance)
+    cells = cells_for(daytype)
+    per_cell = _curves_by_profile(cells)
+    nearest = _nearest_per_cell(per_cell, cells, max_distance)
     m = _membership()
     comp = pd.crosstab(m["group"], m["activity"])
     comp = comp.div(comp.sum(axis=1), axis=0)
@@ -1496,7 +1515,7 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
         share = share[share >= 0.005].sort_values(ascending=False).head(top)
 
         overlay, legend = {}, {}
-        for j in range(len(CURVE_CELLS)):
+        for j in range(len(cells)):
             legend[j] = [(f"DD-SLP {g}", INK, "-")]
         for j, (nat_name, dist, shape) in nearest.get(g, {}).items():
             legend[j].append((_national_caption(nat_name),
@@ -1520,7 +1539,7 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
     _row_figure(rows,
                 "What each behaviour looks like, and which activity classes it gathers",
                 "Share of the points in the behaviour [%]",
-                "fig16_profiles_with_classes", "aggregation", CURVE_CELLS, YLABEL)
+                f"fig16_profiles_with_classes_{daytype}", "aggregation", cells, YLABEL)
 
 
 def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> None:
