@@ -1411,6 +1411,12 @@ def _row_figure(rows: list, title: str, right_title: str,
     for i, row in enumerate(rows):
         for j, (season, daytype) in enumerate(cells):
             ax = axes[i][j]
+            #Lorenzo Giannuzzo: the published profile is the reference of the comparison,
+            #so the residual is measured against it and the relative figure is divided by
+            #its mean level. Taking the behaviour as the denominator would change the
+            #percentage without changing the curves, which is the kind of asymmetry that
+            #makes two tables in a paper disagree for no visible reason.
+            reference = row.get("reference", {}).get(j)
             for curve, _label, colour in row.get("overlay", {}).get(j, []):
                 #Lorenzo Giannuzzo: dashed, so that it never reads as one more behaviour.
                 #It is published, not measured, and the distinction is the whole point of
@@ -1424,6 +1430,20 @@ def _row_figure(rows: list, title: str, right_title: str,
             #The entries are declared by the caller, which is the only place that knows
             #whether the solid line is a behaviour or a published profile, and the night
             #hours leave the upper left corner free in every row of these figures.
+            if reference is not None and row["curves"][j]:
+                measured = row["curves"][j][0][0]
+                rmse = float(np.sqrt(np.mean((measured - reference) ** 2)))
+                level = float(np.mean(reference))
+                #Lorenzo Giannuzzo: reported as a share of the reference level rather
+                #than in kW. On curves normalised to a thousand kilowatt-hours a year the
+                #absolute figure is of the order of one hundredth of a kilowatt and says
+                #nothing on its own, while the ratio is the same quantity on a scale the
+                #reader can weigh against the curves in front of them.
+                ax.annotate(f"RMSE {100 * rmse / level:.1f}%",
+                            xy=(0.975, 0.05), xycoords="axes fraction",
+                            ha="right", va="bottom", fontsize=6.4, color=INK,
+                            bbox=dict(facecolor="white", edgecolor=NEUTRAL,
+                                      linewidth=0.6, pad=2.0, alpha=0.92))
             entries = row.get("legend", {}).get(j, [])
             if entries:
                 handles = [plt.Line2D([], [], color=c, lw=1.6, ls=st) for _l, c, st in entries]
@@ -1514,7 +1534,7 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
         share = comp.loc[g]
         share = share[share >= 0.005].sort_values(ascending=False).head(top)
 
-        overlay, legend = {}, {}
+        overlay, legend, reference = {}, {}, {}
         for j in range(len(cells)):
             legend[j] = [(f"DD-SLP {g}", INK, "-")]
         for j, (nat_name, dist, shape) in nearest.get(g, {}).items():
@@ -1524,14 +1544,15 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
             #drawn, so the panel compares the shape of the day and not the amplitude,
             #which the comparison stage answers in its own terms.
             daily = per_cell[j][g].sum()
-            overlay[j] = [(shape / shape.sum() * daily, nat_name,
-                           _national_color(nat_name))]
+            reference[j] = shape / shape.sum() * daily
+            overlay[j] = [(reference[j], nat_name, _national_color(nat_name))]
 
         rows.append({
             "label": f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
             "curves": [[(cell[g], 1.0, INK)] for cell in per_cell],
             "overlay": overlay,
             "legend": legend,
+            "reference": reference,
             "bars": [(activity_label(c), float(v), palette.get(c, NEUTRAL))
                      for c, v in share.items()],
             "effective": _effective(comp.loc[g].to_numpy()),
@@ -1623,7 +1644,7 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
     palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(sorted(per_cell[0]))}
     rows, unresolved = [], []
     for national, nearest_g, dist in far:
-        curves_per_cell, overlay, legend = [], {}, {}
+        curves_per_cell, overlay, legend, reference = [], {}, {}, {}
         for j, cell in enumerate(CURVE_CELLS):
             nat = _national_curve(national, *cell)
             if nat is None:
@@ -1635,8 +1656,9 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
             #drawn solid and the behaviour is the dashed reference. The roles are the
             #reverse of figure 16 and the styling follows them rather than the colours.
             daily = per_cell[j][nearest_g].sum()
-            curves_per_cell.append([(np.repeat(nat, 4) / 4.0 * daily, 1.0,
-                                     _national_color(national))])
+            published = np.repeat(nat, 4) / 4.0 * daily
+            reference[j] = published
+            curves_per_cell.append([(published, 1.0, _national_color(national))])
             overlay[j] = [(per_cell[j][nearest_g], f"DD-SLP {nearest_g}", INK)]
             legend[j] = [(_national_caption(national),
                           _national_color(national), "-"),
@@ -1650,6 +1672,7 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
             "curves": curves_per_cell,
             "overlay": overlay,
             "legend": legend,
+            "reference": reference,
             "bars": [(f"DD-SLP {g}", float(v), palette.get(g, NEUTRAL))
                      for g, v in spread.items()],
             "effective": _effective(pts["group"].value_counts().to_numpy()),
