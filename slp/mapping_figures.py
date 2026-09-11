@@ -300,6 +300,7 @@ def main() -> None:
     fig_reach_beyond_declared()
     fig_profiles_with_classes()
     fig_classes_across_profiles()
+    fig_national_without_match()
     print(f"\n  figures under {RES}\n")
 
 
@@ -812,7 +813,48 @@ DECLARED = {
 }
 
 
+#Lorenzo Giannuzzo: the ARERA workbooks spell residency in Italian and the label is built
+#straight from them, so the words reached the figures untranslated. They are mapped here,
+#at drawing time only: the keys the pipeline matches on stay exactly as the source writes
+#them, and nothing upstream has to know about the English.
+RESIDENCY_EN = {"residente": "resident", "non residente": "non-resident",
+                "tutti": "all"}
+
+
+SEP = "  -  "
+
+
+def _national_caption(name: str) -> str:
+    """How a published profile is named in a legend: code, and meaning when opaque."""
+    meaning = _declared_meaning(name)
+    self_describing = str(name).upper().startswith("ARERA")
+    return _english_residency(str(name) if self_describing or not meaning
+                              else f"{name}{SEP}{meaning}")
+
+
+def _english_residency(text: str) -> str:
+    out = str(text)
+    for it, en in sorted(RESIDENCY_EN.items(), key=lambda kv: -len(kv[0])):
+        for form in (it, it.title(), it.capitalize()):
+            out = out.replace(form, en)
+    #Lorenzo Giannuzzo: the power class arrives as a bare interval, "0-1.5", which reads
+    #as a range of nothing in particular. The unit is appended here rather than written
+    #into the label upstream, because that label is also the key the ARERA table is
+    #matched on and it has to keep the spelling of the source.
+    parts = out.split()
+    if len(parts) >= 2 and parts[0].upper() == "ARERA" and any(c.isdigit() for c in parts[1]):
+        parts.insert(2, "kW")
+        out = " ".join(parts)
+    return out
+
+
 def _declared_meaning(name: str) -> str:
+    #Lorenzo Giannuzzo: the label may arrive prefixed, as "GSE PAUF", so the published
+    #code is looked for among its tokens. Matching the label whole returned nothing and
+    #the figure then said only "PAUF", which is exactly the opacity being complained of.
+    for token in str(name).replace("_", " ").split():
+        if token in DECLARED:
+            return DECLARED[token]
     if name in DECLARED:
         return DECLARED[name]
     if name.startswith("ARERA"):
@@ -822,7 +864,7 @@ def _declared_meaning(name: str) -> str:
         parts = name.split()
         band = parts[1] if len(parts) > 1 else "?"
         res = " ".join(parts[2:]).lower() if len(parts) > 2 else ""
-        return f"domestic, {band} kW, {res}"
+        return f"domestic, {band} kW, {_english_residency(res)}"
     return ""
 
 
@@ -903,7 +945,8 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
                     fontweight="bold", color=INK, va="center", annotation_clip=False)
 
     ax.set_yticks(y)
-    ax.set_yticklabels([f"{n}\ndeclared: {_declared_meaning(n)}  ·  {int(n_pod[n])} PODs"
+    ax.set_yticklabels([f"{_english_residency(n)}\ndeclared: "
+                        f"{_declared_meaning(n)}{SEP}{int(n_pod[n])} PODs"
                         for n in order], fontsize=8)
     ax.set_xlim(0, 100)
     ax.set_xticks([0, 25, 50, 75, 100])
@@ -1055,7 +1098,12 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
 #  share of the annual energy in every profile of the case study. Three seasons
 #  would triple the height for a point about composition rather than seasonality.
 # ===========================================================================
-CURVE_CELL = ("winter", "weekday")
+#Lorenzo Giannuzzo: the working day of each season. The weekend is left out because the
+#figure is about which users share a behaviour, and the three working days already carry
+#most of the annual energy; showing six cells would double the width for a contrast the
+#day-type figures of Section 2.5 make better.
+CURVE_CELLS = [("winter", "weekday"), ("mid", "weekday"), ("summer", "weekday")]
+YLABEL = "Power normalized to an annual consumption of 1,000 kWh [kW]"
 
 
 def _effective(counts: np.ndarray) -> float:
@@ -1070,13 +1118,17 @@ def _effective(counts: np.ndarray) -> float:
     return float(np.exp(-(p * np.log(p)).sum()))
 
 
-def _curves_by_profile(season: str = CURVE_CELL[0],
-                       daytype: str = CURVE_CELL[1]) -> dict:
+def _curves_by_profile(cells: list = None) -> list:
+    """One dictionary of curves per cell, in the order the cells are given."""
+    cells = cells or CURVE_CELLS
     curves = pd.read_csv(GEN / "profiles.csv")
     kw = [f"kW{i}" for i in range(1, 97)]
-    sub = curves[(curves["season"] == season) & (curves["daytype"] == daytype)]
-    return {int(r.profile): sub.loc[r.Index, kw].to_numpy(float)
-            for r in sub.itertuples()}
+    out = []
+    for season, daytype in cells:
+        sub = curves[(curves["season"] == season) & (curves["daytype"] == daytype)]
+        out.append({int(r.profile): sub.loc[r.Index, kw].to_numpy(float)
+                    for r in sub.itertuples()})
+    return out
 
 
 def _membership() -> pd.DataFrame:
@@ -1091,96 +1143,95 @@ def _membership() -> pd.DataFrame:
     return full
 
 
-def _row_figure(rows: list, title: str, right_label: str, left_title: str,
-                right_title: str, name: str, part: str) -> None:
-    """One row per subject: the curves on the left, the composition on the right.
+_CALENDAR = None
 
-    `rows` carries, per subject: its label, the curves to draw with their weights and
-    colours, the bars to draw with their labels, and the effective number to print at
-    the edge. The two figures below differ in what a subject is and in what the bars
-    count, and in nothing else, so they share this.
+
+def _calendar() -> pd.DataFrame:
+    """The season and day-type calendar of the metering year, built once.
+
+    The year is taken from the metered days rather than from the configuration. The
+    configuration key is optional and was empty here, which turned every call into
+    int(None) and took the whole figure down with a TypeError that named neither the key
+    nor the stage. Reading it from the data cannot be out of step with the days the curves
+    were averaged over, which is the property that actually matters.
     """
-    n = len(rows)
-    head = 0.62
-    fig_h = 1.42 * n + head + 0.45
-    fig, axes = plt.subplots(n, 2, figsize=(11.0, fig_h),
-                             gridspec_kw={"width_ratios": [1.0, 1.35], "hspace": 0.55,
-                                          "wspace": 0.30},
-                             squeeze=False)
-    #Lorenzo Giannuzzo: one vertical scale for every curve. Per-panel scales made a
-    #profile that is flat to within two per cent look as structured as one that doubles
-    #over the day, which is the opposite of what the column is there to show.
-    for i in range(1, n):
-        axes[i][0].sharey(axes[0][0])
-    x = np.arange(96) / 4.0
-    for i, row in enumerate(rows):
-        ax = axes[i][0]
-        #Lorenzo Giannuzzo: deliberately not called `name`. That is the parameter holding
-        #the file name of the whole figure, and a loop variable of the same name overwrote
-        #it, so the figure was saved under the name of the last national profile drawn.
-        for curve, national_name, dist in row.get("overlay", []):
-            #Lorenzo Giannuzzo: dashed and warm, so that it never reads as one more
-            #behaviour. It is published, not measured, and the distinction is the whole
-            #point of putting the two in the same panel.
-            ax.plot(x, curve, color=WARM, lw=1.3, ls="--", alpha=0.95, zorder=3)
-            #Lorenzo Giannuzzo: on an opaque patch, because the corner it sits in is free
-            #in some panels and crossed by the evening peak in others, and the label has to
-            #stay readable in both without being moved by hand per row.
-            ax.annotate(f"{national_name}  (TV {dist:.2f})", xy=(0.98, 0.94),
-                        xycoords="axes fraction", ha="right", va="top",
-                        fontsize=6.4, color=WARM,
-                        bbox=dict(facecolor="white", edgecolor="none", pad=1.2,
-                                  alpha=0.85))
-        for curve, weight, colour in row["curves"]:
-            #Lorenzo Giannuzzo: the width still carries the share, but the range starts
-            #thinner and grows less. A single curve at weight one, which is every row of
-            #the aggregation figure, was coming out as a heavy black band that hid the
-            #shape it was drawn to show.
-            ax.plot(x, curve, color=colour, lw=0.6 + 1.0 * weight, alpha=0.95)
-        ax.set_xlim(0, 24)
-        ax.set_xticks([0, 6, 12, 18, 24])
-        ax.grid(color=GRID, lw=0.5)
-        ax.set_axisbelow(True)
-        ax.tick_params(labelsize=6.5)
-        ax.set_ylabel(row["label"], fontsize=7.8, color=INK)
-        if i == 0:
-            ax.set_title(left_title, fontsize=8.5, loc="left", color=INK)
-        if i == n - 1:
-            ax.set_xlabel("Time of day [h]", fontsize=8)
-
-        ax = axes[i][1]
-        bars = row["bars"]
-        y = np.arange(len(bars))[::-1]
-        vals = np.array([v for _l, v, _c in bars]) * 100
-        ax.barh(y, vals, height=0.68,
-                color=[c for _l, _v, c in bars], edgecolor="white", lw=0.4)
-        for yy, v in zip(y, vals):
-            ax.text(v + 1.6, yy, f"{v:.0f}", va="center", fontsize=6.4, color=INK)
-        ax.set_yticks(y)
-        ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6)
-        ax.set_xlim(0, min(105, vals.max() * 1.22))
-        ax.set_ylim(-0.7, max(len(bars) - 0.3, 0.5))
-        ax.grid(axis="x", color=GRID, lw=0.5)
-        ax.set_axisbelow(True)
-        ax.tick_params(axis="x", labelsize=6.5)
-        ax.tick_params(axis="y", length=0)
-        for sp in ("top", "right", "left"):
-            ax.spines[sp].set_visible(False)
-        if i == 0:
-            ax.set_title(right_title, fontsize=8.5, loc="left", color=INK)
-        ax.annotate(f"{row['effective']:.1f}", xy=(1.045, 0.5),
-                    xycoords="axes fraction", fontsize=9.5, fontweight="bold",
-                    color=WARM, va="center", annotation_clip=False)
-    axes[0][1].annotate(right_label, xy=(1.045, 1.30), xycoords="axes fraction",
-                        fontsize=7.6, fontweight="bold", color=WARM, va="bottom",
-                        annotation_clip=False)
-    fig.suptitle(title, fontsize=10.5, x=0.012, y=1.0 - 0.10 / fig_h, ha="left",
-                 va="top")
-    fig.tight_layout(rect=[0, 0, 0.955, 1.0 - head / fig_h])
-    save(fig, name, part)
+    global _CALENDAR
+    if _CALENDAR is None:
+        days = pd.read_parquet(CACHE / "days.parquet")
+        year = int(pd.to_datetime(days["date"]).dt.year.mode().iloc[0])
+        _CALENDAR = C.build_calendar(year, C.season_map_from_days(days))
+    return _CALENDAR
 
 
-COMP = None  # resolved lazily, the comparison stage may not have run
+def _cell_months(season: str) -> list[int]:
+    cal = _calendar()
+    return sorted(cal.loc[cal["season"] == season, "date"].dt.month.unique())
+
+
+def _national_names() -> list:
+    """The published profiles the comparison stage considered, in its own spelling."""
+    path = _CFG.results_dir("comparison") / "b1_ddslp_vs_national.csv"
+    if not path.exists():
+        return []
+    return sorted(pd.read_csv(path)["national"].astype(str).unique())
+
+
+def _total_variation(a: np.ndarray, b: np.ndarray) -> float:
+    #Lorenzo Giannuzzo: half the sum of the absolute differences between the two daily
+    #shapes once each is normalised to one. It is the share of the day's energy the one
+    #would misallocate if used in place of the other, which is the quantity Section 2.5
+    #reports, so a distance read here is on the same scale as a distance read there.
+    p = np.asarray(a, float)
+    q = np.asarray(b, float)
+    if p.sum() <= 0 or q.sum() <= 0:
+        return float("nan")
+    return float(0.5 * np.abs(p / p.sum() - q / q.sum()).sum())
+
+
+def _nearest_per_cell(per_cell: list, cells: list, max_distance: float) -> dict:
+    """For each behaviour and each cell, the closest published profile in that cell.
+
+    The pairing is recomputed per cell rather than taken once from the annual table. A
+    published profile can sit close to a behaviour in summer and far from it in winter,
+    and a single pairing carried across the three panels hides exactly that, which is one
+    of the things the seasonal panels were added to show.
+    """
+    names = _national_names()
+    if not names:
+        print("  fig16: comparison output absent, national curves omitted")
+        return {}
+    curves = {}
+    for j, cell in enumerate(cells):
+        for name in names:
+            nat = _national_curve(name, *cell)
+            if nat is not None:
+                curves[(j, name)] = np.repeat(nat, 4) / 4.0
+
+    out, rejected, unresolved = {}, [], set(names) - {n for _, n in curves}
+    for g in per_cell[0]:
+        for j in range(len(cells)):
+            best, best_d = None, np.inf
+            for name in names:
+                shape = curves.get((j, name))
+                if shape is None:
+                    continue
+                d = _total_variation(per_cell[j][g], shape)
+                if np.isfinite(d) and d < best_d:
+                    best, best_d = name, d
+            if best is None:
+                continue
+            if best_d <= max_distance:
+                out.setdefault(g, {})[j] = (best, best_d, curves[(j, best)])
+            else:
+                rejected.append(f"DD-SLP {g} in {cells[j][0]}: {best} at {best_d:.3f}")
+    if unresolved:
+        print("  fig16: national curve not reconstructed for "
+              + ", ".join(sorted(unresolved)))
+    if rejected:
+        #Lorenzo Giannuzzo: printed with the distances so the threshold can be judged
+        #against the numbers rather than guessed at.
+        print(f"  fig16: nothing within {max_distance:.2f} for " + "; ".join(rejected))
+    return out
 
 
 def _nearest_national(max_distance: float = 0.15) -> dict:
@@ -1212,34 +1263,8 @@ def _nearest_national(max_distance: float = 0.15) -> dict:
     if rejected:
         #Lorenzo Giannuzzo: the rejections are printed with their distances so that the
         #threshold can be judged against the numbers instead of guessed at.
-        print(f"  fig16: nothing within {max_distance:.2f} for "
-              + "; ".join(rejected))
+        print(f"  fig16: nothing within {max_distance:.2f} for " + "; ".join(rejected))
     return out
-
-
-_CALENDAR = None
-
-
-def _calendar() -> pd.DataFrame:
-    """The season and day-type calendar of the metering year, built once.
-
-    The year is taken from the metered days rather than from the configuration. The
-    configuration key is optional and was empty here, which turned every call into
-    int(None) and took the whole figure down with a TypeError that named neither the
-    key nor the stage. Reading it from the data cannot be out of step with the days the
-    curves were averaged over, which is the property that actually matters.
-    """
-    global _CALENDAR
-    if _CALENDAR is None:
-        days = pd.read_parquet(CACHE / "days.parquet")
-        year = int(pd.to_datetime(days["date"]).dt.year.mode().iloc[0])
-        _CALENDAR = C.build_calendar(year, C.season_map_from_days(days))
-    return _CALENDAR
-
-
-def _cell_months(season: str) -> list[int]:
-    cal = _calendar()
-    return sorted(cal.loc[cal["season"] == season, "date"].dt.month.unique())
 
 
 def _gse_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
@@ -1270,12 +1295,11 @@ def _arera_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
     The workbooks are tabulated by month, so the cell is assembled by averaging the months
     the calendar assigns to the season, which is the same grid the generation stage uses.
     """
-    cached = sorted(CACHE.glob("arera_*.parquet"))
-    cached = [p for p in cached if "provenance" not in p.name]
+    cached = [p for p in sorted(CACHE.glob("arera_*.parquet"))
+              if "provenance" not in p.name]
     if not cached:
         return None
     tab = pd.read_parquet(cached[0])
-
     label = str(name).replace("ARERA", "").strip()
     cls = next((c for c in sorted(tab["power_class"].unique(), key=len, reverse=True)
                 if label.startswith(str(c))), None)
@@ -1303,68 +1327,182 @@ def _national_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
     return _gse_curve(name, season, daytype)
 
 
+#Lorenzo Giannuzzo: the effective number is not drawn. It is the subject of the dot plots
+#of figures 7 and 8 and repeating it in the margin here competed with the curves for the
+#reader's attention without adding anything the tables do not already carry.
+def _row_figure(rows: list, title: str, right_title: str,
+                name: str, part: str, cells: list, ylabel: str,
+                overlay_color: str = None) -> None:
+    """One row per subject: the curves on the left, the composition on the right.
+
+    `rows` carries, per subject: its label, one list of curves per cell, an optional
+    overlay per cell, the bars, and the effective number printed at the edge. The three
+    figures built on this differ in what a subject is and in what the bars count, and in
+    nothing else.
+    """
+    n = len(rows)
+    nc = len(cells)
+    over = overlay_color or WARM
+    #Lorenzo Giannuzzo: a short figure needs proportionally more head room, otherwise the
+    #title lands on the panel titles. Expressed in inches it would vanish at one row.
+    head = 0.92 if n > 2 else 1.32
+    fig_h = 1.55 * n + head + 0.55
+    #Lorenzo Giannuzzo: the bar column is given both extra width and extra space to its
+    #left, because its tick labels are class names and they grow leftwards into whatever
+    #panel precedes them. Shrinking the font instead would have cost legibility on the
+    #one column the figure is read for.
+    #Lorenzo Giannuzzo: the panels take the width back. The bar labels needed room, but
+    #buying it with white space between every column shrank the curves, which are what the
+    #figure is for. The room comes from a wider figure and from the bar column alone,
+    #whose left margin is the only one that has to hold a class name.
+    fig, axes = plt.subplots(n, nc + 1, figsize=(3.35 * nc + 6.2, fig_h),
+                             gridspec_kw={"width_ratios": [1.0] * nc + [1.55],
+                                          "hspace": 0.26, "wspace": 0.10},
+                             squeeze=False)
+    #Lorenzo Giannuzzo: one vertical scale for every curve in the figure, not per panel.
+    #Per-panel scales made a profile that is flat to within two per cent look as
+    #structured as one that doubles over the day.
+    for i in range(n):
+        for j in range(nc):
+            if (i, j) != (0, 0):
+                axes[i][j].sharey(axes[0][0])
+            if j:
+                axes[i][j].tick_params(labelleft=False)
+
+    x = np.arange(96) / 4.0
+    for i, row in enumerate(rows):
+        for j, (season, daytype) in enumerate(cells):
+            ax = axes[i][j]
+            for curve, national_name, dist in row.get("overlay", {}).get(j, []):
+                #Lorenzo Giannuzzo: dashed and warm, so that it never reads as one more
+                #behaviour. It is published, not measured, and the distinction is the
+                #whole point of putting the two in the same panel.
+                ax.plot(x, curve, color=over, lw=1.2, ls="--", alpha=0.95, zorder=3)
+            for curve, weight, colour in row["curves"][j]:
+                ax.plot(x, curve, color=colour, lw=0.6 + 1.0 * weight, alpha=0.95)
+            #Lorenzo Giannuzzo: a legend inside the panel rather than a caption above it.
+            #The entries are declared by the caller, which is the only place that knows
+            #whether the solid line is a behaviour or a published profile, and the night
+            #hours leave the upper left corner free in every row of these figures.
+            entries = row.get("legend", {}).get(j, [])
+            if entries:
+                handles = [plt.Line2D([], [], color=c, lw=1.6, ls=st) for _l, c, st in entries]
+                ax.legend(handles, [l for l, _c, _s in entries], loc="upper left",
+                          fontsize=6.2, frameon=True, framealpha=0.9,
+                          edgecolor=NEUTRAL, handlelength=1.7, borderpad=0.35,
+                          labelspacing=0.25, borderaxespad=0.3)
+            ax.set_xlim(0, 24)
+            ax.set_xticks([0, 6, 12, 18, 24])
+            ax.grid(color=GRID, lw=0.5)
+            ax.set_axisbelow(True)
+            ax.tick_params(labelsize=6.5)
+            if j == 0:
+                #Lorenzo Giannuzzo: the unit repeated on the row, because the label of the
+                #whole figure sits far to the left and a reader looking at the fifth row
+                #has no reason to travel back to it.
+                ax.set_ylabel(row["label"] + "\nNormalized power [kW]",
+                              fontsize=7.4, color=INK)
+            if i == 0:
+                #Lorenzo Giannuzzo: the padding is back to normal. It was opened up to
+                #clear the national caption that used to sit above the panel, and that
+                #caption is now a legend inside it.
+                ax.set_title(f"{_pretty(season)}, {_pretty(daytype)}",
+                             fontsize=8.3, color=INK, pad=6)
+            if i == n - 1:
+                ax.set_xlabel("Time of day [h]", fontsize=7.8)
+
+        ax = axes[i][nc]
+        bars = row["bars"]
+        y = np.arange(len(bars))[::-1]
+        vals = np.array([v for _l, v, _c in bars]) * 100
+        ax.barh(y, vals, height=0.68,
+                color=[c for _l, _v, c in bars], edgecolor="white", lw=0.4)
+        for yy, v in zip(y, vals):
+            ax.text(v + 1.6, yy, f"{v:.0f}", va="center", fontsize=6.4, color=INK)
+        ax.set_yticks(y)
+        ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6)
+        ax.set_xlim(0, min(105, vals.max() * 1.22))
+        ax.set_ylim(-0.7, max(len(bars) - 0.3, 0.5))
+        ax.grid(axis="x", color=GRID, lw=0.5)
+        ax.set_axisbelow(True)
+        ax.tick_params(axis="x", labelsize=6.5)
+        ax.tick_params(axis="y", length=0)
+        for sp in ("top", "right", "left"):
+            ax.spines[sp].set_visible(False)
+        if i == 0:
+            ax.set_title(right_title, fontsize=8.5, loc="left", color=INK)
+    #Lorenzo Giannuzzo: no figure-wide vertical label. It reserved a column of its own
+    #down the whole left side for one line of text, and the row labels already carry the
+    #unit. The normalisation it used to state now rides in the title, where it is read
+    #once and costs no width.
+    fig.tight_layout(rect=[0.004, 0, 0.99, 1.0 - head / fig_h])
+    #Lorenzo Giannuzzo: the bar column is shifted right after the layout pass, so its tick
+    #labels get their own margin instead of one applied to every gap in the figure. Done
+    #before tight_layout it would simply be overwritten by it.
+    shift = 0.062
+    for i in range(n):
+        box = axes[i][nc].get_position()
+        axes[i][nc].set_position([box.x0 + shift, box.y0,
+                                  max(box.width - shift, 0.05), box.height])
+    #Lorenzo Giannuzzo: placed after the layout pass and measured from where the panels
+    #actually ended up. tight_layout silently ignores its rect when a figure carries
+    #annotations outside the axes, which this one does, so a title positioned beforehand
+    #landed on the panel titles and no amount of head room moved it.
+    #Lorenzo Giannuzzo: the offset has to clear both the season title and the national
+    #label that now sits above the panel, so it is measured against the two together.
+    top = max(ax.get_position().y1 for ax in axes[0])
+    fig.text(0.5, min(0.995, top + 0.58 / fig_h), f"{title}\n{ylabel}",
+             fontsize=10.5, ha="center", va="bottom", color=INK, linespacing=1.5)
+    save(fig, name, part)
+
+
 def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
     """M2 with the behaviour shown: what each profile looks like and who is in it."""
-    curves = _curves_by_profile()
-    nearest = _nearest_national(max_distance)
-    unresolved: list[str] = []
+    per_cell = _curves_by_profile()
+    nearest = _nearest_per_cell(per_cell, CURVE_CELLS, max_distance)
     m = _membership()
     comp = pd.crosstab(m["group"], m["activity"])
     comp = comp.div(comp.sum(axis=1), axis=0)
     sizes = m["group"].value_counts()
 
-    #Lorenzo Giannuzzo: only as many classes get a colour as the palette holds. Cycling
-    #past its end put the same blue on Domestic and on Public administration in the same
-    #panel, which is worse than sending the rarer of the two to grey.
     ranked = comp.sum(axis=0).sort_values(ascending=False)
     palette = {c: CLASSES[i] for i, c in enumerate(ranked.index[:len(CLASSES)])}
 
     rows = []
-    for g in sorted(c for c in comp.index if c in curves):
+    for g in sorted(c for c in comp.index if c in per_cell[0]):
         share = comp.loc[g]
         share = share[share >= 0.005].sort_values(ascending=False).head(top)
-        #Lorenzo Giannuzzo: the published curve is put on the same daily energy as the
-        #behaviour before being drawn, so that the panel compares the shape of the day and
-        #not the amplitude. The amplitude is a separate question and the comparison stage
-        #answers it in its own terms.
-        overlay = []
-        if g in nearest:
-            nat_name, dist = nearest[g]
-            nat = _national_curve(nat_name, *CURVE_CELL)
-            if nat is None:
-                #Lorenzo Giannuzzo: said out loud rather than skipped. The first version
-                #returned None on any name it could not resolve and drew nothing, which
-                #is indistinguishable from "no national profile is close" and sent me
-                #looking for a threshold problem that was not there.
-                unresolved.append(nat_name)
-            else:
-                daily = curves[g].sum()
-                overlay = [(np.repeat(nat, 4) / 4.0 * daily, nat_name, dist)]
+
+        overlay, legend = {}, {}
+        for j in range(len(CURVE_CELLS)):
+            legend[j] = [(f"DD-SLP {g}", INK, "-")]
+        for j, (nat_name, dist, shape) in nearest.get(g, {}).items():
+            legend[j].append((_national_caption(nat_name), WARM, "--"))
+            #Lorenzo Giannuzzo: put on the same daily energy as the behaviour before being
+            #drawn, so the panel compares the shape of the day and not the amplitude,
+            #which the comparison stage answers in its own terms.
+            daily = per_cell[j][g].sum()
+            overlay[j] = [(shape / shape.sum() * daily, nat_name, dist)]
+
         rows.append({
             "label": f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
-            "curves": [(curves[g], 1.0, INK)],
+            "curves": [[(cell[g], 1.0, INK)] for cell in per_cell],
             "overlay": overlay,
+            "legend": legend,
             "bars": [(activity_label(c), float(v), palette.get(c, NEUTRAL))
                      for c, v in share.items()],
             "effective": _effective(comp.loc[g].to_numpy()),
         })
-    if unresolved:
-        print("  fig16: national curve not reconstructed for "
-              + ", ".join(sorted(set(unresolved))))
     _row_figure(rows,
                 "What each behaviour looks like, and which activity classes it gathers",
-                "Effective\nclasses",
-                f"Curve, {_pretty(CURVE_CELL[0])} {CURVE_CELL[1]} [kW]",
                 "Share of the points in the behaviour [%]",
-                "fig16_profiles_with_classes", "aggregation")
+                "fig16_profiles_with_classes", "aggregation", CURVE_CELLS, YLABEL)
 
 
-#Lorenzo Giannuzzo: the eligibility threshold is the one the mapping stage pools rare
-#classes at, so the classes drawn here are exactly the classes the metrics are computed
-#on. A higher figure looked reasonable and left only the domestic class standing.
 def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> None:
     """M1 with the behaviours shown: what a single activity class fragments into."""
-    curves = _curves_by_profile()
+    per_cell = _curves_by_profile()
+    curves = per_cell[0]
     m = _membership()
     comp = pd.crosstab(m["activity"], m["group"])
     comp = comp[[c for c in comp.columns if c in curves]]
@@ -1385,13 +1523,98 @@ def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> Non
         share = share[share > 0]
         rows.append({
             "label": f"{activity_label(c)}\n({int(sizes[c])} PODs)",
-            "curves": [(curves[g], float(share[g]), palette[g]) for g in share.index],
+            "curves": [[(cell[g], float(share[g]), palette[g]) for g in share.index]
+                       for cell in per_cell],
             "bars": [(f"DD-SLP {g}", float(v), palette[g]) for g, v in share.items()],
             "effective": float(eff[c]),
         })
     _row_figure(rows,
                 "What a single activity class fragments into",
-                "Effective\nprofiles",
-                f"Behaviours it spans, {_pretty(CURVE_CELL[0])} {CURVE_CELL[1]} [kW]",
                 "Share of the class [%]",
-                "fig17_classes_across_profiles", "multiplicity")
+                "fig17_classes_across_profiles", "multiplicity", CURVE_CELLS, YLABEL)
+
+
+# ===========================================================================
+#  The published profiles that match nothing.
+#
+#  Figure 16 pairs a behaviour with the national profile closest to it and
+#  leaves the row bare when nothing is close. That silence is itself a result,
+#  and it is read the wrong way round there: a behaviour without a match is a
+#  gap in the catalogue, but a *published profile* without a match is a curve
+#  the regulator applies to real users while describing none of them.
+#
+#  Here the national profile is the subject. Each row shows its curve against
+#  the nearest behaviour, which is the least distant one available and is drawn
+#  however far it is, and beside it the behaviours its own points actually fall
+#  into. A profile far from the behaviour it is closest to, whose points then
+#  scatter over several, is being applied without describing anything.
+# ===========================================================================
+def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
+                               min_points: int = 25) -> None:
+    """National profiles whose nearest behaviour is still far away."""
+    path = _CFG.results_dir("comparison") / "b1_ddslp_vs_national.csv"
+    if not path.exists():
+        print("  fig18: comparison output absent, figure skipped")
+        return
+    b1 = pd.read_csv(path)
+    if "setting" in b1.columns and (b1["setting"] == "S1_monthly").any():
+        b1 = b1[b1["setting"] == "S1_monthly"]
+
+    per_cell = _curves_by_profile()
+    nat_frame = _national_frame()
+    counts = nat_frame["national"].value_counts()
+
+    far = []
+    for national, sub in b1.groupby("national"):
+        best = sub.loc[sub["total_variation"].idxmin()]
+        dist = float(best["total_variation"])
+        if dist < min_distance or counts.get(national, 0) < min_points:
+            continue
+        far.append((str(national), int(str(best["ddslp"]).split("_")[-1]), dist))
+    if not far:
+        print(f"  fig18: every published profile has a behaviour within "
+              f"{min_distance:.2f}, nothing to draw")
+        return
+    far.sort(key=lambda r: -r[2])
+
+    palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(sorted(per_cell[0]))}
+    rows, unresolved = [], []
+    for national, nearest_g, dist in far:
+        curves_per_cell, overlay, legend = [], {}, {}
+        for j, cell in enumerate(CURVE_CELLS):
+            nat = _national_curve(national, *cell)
+            if nat is None:
+                if j == 0:
+                    unresolved.append(national)
+                curves_per_cell.append([])
+                continue
+            #Lorenzo Giannuzzo: the published curve is the subject here, so it is the one
+            #drawn solid and the behaviour is the dashed reference. The roles are the
+            #reverse of figure 16 and the styling follows them rather than the colours.
+            daily = per_cell[j][nearest_g].sum()
+            curves_per_cell.append([(np.repeat(nat, 4) / 4.0 * daily, 1.0, WARM)])
+            overlay[j] = [(per_cell[j][nearest_g], f"DD-SLP {nearest_g}", dist)]
+            legend[j] = [(_national_caption(national), WARM, "-"),
+                         (f"DD-SLP {nearest_g}, closest behaviour", INK, "--")]
+
+        pts = nat_frame[nat_frame["national"] == national]
+        spread = pts["group"].value_counts()
+        spread = (spread / spread.sum()).sort_values(ascending=False).head(top)
+        rows.append({
+            "label": f"{_english_residency(national)}\n({int(counts[national])} PODs)",
+            "curves": curves_per_cell,
+            "overlay": overlay,
+            "legend": legend,
+            "bars": [(f"DD-SLP {g}", float(v), palette.get(g, NEUTRAL))
+                     for g, v in spread.items()],
+            "effective": _effective(pts["group"].value_counts().to_numpy()),
+        })
+    if unresolved:
+        print("  fig18: national curve not reconstructed for "
+              + ", ".join(sorted(set(unresolved))))
+    _row_figure(rows,
+                f"Published profiles with no behaviour within {min_distance:.2f},\n"
+                f"and the behaviours their own points fall into",
+                "Share of the profile's points [%]",
+                "fig18_national_without_match", "coverage", CURVE_CELLS, YLABEL,
+                overlay_color=INK)
