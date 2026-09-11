@@ -5,6 +5,16 @@
 The outlier filter of Section 2.2 compares a quarter-hourly reading against the
 contractual power. That comparison only holds if the units are what the code
 assumes: kWh for the readings, kW for the power. This prints enough to tell.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -38,12 +48,16 @@ for y, g in idx_all.groupby("year"):
         print(f"      MISSING: {' '.join(MON[m] for m in missing)}")
         print(f"      -> at most {days_ok} days per POD. min_valid_days must be below that.")
 
-idx = idx_all[idx_all["year"] == cfg.year]
+#Lorenzo Giannuzzo: the configured year is optional and is null on this dataset, where
+# no calendar year is complete. Reading it unguarded raised int(None) before a single
+# line of the report was printed.
+year = cfg.get("data.year")
+idx = idx_all if year is None else idx_all[idx_all["year"] == int(year)]
 if idx.empty:
-    print(f"\nNo folder for the configured year {cfg.year}. Nothing to inspect.")
+    print(f"\nNo folder for the configured year {year}. Nothing to inspect.")
     sys.exit(0)
 
-print(f"\n\nconfigured year: {cfg.year}")
+print(f"\n\nconfigured year: {year if year is not None else 'every month available'}")
 
 row = idx.iloc[len(idx) // 2]
 path = row["meas_file"]
@@ -100,7 +114,7 @@ else:
     print("    A small integer such as 1, 2, 3 with few distinct values is a")
     print("    power CLASS id, not a power, and cannot be used as a threshold.")
 
-    # implied ratio: what does the peak reading imply about the power?
+    #Lorenzo Giannuzzo: implied ratio: what does the peak reading imply about the power?
     peak = np.nanmax(q, axis=1)
     ok = np.isfinite(peak) & p.notna().to_numpy() & (p.to_numpy() > 0)
     ratio = (peak[ok] * 4) / p.to_numpy()[ok]

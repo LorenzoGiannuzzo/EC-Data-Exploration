@@ -30,6 +30,16 @@ Outputs
 
 Run
     python clustering.py
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -144,7 +154,7 @@ def to_monthly(shapes: np.ndarray, days: pd.DataFrame,
         "has_shape": tot > 0,
         "shape_idx": np.arange(len(uniq)),
     })
-    # the weight of a month is its share of the user's observed energy
+    #Lorenzo Giannuzzo: the weight of a month is its share of the user's observed energy
     out["w"] = out["energy"] / out["pod"].map(out.groupby("pod")["energy"].sum())
     return mshapes.astype("float32"), out
 
@@ -247,7 +257,7 @@ def summarised_ward_dictionary(shapes: np.ndarray, d_range: tuple[int, int],
     threshold, so the count is impossible to anticipate and can run to six
     figures, at which point Ward is back to being impossible.
     """
-    # The summary is only there because Ward cannot hold the distances between
+    #Lorenzo Giannuzzo: The summary is only there because Ward cannot hold the distances between
     # millions of shapes. Below that, it is pointless and, if n_micro exceeds the
     # number of shapes, impossible: Ward then runs on the shapes themselves.
     if len(shapes) <= max(n_micro, 25_000):
@@ -360,7 +370,7 @@ def frequencies(days: pd.DataFrame, code: np.ndarray, D: int) -> pd.DataFrame:
             f[k] = 0.0
     f = f[sorted(f.columns)]
     f.columns = [f"f_{k+1}" for k in f.columns]
-    # renormalise: days at zero carry w=0 and are absent, so the row may fall
+    #Lorenzo Giannuzzo: renormalise: days at zero carry w=0 and are absent, so the row may fall
     # short of one by the share of the year spent at zero
     s = f.sum(axis=1).replace(0, np.nan)
     return f.div(s, axis=0).fillna(0.0)
@@ -450,7 +460,7 @@ def ward_users(X: np.ndarray, k_range: tuple[int, int], k_fixed: int | None,
         rows.append({
             "K": K,
             "smallest_group": sizes_at_K[K],
-            # the users a partition strands in groups too small to carry a
+            #Lorenzo Giannuzzo: the users a partition strands in groups too small to carry a
             # profile, which is what fragmentation costs and what the smallest
             # group on its own does not say
             "small_share": float(counts[counts < n_min].sum() / counts.sum()),
@@ -501,7 +511,7 @@ def pod_cell_sums(days_daily: pd.DataFrame, shapes, pod_index
     shape_idx = piv["shape_idx"].to_numpy()[ok]
     key = (pod_id[ok].astype("int64") * len(cells) + cell_id[ok]).astype("int64")
 
-    # one pass with np.add.at instead of a Python loop over the PODs
+    #Lorenzo Giannuzzo: one pass with np.add.at instead of a Python loop over the PODs
     sums = np.zeros((len(pod_index) * len(cells), 96), dtype="float64")
     np.add.at(sums, key, np.asarray(shapes[shape_idx], dtype="float64"))
     cnt = np.bincount(key, minlength=len(pod_index) * len(cells)).astype("float64")
@@ -631,11 +641,11 @@ def sweep_K_dispersion(Z: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
             "n_profiles": int(len(kept)),
             "pods_covered": int(kept.sum()),
             "pods_below_n_min": int(sizes.sum() - kept.sum()),
-            # the cell median as the summary is written today, where a group of
+            #Lorenzo Giannuzzo: the cell median as the summary is written today, where a group of
             # forty points weighs as much as a group of two thousand because both
             # are spread over the same nine cells
             "nrmsd_p50_unweighted": float(np.median(p50)),
-            # and the same median with each cell carrying its population, which is
+            #Lorenzo Giannuzzo: and the same median with each cell carrying its population, which is
             # the figure the knee has to be read on: without it K improves simply
             # by shedding small tight groups off the main body of users
             "nrmsd_p50_pod_weighted": _weighted_median(p50, w_pod),
@@ -737,7 +747,7 @@ def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
             if len(idx):
                 pick = rng.choice(idx, size=min(n_show, len(idx)), replace=False)
                 mem = np.asarray(shapes[np.sort(pick)], dtype="float64") * scale
-                # the members themselves, faint enough that density reads as shade
+                #Lorenzo Giannuzzo: the members themselves, faint enough that density reads as shade
                 ax.plot(x, mem.T, color="#0d1f3c", alpha=0.02, lw=0.6)
                 lo, hi = np.percentile(mem, [10, 90], axis=0)
                 ax.fill_between(x, lo, hi, color="#1565c0", alpha=0.18, lw=0)
@@ -865,7 +875,7 @@ def main() -> None:
     print(f"  {len(shapes):,} daily shapes, {len(users):,} PODs   "
           f"(shapes normalised: {norm})\n")
 
-    # The resolution at which the vocabulary is built, which is not the
+    #Lorenzo Giannuzzo: The resolution at which the vocabulary is built, which is not the
     # resolution of anything else: the shapes stay at 96 components everywhere
     # they are reported or compared.
     res = str(cl.get("dictionary_resolution", "quarter_hourly")).lower()
@@ -878,7 +888,7 @@ def main() -> None:
         raise ValueError(f"dictionary_resolution must be hourly | quarter_hourly, "
                          f"got {res!r}")
 
-    # strata that exist in the data
+    #Lorenzo Giannuzzo: strata that exist in the data
     tcol = next((c for c in users.columns if c.lower() in ("d_tipta", "d_49des")), None)
     if tcol:
         days = days.merge(users[["pod", tcol]].rename(columns={tcol: "tariff_class"}),
@@ -897,7 +907,7 @@ def main() -> None:
     d_reason = ""
 
     if scope == "per_season":
-        # One vocabulary per season. Shapes are normalised to unit integral, so a
+        #Lorenzo Giannuzzo: One vocabulary per season. Shapes are normalised to unit integral, so a
         # flat winter day and a flat summer day are the same curve and a global
         # dictionary merges them, taking the seasonality out of the frequency
         # vector. Split by season, it becomes a coordinate.
@@ -926,14 +936,14 @@ def main() -> None:
             val_D.append(v_s)
         cent = np.vstack(cent_parts)
         val_D = pd.concat(val_D, ignore_index=True) if val_D else pd.DataFrame()
-        # which season each codeword belongs to, for the report
+        #Lorenzo Giannuzzo: which season each codeword belongs to, for the report
         cw_season = np.concatenate([[s] * len(c_) for s, c_ in zip(seasons, cent_parts)])
         D = len(cent)
         d_reason = " ; ".join(d_reasons)
         print(f"\n    D = {D} codewords in all "
               f"({', '.join(f'{s}:{len(c_)}' for s, c_ in zip(seasons, cent_parts))})")
     elif method in ("summarised_ward", "birch_ward"):
-        # Ward on every shape, through a summary of fixed size. Nothing is
+        #Lorenzo Giannuzzo: Ward on every shape, through a summary of fixed size. Nothing is
         # sampled away, and the memory Ward will need is known in advance.
         cent, val_D, n_sub, d_reason = summarised_ward_dictionary(
             shapes, tuple(cl["codewords_range"]), cl.get("n_codewords"), out,
@@ -995,7 +1005,7 @@ def main() -> None:
             c2 = (c2 / c2.sum(axis=1, keepdims=True)).astype("float32")
             stab.append({"comparison": f"replica {r+1}",
                          "ARI": adjusted_rand_score(base, assign_nearest(hold_x.astype("float32"), c2))})
-        # bias against the full pool, which no replica can reveal
+        #Lorenzo Giannuzzo: bias against the full pool, which no replica can reveal
         print("    BIRCH on the whole pool, to bound the sampling bias...")
         br = Birch(n_clusters=None, threshold=0.02).fit(
             np.asarray(shapes[::5], dtype="float64"))
@@ -1023,7 +1033,7 @@ def main() -> None:
     lam = float(cl["scale_weight"])
     Xs_raw = zscore(feat.to_numpy())
 
-    # Ward reads one Euclidean distance over the concatenated vector and has no
+    #Lorenzo Giannuzzo: Ward reads one Euclidean distance over the concatenated vector and has no
     # notion of which coordinates describe behaviour and which describe size, so
     # what settles the balance between the two blocks is the total variance each
     # carries and not the count of coordinates. Left as they are, the CLR block
@@ -1087,10 +1097,10 @@ def main() -> None:
 
     # ── ablation: the mixture against the mean it replaces ───────────────────
     print("\n  Ablation — mean curves on the regulatory grid")
-    # the baseline is always the mean curves of the regulatory grid, whatever
+    #Lorenzo Giannuzzo: the baseline is always the mean curves of the regulatory grid, whatever
     # unit the dictionary was built on
     shp_daily = np.load(cfg.cache_dir / "shapes.npy", mmap_mode="r")
-    # the same accumulator serves the baseline here and the sweep below, so the
+    #Lorenzo Giannuzzo: the same accumulator serves the baseline here and the sweep below, so the
     # shapes are walked once for both
     sums, cnt, cells, day_view = pod_cell_sums(days_daily, shp_daily, f.index)
     means = np.divide(sums, cnt[:, None], out=np.zeros_like(sums), where=cnt[:, None] > 0)
@@ -1099,7 +1109,7 @@ def main() -> None:
     lab_m = fcluster(linkage(Xm, method="ward"), K, criterion="maxclust")
     ari = adjusted_rand_score(lab, lab_m)
 
-    # The ARI alone cannot tell an informative divergence from noise: two
+    #Lorenzo Giannuzzo: The ARI alone cannot tell an informative divergence from noise: two
     # partitions disagree completely both when one sees a structure the other
     # misses and when one of them has found nothing at all. The silhouette of
     # each says which of the two is the case, and it is the question the paper
@@ -1164,7 +1174,7 @@ def main() -> None:
                   "peak_hour": cent.argmax(axis=1) / 4.0,
                   **{f"q{i+1}": cent[:, i] for i in range(96)}}
                  ).to_csv(out / "dictionary.csv", index=False)
-    # the members are drawn at the resolution the codewords are reported at,
+    #Lorenzo Giannuzzo: the members are drawn at the resolution the codewords are reported at,
     # which is 96 components whatever resolution the vocabulary was built in
     plot_dictionary(cent, share_days, out / "dictionary.png",
                     shapes=shapes_full, code=code, rng=rng,
@@ -1180,17 +1190,17 @@ def main() -> None:
     agg = comp.groupby("group").agg(n_pods=("pod", "size"))
     agg["share_of_pods"] = agg["n_pods"] / agg["n_pods"].sum()
 
-    # the mixture that defines the group, which is how it was built
+    #Lorenzo Giannuzzo: the mixture that defines the group, which is how it was built
     fcols = [c for c in f.columns if c.startswith("f_")]
     mix = pd.DataFrame(f[fcols].to_numpy(), columns=fcols)
     mix["group"] = lab
     agg = agg.join(mix.groupby("group")[fcols].mean().round(3))
-    # the form the group lives on, and how much of its year that form takes
+    #Lorenzo Giannuzzo: the form the group lives on, and how much of its year that form takes
     m = mix.groupby("group")[fcols].mean()
     agg["dominant_form"] = [int(c.replace("f_", "")) for c in m.idxmax(axis=1)]
     agg["dominant_share"] = m.max(axis=1).round(3)
 
-    # the scale features, averaged
+    #Lorenzo Giannuzzo: the scale features, averaged
     fe = feat.copy()
     fe["group"] = lab
     agg = agg.join(fe.groupby("group").mean().round(3),
@@ -1208,7 +1218,7 @@ def main() -> None:
     agg["below_n_min"] = agg.index.isin(small)
     agg.to_csv(out / "groups.csv")
 
-    # who is in each group, one row per POD: the table Section 3 needs
+    #Lorenzo Giannuzzo: who is in each group, one row per POD: the table Section 3 needs
     comp.merge(f.reset_index()[["pod"] + fcols], on="pod", how="left").to_csv(
         out / "group_members.csv", index=False)
 
@@ -1255,6 +1265,10 @@ def main() -> None:
     print(f"\n  cache/   dictionary.npy, day_codeword.npy, user_vectors.parquet, groups.parquet")
     print(f"  results/ {out.name}")
     print(f"{'='*78}\n")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":

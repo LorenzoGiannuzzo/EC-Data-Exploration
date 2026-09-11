@@ -25,6 +25,16 @@ insensitive to a long tail of single points. A hard count covering eighty per ce
 mass is reported beside it because it reads more easily in a table. Both come with
 bootstrap intervals, without which a class of thirty points would produce a number that
 looks like a result and is not.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -55,7 +65,7 @@ OUT_M3 = _CFG.results_dir("mapping", "coverage")
 ACTIVITY_LEVEL = "ateco_l1"     # ateco_l1 | ateco_l2 | ateco_l3
 N_MIN = 25                      # a class below this is pooled into the residual
 N_BOOTSTRAP = 500
-# Public lighting and vehicle charging are a handful of points on codes that cannot be
+#Lorenzo Giannuzzo: Public lighting and vehicle charging are a handful of points on codes that cannot be
 # decoded with confidence: they are left out of every figure rather than shown as noise.
 GSE_KEEP = ("PDMM", "PAUM")
 RNG = np.random.default_rng(20260728)
@@ -128,7 +138,7 @@ def multiplicity(m: pd.DataFrame, weight: str = "pod") -> pd.DataFrame:
         rows.append({"activity": cls, "weight": weight, "n_pod": len(x),
                      "energy_kWh": float(x["E"].sum()),
                      "M1_effective": effective_number(counts),
-                     # An effective number cannot exceed the number of categories
+                     #Lorenzo Giannuzzo: An effective number cannot exceed the number of categories
                      # available, so it grows with K by construction and two runs at
                      # different K are not comparable until it is divided by that maximum.
                      # The ratio is the share of the maximum possible spread, and it is
@@ -183,7 +193,7 @@ def real_coverage(m: pd.DataFrame, users: pd.DataFrame,
                  else y.groupby("profile")["E"].sum()).to_numpy()
         lo_d, hi_d = bootstrap_effective(y["profile"].to_numpy(), w)
         rows.append({"national_profile": prof, "weight": weight, "n_pod": len(y),
-                     # what the regulation declares: one profile stands for the whole
+                     #Lorenzo Giannuzzo: what the regulation declares: one profile stands for the whole
                      # tariff category, which is the claim being tested
                      "declared": 1.0,
                      "M3_classes_effective": effective_number(counts),
@@ -191,7 +201,7 @@ def real_coverage(m: pd.DataFrame, users: pd.DataFrame,
                      "M3_ci_low": lo, "M3_ci_high": hi,
                      "M3_classes_hard80": hard_count(counts),
                      "n_classes_present": int((counts > 0).sum()),
-                     # and how many distinct consumption behaviours are actually hiding
+                     #Lorenzo Giannuzzo: and how many distinct consumption behaviours are actually hiding
                      # under that single published curve
                      "M3_ddslp_effective": effective_number(ddslp),
                      "M3_ddslp_evenness": effective_number(ddslp) / n_prof_max,

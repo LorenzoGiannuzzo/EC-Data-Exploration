@@ -8,6 +8,16 @@ installed at its start. Reads dates and PODs alone, no Q columns.
 Everything runs on a POD-by-month table (~200k rows) rather than on the POD-day
 rows (~4M), and the windows are selected with numpy rather than with a Python
 loop over every row, so this takes seconds.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 

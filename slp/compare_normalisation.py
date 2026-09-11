@@ -12,6 +12,16 @@ The results of each branch are kept, so nothing has to be re-run afterwards:
     paper_results/clustering_results_unit_integral/
     paper_results/clustering_results_min_max/
     paper_results/normalisation_choice.csv
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -24,6 +34,9 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common.config import load_config  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent
 
 
@@ -31,7 +44,7 @@ def set_norm(norm: str) -> None:
     p = ROOT / "config.yaml"
     cfg = yaml.safe_load(p.read_text(encoding="utf-8"))
     cfg["preprocessing"]["shape_normalisation"] = norm
-    # keep the comments by rewriting only the one line
+    #Lorenzo Giannuzzo: keep the comments by rewriting only the one line
     text = p.read_text(encoding="utf-8")
     out = []
     for line in text.splitlines():
@@ -78,7 +91,10 @@ def main() -> None:
             run("preprocessing")          # the normalisation happens here
             run("clustering")
 
-            res = ROOT / "paper_results" / "clustering_results"
+            #Lorenzo Giannuzzo: resolved through the configuration. The folder was
+            # renamed when the results tree was reorganised by framework stage, and a
+            # path written out here kept pointing at a directory that no longer exists.
+            res = load_config().results_dir("clustering")
             abl = pd.read_csv(res / "ablation.csv").iloc[0]
             dic = pd.read_csv(res / "dictionary.csv")
             grp = pd.read_csv(res / "groups.csv")
@@ -96,7 +112,7 @@ def main() -> None:
                 "seconds": round(time.time() - t0),
             })
 
-            dest = ROOT / "paper_results" / f"clustering_results_{norm}"
+            dest = res.parent / f"{res.name}_{norm}"
             if dest.exists():
                 shutil.rmtree(dest)
             shutil.copytree(res, dest)
@@ -109,7 +125,7 @@ def main() -> None:
     print(f"\n{'='*70}\nCOMPARISON\n{'='*70}")
     print(df.to_string(index=False))
 
-    # What the paper has to defend is not the level of the silhouette but the
+    #Lorenzo Giannuzzo: What the paper has to defend is not the level of the silhouette but the
     # margin over the mean curves it replaces. A normalisation that raises both
     # has bought nothing and given the rival half the ground back.
     df["margin"] = (df["silhouette_two_stage"] /

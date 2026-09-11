@@ -17,6 +17,16 @@ Outputs
 
 Run
     python preprocessing.py
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -109,7 +119,7 @@ def classify_zero_runs(days: pd.DataFrame, min_run_days: int,
     z = days[days["is_zero"]]
     for pod, grp in z.groupby("pod", sort=False):
         g = grp.sort_values("date")
-        # consecutive runs
+        #Lorenzo Giannuzzo: consecutive runs
         breaks = (g["date"].diff() != pd.Timedelta(days=1)).cumsum()
         lengths = g.groupby(breaks)["date"].transform("size")
         run_id = breaks
@@ -141,10 +151,10 @@ def fill_gaps(shapes: np.ndarray, days: pd.DataFrame,
     nan_mask = np.isnan(filled)
     gap_len = nan_mask.sum(axis=1)
 
-    # rows with no gap at all
+    #Lorenzo Giannuzzo: rows with no gap at all
     clean = gap_len == 0
 
-    # rows to drop outright
+    #Lorenzo Giannuzzo: rows to drop outright
     drop |= gap_len > medium_max
 
     # ── short gaps: linear interpolation along the row ───────────────────────
@@ -164,7 +174,7 @@ def fill_gaps(shapes: np.ndarray, days: pd.DataFrame,
     if len(idx_med):
         key = days["pod"].astype(str) + "|" + days["daytype"] + "|" + days["season"]
         key = key.values
-        # median profile per key, computed on the rows that are complete
+        #Lorenzo Giannuzzo: median profile per key, computed on the rows that are complete
         med: dict[str, np.ndarray] = {}
         for k in np.unique(key[idx_med]):
             pool = filled[(key == k) & clean]
@@ -225,7 +235,7 @@ def main() -> None:
         print(f"  PODs that also inject (AN rows present): {len(prosumers):,}\n")
     track("0. as read", meas["pod"].nunique(), len(meas), f"{cfg.get('data.keep_kind','AP')} only")
 
-    # season map: month -> label
+    #Lorenzo Giannuzzo: season map: month -> label
     global SEASON_OF_MONTH
     SEASON_OF_MONTH = {m: lab for lab, months in pp["seasons"].items() for m in months}
 
@@ -270,11 +280,11 @@ def main() -> None:
         pmax = to_number(meas.loc[keep.values, power_col]).to_numpy(dtype="float32")
         if str(cfg.get("data.power_unit", "kW")).lower() == "w":
             pmax = pmax / 1000.0
-        # A POD with no declared power carries no threshold; leaving it in would
+        #Lorenzo Giannuzzo: A POD with no declared power carries no threshold; leaving it in would
         # censor every one of its readings against a limit of zero.
         floor = float(pp.get("min_contractual_power", 0.1))
         usable = np.isfinite(pmax) & (pmax > floor)
-        # A quarter-hour of x kWh is a mean power of 4x kW over that quarter.
+        #Lorenzo Giannuzzo: A quarter-hour of x kWh is a mean power of 4x kW over that quarter.
         limit = np.where(usable, pmax * float(pp["power_margin"]) / 4.0, np.inf)
         bad = shapes > limit[:, None]
         n_bad = int(np.nansum(bad))
@@ -351,7 +361,7 @@ def main() -> None:
     # the same quantity, an annual rate rather than a total.
     agg = days.groupby("pod")["energy"].agg(["sum", "size"])
     E = (agg["sum"] / agg["size"] * 365.0).rename("E")
-    # Fraction of the observed year spent at zero. The frequencies of Eq. 4 are
+    #Lorenzo Giannuzzo: Fraction of the observed year spent at zero. The frequencies of Eq. 4 are
     # weighted by energy and are therefore blind to it: a shop closed for three
     # months and one open all year would share the same frequency vector.
     zero_frac = (1.0 - days.groupby("pod")["has_shape"].mean()).rename("zero_day_fraction")
@@ -367,10 +377,10 @@ def main() -> None:
     norm = str(pp.get("shape_normalisation", "unit_integral")).lower()
     raw = shapes[has]
     if norm == "unit_integral":
-        # Eq. 2: every shape is a distribution over the day and sums to one.
+        #Lorenzo Giannuzzo: Eq. 2: every shape is a distribution over the day and sums to one.
         shapes = (raw / days.loc[has, "energy"].to_numpy()[:, None]).astype("float32")
     elif norm == "min_max":
-        # The outline alone: the peak is 1 whatever it is, and the energy under
+        #Lorenzo Giannuzzo: The outline alone: the peak is 1 whatever it is, and the energy under
         # the curve is discarded. A day already flat has its noise stretched to
         # full scale, which is the risk this normalisation carries here.
         lo = raw.min(axis=1, keepdims=True)
@@ -381,7 +391,7 @@ def main() -> None:
         raise ValueError(f"shape_normalisation must be unit_integral | min_max, "
                          f"got {norm!r}")
     print(f"  shapes normalised: {norm}")
-    # shapes.npy holds only the days that have one; days.parquet holds them all,
+    #Lorenzo Giannuzzo: shapes.npy holds only the days that have one; days.parquet holds them all,
     # and days[days.has_shape] indexes into shapes row by row.
     days["shape_idx"] = -1
     days.loc[has, "shape_idx"] = np.arange(int(has.sum()))
@@ -398,7 +408,7 @@ def main() -> None:
     users = pd.DataFrame({"pod": E.index, "E": E.values}).merge(
         zero_frac.reset_index(), on="pod", how="left").merge(
         meta.drop_duplicates("pod"), on="pod", how="left")
-    # A prosumer is a POD that also records injected active energy. The readings
+    #Lorenzo Giannuzzo: A prosumer is a POD that also records injected active energy. The readings
     # kept here are withdrawals, so it cannot be told from their sign.
     users["prosumer"] = users["pod"].isin(prosumers)
 

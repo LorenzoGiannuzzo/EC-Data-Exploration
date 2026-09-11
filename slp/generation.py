@@ -35,6 +35,16 @@ Outputs
 
 Run
     python generation.py
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -135,11 +145,11 @@ def typical_curves(shapes: np.ndarray, days: pd.DataFrame, groups: pd.DataFrame,
     cnt = np.bincount(key, minlength=K * len(cells)).astype("float64")
     curves = np.divide(sums, cnt[:, None], out=np.zeros_like(sums), where=cnt[:, None] > 0)
 
-    # each curve is a distribution over the day; renormalise against rounding
+    #Lorenzo Giannuzzo: each curve is a distribution over the day; renormalise against rounding
     s = curves.sum(axis=1, keepdims=True)
     curves = np.divide(curves, s, out=np.zeros_like(curves), where=s > 0)
 
-    # mean daily energy per cell, which is what the weights are built on
+    #Lorenzo Giannuzzo: mean daily energy per cell, which is what the weights are built on
     e = np.zeros(K * len(cells))
     np.add.at(e, key, d.loc[ok, "energy"].to_numpy())
     mean_e = np.divide(e, cnt, out=np.zeros_like(e), where=cnt > 0)
@@ -226,7 +236,7 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
 
     seasons = list(dict.fromkeys(s for s, _ in cells))
     K = len(groups_list)
-    # a monthly grid puts twelve columns on the page, so the column narrows
+    #Lorenzo Giannuzzo: a monthly grid puts twelve columns on the page, so the column narrows
     col_w = 3.3 if len(seasons) <= 4 else 1.9
     fig, axes = plt.subplots(K, len(seasons),
                              figsize=(col_w * len(seasons), 1.9 * K),
@@ -248,7 +258,7 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
                 w, nd = wmap.get((g, f"{s_}|{t_}"), (0.0, 0))
                 if nd == 0 or w == 0:
                     continue
-                # kWh on one such day, spread over the quarter-hours -> kW
+                #Lorenzo Giannuzzo: kWh on one such day, spread over the quarter-hours -> kW
                 kwh_day = kwh_year * w / nd
                 y = curves[i, cj] * kwh_day * 4.0
                 ax.plot(x, y, color=colors[t_], lw=1.2, label=t_ if i == 0 and j == 0 else None)
@@ -324,7 +334,7 @@ def main() -> None:
 
     print(f"\n{'='*78}\nSTAGE 3 — STANDARD LOAD PROFILE GENERATION (Section 2.4)\n{'='*78}\n")
 
-    # what wrote cache/ has to be the configuration now in force, or this stage
+    #Lorenzo Giannuzzo: what wrote cache/ has to be the configuration now in force, or this stage
     # reports profiles built on a dictionary that no longer exists
     man = check_manifest(cfg.cache_dir, cfg["clustering"], "generation")
     print(f"  cache written with D = {man.get('n_codewords')}, "
@@ -335,7 +345,7 @@ def main() -> None:
     groups = pd.read_parquet(cfg.cache_dir / "groups.parquet")
     users = pd.read_parquet(cfg.cache_dir / "users.parquet")
 
-    # groups below n_min are reported but do not carry a profile
+    #Lorenzo Giannuzzo: groups below n_min are reported but do not carry a profile
     keep = groups[~groups["below_n_min"]] if "below_n_min" in groups else groups
     dropped = len(groups) - len(keep)
     glist = sorted(keep["group"].unique())
@@ -401,7 +411,7 @@ def main() -> None:
             nd = int(w["calendar_days"].iloc[0]) if len(w) else 0
             kwh_day = kwh_year * wv / nd if nd else 0.0
             rows.append({
-                # `period` is the grid coordinate, a season or a month; `season`
+                #Lorenzo Giannuzzo: `period` is the grid coordinate, a season or a month; `season`
                 # repeats it so that readers written against the season grid keep
                 # working unchanged
                 "profile": g, "period": s_, "season": s_, "daytype": t_,
@@ -409,7 +419,7 @@ def main() -> None:
                 "calendar_days": nd,
                 "n_days_observed": int(counts[i, j]),
                 "kWh_per_day": round(kwh_day, 4),
-                # q1..q96 are the shape, summing to one over the day, which is
+                #Lorenzo Giannuzzo: q1..q96 are the shape, summing to one over the day, which is
                 # what Eq. 6 defines and what the comparison of Section 2.5
                 # consumes. kW1..kW96 are the same curve in the unit the figure
                 # is drawn in, the power a user drawing kwh_year over the year

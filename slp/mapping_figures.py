@@ -1,4 +1,14 @@
-"""Figures for the mapping stage (Section 2.6)."""
+"""Figures for the mapping stage (Section 2.6).
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
+"""
 from __future__ import annotations
 
 import sys
@@ -657,7 +667,7 @@ def fig_behaviours_under_national(national: str = "PDMM",
         if j == len(seasons) - 1:
             names = list(y) + ["national"]
             ends = np.array([y[g][-1] for g in y] + [national_curve[-1]])
-            # the gap is a share of the axis, not of the ends, so it is the
+            #Lorenzo Giannuzzo: the gap is a share of the axis, not of the ends, so it is the
             # same on every panel whatever the curves happen to do at midnight
             span = float(np.ptp(ax.get_ylim()))
             placed = _spread_labels(ends, 0.052 * span)
@@ -760,7 +770,7 @@ def _draw_behaviour_table(fig, table: pd.DataFrame, palette: dict,
     n = len(table)
     total = TITLE_ROWS + HEADER_ROWS + RULE_GAP + n + BOTTOM_ROWS
 
-    # centred on the figure, and no wider than the panels above it
+    #Lorenzo Giannuzzo: centred on the figure, and no wider than the panels above it
     width = 0.86
     ax = fig.add_axes([(1.0 - width) / 2.0, 0.012, width, max(height - 0.03, 0.05)])
     ax.set_axis_off()
@@ -1023,7 +1033,7 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
     if "below_n_min" in full:
         full = full[~full["below_n_min"]]
 
-    # composition of every behaviour, over all its members
+    #Lorenzo Giannuzzo: composition of every behaviour, over all its members
     comp = pd.crosstab(full["group"], full["activity"])
     comp = comp.div(comp.sum(axis=1), axis=0)
 
@@ -1354,7 +1364,7 @@ def _row_figure(rows: list, title: str, right_title: str,
     nc = len(cells)
     #Lorenzo Giannuzzo: a short figure needs proportionally more head room, otherwise the
     #title lands on the panel titles. Expressed in inches it would vanish at one row.
-    head = 0.92 if n > 2 else 1.32
+    head = 0.22 if n > 2 else 0.42
     fig_h = 1.55 * n + head + 0.55
     #Lorenzo Giannuzzo: the bar column is given both extra width and extra space to its
     #left, because its tick labels are class names and they grow leftwards into whatever
@@ -1459,11 +1469,10 @@ def _row_figure(rows: list, title: str, right_title: str,
     #actually ended up. tight_layout silently ignores its rect when a figure carries
     #annotations outside the axes, which this one does, so a title positioned beforehand
     #landed on the panel titles and no amount of head room moved it.
-    #Lorenzo Giannuzzo: the offset has to clear both the season title and the national
-    #label that now sits above the panel, so it is measured against the two together.
-    top = max(ax.get_position().y1 for ax in axes[0])
-    fig.text(0.5, min(0.995, top + 0.58 / fig_h), f"{title}\n{ylabel}",
-             fontsize=10.5, ha="center", va="bottom", color=INK, linespacing=1.5)
+    #Lorenzo Giannuzzo: no heading inside the figure. The title and the normalisation it
+    #stated belong to the caption, which is where a journal expects them and where they do
+    #not compete with the panels for height. The arguments are kept in the signature so
+    #that the three callers keep documenting what each figure shows.
     save(fig, name, part)
 
 

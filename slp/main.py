@@ -7,6 +7,16 @@
 
 Each stage reads the cache the previous one wrote, so re-running a late stage
 after changing a parameter does not recompute the dictionary.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -18,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-# stage name -> (module, paper section)
+#Lorenzo Giannuzzo: stage name -> (module, paper section)
 STAGES: dict[str, tuple[str, str]] = {
     "preprocessing": ("preprocessing", "2.2"),
     "clustering":    ("clustering",    "2.3"),
@@ -34,7 +44,7 @@ def run_stage(name: str) -> float:
     try:
         mod = importlib.import_module(mod_name)
     except ModuleNotFoundError as exc:
-        # Only a missing stage module means the stage is not written yet. A stage that
+        #Lorenzo Giannuzzo: Only a missing stage module means the stage is not written yet. A stage that
         # exists but fails to import because one of *its* dependencies is missing must
         # raise: reporting that as "not implemented" would let a broken stage be silently
         # skipped while the pipeline reports success and the cache keeps stale results.
@@ -68,7 +78,7 @@ def apply_config_override(path: str) -> None:
 
     C.load_config = load_config  # type: ignore[assignment]
     print(f"  configuration overridden: {path}")
-    # A stage that did `from common.config import load_config` at import time holds its own
+    #Lorenzo Giannuzzo: A stage that did `from common.config import load_config` at import time holds its own
     # reference and is unaffected. Stages in this pipeline call `config.load_config()`
     # through the module, which is what makes the override work.
 
@@ -111,7 +121,7 @@ def main() -> None:
         try:
             timings.append((s, run_stage(s)))
         except Exception:
-            # The traceback is left to propagate. What is added here is the timing of the
+            #Lorenzo Giannuzzo: The traceback is left to propagate. What is added here is the timing of the
             # stages that did complete, which is otherwise lost and is the first thing
             # wanted when a long run dies halfway.
             print_timings(timings, failed=s)

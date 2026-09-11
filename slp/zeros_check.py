@@ -22,6 +22,16 @@ than how it consumes.
 Reads only the cache the clustering stage already wrote. Run from slp/.
 
     python zeros_check.py
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -65,7 +75,7 @@ def main() -> None:
     print(f"  {len(v):,} users, {D} coordinates read from "
           f"{cols[0]}..{cols[-1]}")
 
-    # a replaced zero lands on the row minimum, and every replaced zero of a user
+    #Lorenzo Giannuzzo: a replaced zero lands on the row minimum, and every replaced zero of a user
     # lands on the same value, so counting the ties at the minimum counts them
     lo = X.min(axis=1, keepdims=True)
     n_zero = (np.abs(X - lo) <= TOL).sum(axis=1)
@@ -91,7 +101,7 @@ def main() -> None:
     tab = d.groupby("group")["filled"].agg(["size", "median", "min", "max"])
     print(tab.to_string())
 
-    # how much of the variation in the count the partition explains: if the
+    #Lorenzo Giannuzzo: how much of the variation in the count the partition explains: if the
     # groups were blind to it this would sit near zero
     grand = d["filled"].to_numpy()
     ss_tot = float(((grand - grand.mean()) ** 2).sum())

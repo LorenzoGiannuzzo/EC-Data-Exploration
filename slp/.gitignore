@@ -1,6 +1,14 @@
 cache/
-paper_results/*/*.csv
-paper_results/*/*.png
-paper_results/*/*.txt
 __pycache__/
 *.pyc
+.idea/
+
+# Regenerated results. Tables and summaries are rebuilt by any run and are
+# large, so they stay out of the history; figures are committed, because they
+# are what the manuscript carries and what a reader without the data can look
+# at. Everything not matched below therefore passes, PNG and PDF included.
+paper_results/**/*.csv
+paper_results/**/*.txt
+paper_results/**/*.parquet
+paper_results/**/*.npy
+paper_results/**/*.xlsx

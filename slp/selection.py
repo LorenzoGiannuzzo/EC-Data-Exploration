@@ -22,6 +22,16 @@ A third question is asked after the profiles exist, in Section 2.4: whether two
 profiles are far enough apart to be told apart at all, given how far their own
 members lie from them. That is what merge_map answers, and it is the one that
 decides how many standard profiles are actually being delivered.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 

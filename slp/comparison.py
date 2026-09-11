@@ -33,6 +33,16 @@ given the same inputs by the regulation:
 
 Metrics are computed on hourly values throughout. The settings differ in the scale each
 curve is given before the metrics are taken, never in the resolution.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -60,20 +70,20 @@ OUT = _CFG.results_dir("comparison")
 PROVINCE = "Trento"
 REFERENCE_YEAR = 2025          # the year the GSE workbook refers to
 GSE_TREATMENT = "monorario"    # or "fasce"
-# Only the two categories that describe the population under study. Public lighting and
+#Lorenzo Giannuzzo: Only the two categories that describe the population under study. Public lighting and
 # vehicle charging are 84 points out of 7,524 and their four-letter codes cannot be told
 # apart with confidence, so they are left out of the comparison rather than guessed at.
 GSE_PROFILES = ("PDMM", "PAUM", "PDMF", "PAUF")
-# A profile is residential or not, which fixes which data-driven profiles it may be
+#Lorenzo Giannuzzo: A profile is residential or not, which fixes which data-driven profiles it may be
 # compared against in the figures.
 GSE_IS_RESIDENTIAL = {"PDMM": True, "PDMF": True, "PAUM": False, "PAUF": False}
-# Share of points that must be domestic for a data-driven profile to count as residential.
+#Lorenzo Giannuzzo: Share of points that must be domestic for a data-driven profile to count as residential.
 RESIDENTIAL_THRESHOLD = 0.80
 USE_M_FAMILY = False           # sensitivity only, see common/assignment.py
 IMBALANCE_PRICE = 15.0         # EUR/MWh, Eq. 16. Placeholder, set from the market data.
 MIN_HOURS_PER_MONTH = 240      # a user-month below this is not compared
 MAKE_FIGURES = True            # draw the figures at the end of the stage
-# B3 is accumulated twice: once per reference, and once over the whole perimeter a
+#Lorenzo Giannuzzo: B3 is accumulated twice: once per reference, and once over the whole perimeter a
 # family is asked to settle. The second scope carries this label.
 SYSTEM_LABEL = "__all__"
 
@@ -212,7 +222,7 @@ def gse_hourly_year(gse: pd.DataFrame, hcal: pd.DataFrame) -> dict[str, np.ndarr
     """
     cols = [c for c in gse.columns
             if c not in ("year", "month", "day", "hour") and c in GSE_PROFILES]
-    # The workbook is a civil calendar and therefore carries a 23-hour and a 25-hour day.
+    #Lorenzo Giannuzzo: The workbook is a civil calendar and therefore carries a 23-hour and a 25-hour day.
     # They are dropped here for the same reason preprocessing drops them (Section 2.2):
     # they are neither missing values nor duplicates, and any realignment convention would
     # need its own justification.
@@ -403,7 +413,7 @@ def block_b1(dd: pd.DataFrame, arera: dict, gse: dict, hcal: pd.DataFrame) -> pd
                 for key in per_month[0]:
                     vals = np.array([p[key] for p in per_month], dtype=float)
                     ok = np.isfinite(vals) & (wts > 0)
-                    # a month whose metric is undefined (a flat reference has no
+                    #Lorenzo Giannuzzo: a month whose metric is undefined (a flat reference has no
                     # correlation to speak of) is dropped from the average, not counted
                     # as a zero, which would silently reward the flat profile
                     agg[key] = float(np.average(vals[ok], weights=wts[ok])) if ok.any() else np.nan
@@ -431,7 +441,7 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
     g = groups.set_index("pod")["group"]
     E = users.set_index("pod")["E"]
     rows = []
-    # Settlement does not allocate one user at a time: it allocates a portfolio and
+    #Lorenzo Giannuzzo: Settlement does not allocate one user at a time: it allocates a portfolio and
     # settles the residual of the whole. Errors that are large per user cancel across
     # users when they are independent, so the aggregate residual is the quantity the
     # imbalance is actually computed on, and it is accumulated here alongside the
@@ -464,7 +474,7 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
             o = o_all[hours]
             if o.sum() <= 0:
                 continue
-            # A portfolio comparison is only fair on the user-months every family could
+            #Lorenzo Giannuzzo: A portfolio comparison is only fair on the user-months every family could
             # be evaluated on: ARERA covers domestic points alone, and a family credited
             # with the easy months only would win on the sample, not on the method.
             usable = {src for src, (ref, _, _) in refs.items() if ref[hours].sum() > 0}
@@ -487,7 +497,7 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
                                  "reference": label, "uncertain_assignment": unc,
                                  "month_energy_kWh": float(o.sum()), **mm})
                     continue
-                # accumulated at full hourly resolution rather than folded onto an
+                #Lorenzo Giannuzzo: accumulated at full hourly resolution rather than folded onto an
                 # average day: settlement is hourly, and pooling the hours of a month
                 # cancels exactly the day-to-day part of the residual it charges for.
                 # The fold is recovered afterwards, so both readings are reported.
@@ -515,7 +525,7 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
             continue
         po, pr = so / so.sum(), sr / sr.sum()
         tv = float(0.5 * np.abs(po - pr).sum())
-        # the same residual read on the average day of the month. Total variation cannot
+        #Lorenzo Giannuzzo: the same residual read on the average day of the month. Total variation cannot
         # increase when hours are pooled, so tv >= tv_mean_day always, and the gap is the
         # share of the misallocation that only the hourly resolution exposes. It is a
         # lower bound on the day-to-day component, not an orthogonal decomposition.
@@ -538,7 +548,7 @@ def main() -> None:
     t0 = time.time()
     print(f"\n{'='*78}\n  COMPARISON, Section 2.5\n{'='*78}")
 
-    # the profiles audited here have to come from the configuration now in
+    #Lorenzo Giannuzzo: the profiles audited here have to come from the configuration now in
     # force: an audit reporting a dictionary that no longer exists fails silently
     man = check_manifest(CACHE, load_config()["clustering"], "comparison")
 
@@ -581,7 +591,7 @@ def main() -> None:
     print(f"  B1: {len(b1)} pairs")
 
     uv = pd.read_parquet(CACHE / "user_vectors.parquet")
-    # The B2 comparison is only as good as the curve it calls observed; the mode is
+    #Lorenzo Giannuzzo: The B2 comparison is only as good as the curve it calls observed; the mode is
     # printed and written to the summary so a result can never be read without it.
     pods, obs, seen, mode = observed_hourly(days, dictionary, CACHE, hcal,
                                             REFERENCE_YEAR, user_vectors=uv)
@@ -590,7 +600,7 @@ def main() -> None:
     b2.to_csv(OUT / "b2_pod_month.csv", index=False)
     b3.to_csv(OUT / "b3_portfolio_month.csv", index=False)
     if len(b3):
-        # two scopes. `reference` is the portfolio of a single published class, and it
+        #Lorenzo Giannuzzo: two scopes. `reference` is the portfolio of a single published class, and it
         # rewards a fine partition; `system` pools every class of a family into the one
         # perimeter the imbalance is settled on, where the granularity of the partition
         # no longer enters the residual and only the shapes are left to compare.
@@ -615,7 +625,7 @@ def main() -> None:
             print(pf.round(4).to_string())
 
     if len(b2):
-        # Totals are only comparable on the user-months every source could be evaluated
+        #Lorenzo Giannuzzo: Totals are only comparable on the user-months every source could be evaluated
         # on: ARERA covers domestic points alone, so the raw sums span different samples.
         wide = b2.pivot_table(index=["pod", "month"], columns="source",
                               values="total_variation")
@@ -656,7 +666,7 @@ def main() -> None:
     print(f"\n  results in {OUT}   ({time.time()-t0:.0f}s)")
 
     if MAKE_FIGURES:
-        # Drawn here so that running the stage produces the tables and the figures that
+        #Lorenzo Giannuzzo: Drawn here so that running the stage produces the tables and the figures that
         # go with them in one go. A failure while plotting must not discard the results
         # that were just computed, so it is reported and swallowed. The figures remain
         # available as a stage of their own through `main.py --stage figures`.

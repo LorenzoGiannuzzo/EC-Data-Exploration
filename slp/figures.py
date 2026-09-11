@@ -7,6 +7,16 @@ Run after `python main.py --stage comparison`:
 Every figure is written both as PNG at 300 dpi for the manuscript and as PDF for the
 camera-ready version. Nothing is computed here that is not already in the comparison
 outputs or in the cache, so the figures cannot disagree with the tables.
+
+-------------------------------------------------------------------------------
+Author:        Lorenzo Giannuzzo
+Affiliation:   Politecnico di Torino, Department of Energy (DENERG)
+               Energy Center Lab
+Contact:       lorenzo.giannuzzo@polito.it
+
+Developed in collaboration with ENEA within the Italian Research on the Electric
+System programme (Ricerca di Sistema Elettrico).
+-------------------------------------------------------------------------------
 """
 from __future__ import annotations
 
@@ -76,7 +86,7 @@ def fig_b1_heatmap() -> None:
     im = ax.imshow(m.to_numpy(), aspect="auto", cmap="RdYlBu_r", vmin=0,
                    vmax=float(np.nanpercentile(m.to_numpy(), 98)))
     ax.set_xticks(range(len(m.columns)))
-    # Beyond about six columns the labels collide; rotating is cheaper than shortening
+    #Lorenzo Giannuzzo: Beyond about six columns the labels collide; rotating is cheaper than shortening
     # them, which would cost the reader the profile numbers.
     rot = 0 if len(m.columns) <= 6 else 45
     ax.set_xticklabels([c.replace("DDSLP_", "DD-SLP ") for c in m.columns],
@@ -157,7 +167,7 @@ def fig_daily_shapes(cell: str = "winter|weekday") -> None:
 # ------------------------------------------------------------------------ figure 3
 def fig_b2_distributions() -> None:
     """The audit: how the per-user error is distributed, not just its median."""
-    # POD codes contain an "E" and are read as floats unless forced to string:
+    #Lorenzo Giannuzzo: POD codes contain an "E" and are read as floats unless forced to string:
     # 99999E00010600 is a valid float literal and silently becomes inf.
     b2 = pd.read_csv(RES / "b2_pod_month.csv", dtype={"pod": str})
     if "common_set" in b2.columns:
@@ -250,7 +260,7 @@ def fig_daytype_energy() -> None:
 # ------------------------------------------------------------------------ figure 5
 def fig_misallocated() -> None:
     """Eq. 15 and Eq. 16, by tariff category, on the common set of user-months."""
-    # POD codes contain an "E" and are read as floats unless forced to string:
+    #Lorenzo Giannuzzo: POD codes contain an "E" and are read as floats unless forced to string:
     # 99999E00010600 is a valid float literal and silently becomes inf.
     b2 = pd.read_csv(RES / "b2_pod_month.csv", dtype={"pod": str})
     if "common_set" in b2.columns:
@@ -300,7 +310,7 @@ def main() -> None:
     print(f"\n{'='*78}\n  FIGURES, Section 2.5\n{'='*78}")
     missing = [f for f in REQUIRED if not (RES / f).exists()]
     if missing:
-        # Reached when the stage is run before comparison has produced its tables. The
+        #Lorenzo Giannuzzo: Reached when the stage is run before comparison has produced its tables. The
         # figures are a view on those tables and nothing here can be drawn without them.
         print(f"  comparison output not found in {RES}")
         print(f"  missing: {', '.join(missing)}")
@@ -313,7 +323,7 @@ def main() -> None:
     fig_misallocated()
     print(f"\n  figures in {FIG}\n")
 
-    # The stage is called "figures", so it draws every figure the pipeline has, not only
+    #Lorenzo Giannuzzo: The stage is called "figures", so it draws every figure the pipeline has, not only
     # the ones belonging to Section 2.5. The mapping figures are skipped in silence when
     # that stage has not been run, which is the only case in which they cannot exist.
     try:
@@ -321,7 +331,7 @@ def main() -> None:
         if mapping_figures.inputs_ready():
             mapping_figures.main()
         else:
-            # Named rather than skipped in silence. The tables moved into one folder per
+            #Lorenzo Giannuzzo: Named rather than skipped in silence. The tables moved into one folder per
             # metric, and a wrong path here would otherwise look exactly like a mapping
             # stage that has not been run yet.
             print("  mapping figures skipped, missing: "
