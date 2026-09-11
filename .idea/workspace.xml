@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Profiles constructor">
-      <change beforePath="$PROJECT_DIR$/slp/mapping_figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/mapping_figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

@@ -823,6 +823,17 @@ RESIDENCY_EN = {"residente": "resident", "non residente": "non-resident",
 
 SEP = "  -  "
 
+#Lorenzo Giannuzzo: one colour per publishing body, so that a reader who has seen two
+#figures knows which catalogue a dashed curve belongs to before reading its label. The
+#green is dark enough to stay distinct from the behaviour ink in greyscale print, which
+#the accent blues of the palette would not.
+GSE_GREEN = "#2e7d4f"
+ARERA_RED = WARM
+
+
+def _national_color(name: str) -> str:
+    return ARERA_RED if str(name).upper().startswith("ARERA") else GSE_GREEN
+
 
 def _national_caption(name: str) -> str:
     """How a published profile is named in a legend: code, and meaning when opaque."""
@@ -1331,8 +1342,7 @@ def _national_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
 #of figures 7 and 8 and repeating it in the margin here competed with the curves for the
 #reader's attention without adding anything the tables do not already carry.
 def _row_figure(rows: list, title: str, right_title: str,
-                name: str, part: str, cells: list, ylabel: str,
-                overlay_color: str = None) -> None:
+                name: str, part: str, cells: list, ylabel: str) -> None:
     """One row per subject: the curves on the left, the composition on the right.
 
     `rows` carries, per subject: its label, one list of curves per cell, an optional
@@ -1342,7 +1352,6 @@ def _row_figure(rows: list, title: str, right_title: str,
     """
     n = len(rows)
     nc = len(cells)
-    over = overlay_color or WARM
     #Lorenzo Giannuzzo: a short figure needs proportionally more head room, otherwise the
     #title lands on the panel titles. Expressed in inches it would vanish at one row.
     head = 0.92 if n > 2 else 1.32
@@ -1373,11 +1382,13 @@ def _row_figure(rows: list, title: str, right_title: str,
     for i, row in enumerate(rows):
         for j, (season, daytype) in enumerate(cells):
             ax = axes[i][j]
-            for curve, national_name, dist in row.get("overlay", {}).get(j, []):
-                #Lorenzo Giannuzzo: dashed and warm, so that it never reads as one more
-                #behaviour. It is published, not measured, and the distinction is the
-                #whole point of putting the two in the same panel.
-                ax.plot(x, curve, color=over, lw=1.2, ls="--", alpha=0.95, zorder=3)
+            for curve, _label, colour in row.get("overlay", {}).get(j, []):
+                #Lorenzo Giannuzzo: dashed, so that it never reads as one more behaviour.
+                #It is published, not measured, and the distinction is the whole point of
+                #putting the two in the same panel. The colour is chosen by the caller,
+                #which knows whether the dashed line is a catalogue curve and which
+                #catalogue it comes from.
+                ax.plot(x, curve, color=colour, lw=1.2, ls="--", alpha=0.95, zorder=3)
             for curve, weight, colour in row["curves"][j]:
                 ax.plot(x, curve, color=colour, lw=0.6 + 1.0 * weight, alpha=0.95)
             #Lorenzo Giannuzzo: a legend inside the panel rather than a caption above it.
@@ -1477,12 +1488,14 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15) -> None:
         for j in range(len(CURVE_CELLS)):
             legend[j] = [(f"DD-SLP {g}", INK, "-")]
         for j, (nat_name, dist, shape) in nearest.get(g, {}).items():
-            legend[j].append((_national_caption(nat_name), WARM, "--"))
+            legend[j].append((_national_caption(nat_name),
+                              _national_color(nat_name), "--"))
             #Lorenzo Giannuzzo: put on the same daily energy as the behaviour before being
             #drawn, so the panel compares the shape of the day and not the amplitude,
             #which the comparison stage answers in its own terms.
             daily = per_cell[j][g].sum()
-            overlay[j] = [(shape / shape.sum() * daily, nat_name, dist)]
+            overlay[j] = [(shape / shape.sum() * daily, nat_name,
+                           _national_color(nat_name))]
 
         rows.append({
             "label": f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
@@ -1592,9 +1605,11 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
             #drawn solid and the behaviour is the dashed reference. The roles are the
             #reverse of figure 16 and the styling follows them rather than the colours.
             daily = per_cell[j][nearest_g].sum()
-            curves_per_cell.append([(np.repeat(nat, 4) / 4.0 * daily, 1.0, WARM)])
-            overlay[j] = [(per_cell[j][nearest_g], f"DD-SLP {nearest_g}", dist)]
-            legend[j] = [(_national_caption(national), WARM, "-"),
+            curves_per_cell.append([(np.repeat(nat, 4) / 4.0 * daily, 1.0,
+                                     _national_color(national))])
+            overlay[j] = [(per_cell[j][nearest_g], f"DD-SLP {nearest_g}", INK)]
+            legend[j] = [(_national_caption(national),
+                          _national_color(national), "-"),
                          (f"DD-SLP {nearest_g}, closest behaviour", INK, "--")]
 
         pts = nat_frame[nat_frame["national"] == national]
@@ -1616,5 +1631,4 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
                 f"Published profiles with no behaviour within {min_distance:.2f},\n"
                 f"and the behaviours their own points fall into",
                 "Share of the profile's points [%]",
-                "fig18_national_without_match", "coverage", CURVE_CELLS, YLABEL,
-                overlay_color=INK)
+                "fig18_national_without_match", "coverage", CURVE_CELLS, YLABEL)
