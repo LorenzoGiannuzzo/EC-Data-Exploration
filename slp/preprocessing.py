@@ -234,6 +234,22 @@ def main() -> None:
     if prosumers:
         print(f"  PODs that also inject (AN rows present): {len(prosumers):,}\n")
     track("0. as read", meas["pod"].nunique(), len(meas), f"{cfg.get('data.keep_kind','AP')} only")
+    #Lorenzo Giannuzzo: the scalars Section 2.2 quotes, collected as the stage runs and written
+    # next to the funnel, so that the paper never has to reconstruct them from the log
+    facts: list[dict] = []
+
+    def fact(quantity: str, value, unit: str = "-", definition: str = "") -> None:
+        facts.append({"quantity": quantity, "value": value, "unit": unit,
+                      "definition": definition})
+
+    fact("rows with a meter constant above one", int(meas.attrs.get("meter_constant_rows", 0)),
+         "POD-days", "withdrawn active energy rows whose K column is 20, 25 or 40")
+    for kval, nrows in sorted(meas.attrs.get("meter_constant_values", {}).items()):
+        fact(f"rows with meter constant {kval:g}", int(nrows), "POD-days")
+    k_pods = meas.attrs.get("meter_constant_pods")
+    if k_pods is not None:
+        fact("PODs with a meter constant above one", int(len(k_pods)), "PODs")
+    fact("PODs recording injected energy (AN rows), as read", int(len(prosumers)), "PODs")
 
     #Lorenzo Giannuzzo: season map: month -> label
     global SEASON_OF_MONTH
@@ -269,6 +285,8 @@ def main() -> None:
     days, shapes = days[keep].reset_index(drop=True), shapes[keep.values]
     track("1. DST days removed", days["pod"].nunique(), len(days),
           f"{[str(d.date()) for d in dst]}")
+    fact("clock-change days in the period", int(sum(1 for d in dst if d in set(meas["date"]))),
+         "days", "days of 92 or 100 quarter-hours present in the archive, removed")
 
     # ── 2. outliers on contractual power ─────────────────────────────────────
     pcol = cfg.get("data.meas_cols.power")
@@ -290,6 +308,9 @@ def main() -> None:
         n_bad = int(np.nansum(bad))
         n_read = int(np.isfinite(shapes).sum())
         shapes[bad] = np.nan
+        fact("readings censored above the contractual power", n_bad, "quarter-hours",
+             f"reading x 4 above {pp['power_margin']} x contractual power")
+        fact("share of readings censored", n_bad / max(n_read, 1), "-")
         track("2. readings above contractual power", days["pod"].nunique(), len(days),
               f"{n_bad:,} censored ({100*n_bad/max(n_read,1):.3f}% of readings), "
               f"{int((~usable).sum()):,} rows without a usable threshold")
@@ -331,6 +352,14 @@ def main() -> None:
     track("5. days without a shape, kept as days", days["pod"].nunique(), len(days),
           f"{n_zero:,} at zero + {n_thin:,} under {min_nz} non-zero quarters "
           f"= {100*(n_zero+n_thin)/max(len(days),1):.1f}%")
+
+    #Lorenzo Giannuzzo: the coverage of each month before the completeness filter, kept aside
+    # so that coverage_by_month.csv can set what was read against what was retained
+    _d = pd.to_datetime(days["date"])
+    before6 = (pd.DataFrame({"ym": _d.dt.to_period("M").astype(str), "pod": days["pod"], "d": _d})
+               .groupby("ym").agg(read_pods=("pod", "nunique"), read_days=("d", "nunique"),
+                                  read_user_days=("pod", "size")))
+    del _d
 
     # ── 6. completeness ──────────────────────────────────────────────────────
     per_pod = days.groupby("pod").agg(n_days=("date", "size"),
@@ -419,6 +448,29 @@ def main() -> None:
     users.to_parquet(cfg.cache_dir / "users.parquet", index=False)
 
     pd.DataFrame(funnel).to_csv(out / "funnel.csv", index=False)
+    if meas.attrs.get("pod_continuity"):
+        pd.DataFrame(meas.attrs["pod_continuity"]).to_csv(out / "pod_continuity.csv", index=False)
+    fact("PODs retained", int(len(users)), "PODs")
+    fact("prosumers among the retained PODs", int(users["prosumer"].sum()), "PODs")
+    fact("days at zero, kept as days without a shape", n_zero, "days")
+    fact(f"days under {min_nz} non-zero quarter-hours, kept without a shape", n_thin, "days")
+    fact("daily shapes", int(len(shapes)), "days")
+    fact("zero days classified genuine", int(genuine.sum()), "days")
+    fact("zero days classified faults", int(faulty_zero.sum()), "days")
+    fact("days dropped for gaps longer than four hours", int(drop.sum()), "days")
+    no_shape = days.groupby("pod")["has_shape"].sum()
+    fact("retained PODs without any day carrying a shape", int((no_shape == 0).sum()), "PODs",
+         "they pass the completeness thresholds on zero days alone and cannot be clustered")
+    pd.DataFrame(facts).to_csv(out / "preprocessing_facts.csv", index=False)
+
+    #Lorenzo Giannuzzo: calendar coverage month by month, read and retained, so that a month
+    # whose days disappear at the completeness step is visible and not only inferred from
+    # the count of calendar days
+    dd = pd.to_datetime(days["date"])
+    kept_m = (pd.DataFrame({"ym": dd.dt.to_period("M").astype(str), "pod": days["pod"], "d": dd})
+              .groupby("ym").agg(retained_pods=("pod", "nunique"), retained_days=("d", "nunique"),
+                                 retained_user_days=("pod", "size")))
+    before6.join(kept_m, how="left").fillna(0).astype(int).to_csv(out / "coverage_by_month.csv")
 
     for lvl in ("ateco_l1", "ateco_l2", "ateco_l3"):
         if lvl in users:

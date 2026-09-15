@@ -3,8 +3,10 @@
 Two clusterings, on two different units of observation.
 
     Stage 1, the days.  Every POD-day is one observation: a vector of 96 values
-    summing to one. Ward on a stratified sample yields D recurring forms, and
-    every remaining day is assigned to the nearest of them.
+    summing to one. The pool is summarised by mini-batch k-means into a fixed
+    number of micro-clusters, Ward runs on the micro-clusters weighted by the
+    shapes behind them and yields D recurring forms, and every day is assigned to
+    the nearest of them.
 
     Stage 2, the users. Every POD is one observation: a vector of D
     energy-weighted frequencies (Eq. 4) plus scale features, CLR-transformed
@@ -24,8 +26,10 @@ Outputs
         validity_D.csv / .png       how D was chosen
         validity_K.csv / .png       how K was chosen
         groups.csv                  the K groups, size and composition
-        stability.csv               ARI across replicas, and against BIRCH
+        stability.csv               ARI across replicas (sample_ward only)
         ablation.csv                the two-stage against mean curves
+        sensitivity_users.csv       ARI of the user partition under delta and lambda
+        clustering_facts.csv        every scalar Section 2.3 and 3.1 quote
         summary.txt                 [D], [K], [M], [R], [n_min]
 
 Run
@@ -395,12 +399,38 @@ def clr(f: np.ndarray, delta: float) -> np.ndarray:
 
 def scale_features(days: pd.DataFrame, shapes: np.ndarray,
                    users: pd.DataFrame) -> pd.DataFrame:
-    """The five features the dictionary does not carry, plus the zero fraction.
+    """What the dictionary does not carry about how a user spreads its energy in time.
 
-    load factor        mean power over the year / peak power        -> intermittency across the year
-    peak-to-average    mean over days of (peak of day / mean of day) -> peakedness within the day
-    weekday/weekend    mean daily energy of working over non-working days
-    seasonal amplitude (winter - summer) / (winter + summer), in [-1, 1]
+    load factor        mean power over the year / peak power, [0, 1] -> intermittency across the year
+    log peak-to-average log of the mean over days of (peak / mean)   -> peakedness within the day
+    weekday contrast   (working - non-working) / (working + non-working) mean daily energy, [-1, 1]
+    seasonal amplitude (winter - summer) / (winter + summer), [-1, 1]
+    zero-day fraction  share of valid days at zero, [0, 1]
+
+    Every feature is invariant to the scale of the user: multiplying all the readings of
+    a point by any constant leaves it unchanged, as it leaves unchanged the frequency
+    vector of Eq. 4. The annual energy is deliberately not among them. A standard load
+    profile is a normalised allocation of energy over time, multiplied by the annual
+    energy of whoever it is applied to, so two users whose readings differ by a constant
+    factor must receive the same profile; a feature that separates them would build
+    groups the profile itself cannot tell apart. The run of September 2026 in which
+    log10(E) was still in the block showed exactly that: without the block the partition
+    was recovered at ARI 0.09, the three groups were ordered by mean consumption (266,
+    1414 and 17182 kWh), and the resulting catalogue misallocated more energy than the
+    national one.
+
+    Ward reads a Euclidean distance on z-scores, and a z-score is only a fair unit for
+    a feature whose spread is not carried by a handful of points. Annual energy spans
+    four orders of magnitude across this population, from a few hundred kWh to over a
+    hundred MWh: z-scored raw, almost every user sits within a tenth of a standard
+    deviation of the mean and a few dozen large ones sit fifty away, so the tree spends
+    its first cuts isolating size classes and the size block decides the partition
+    whatever lambda says. On a logarithmic scale a distance is a ratio, a user ten times
+    larger is equally far at every size, and no tail can monopolise the block. The
+    peak-to-average ratio is bounded below by one and right-skewed, and the ratio of
+    working to non-working energy is unbounded when the weekend is close to zero; the
+    first is taken in logs and the second as a normalised contrast in [-1, 1], the form
+    the seasonal amplitude already has.
     """
     d = days[days["has_shape"]].copy()
     idx = d["shape_idx"].to_numpy()
@@ -414,18 +444,23 @@ def scale_features(days: pd.DataFrame, shapes: np.ndarray,
         "par": g["par_day"].mean(),
     })
     feat = feat.join(users.set_index("pod")[["E", "zero_day_fraction"]])
-    feat["load_factor"] = (feat["E"] / 8760.0) / feat["peak_kW"].replace(0, np.nan)
+    feat["load_factor"] = ((feat["E"] / 8760.0) / feat["peak_kW"].replace(0, np.nan)).clip(0, 1)
+    feat["log_par"] = np.log(feat["par"].where(feat["par"] > 0))
 
     wk = d[d["daytype"] == "weekday"].groupby("pod")["energy"].mean()
     we = d[d["daytype"] != "weekday"].groupby("pod")["energy"].mean()
-    feat["weekday_weekend"] = (wk / we.replace(0, np.nan)).reindex(feat.index)
+    feat["weekday_contrast"] = ((wk - we) / (wk + we).replace(0, np.nan)).reindex(feat.index)
 
     win = d[d["season"] == "winter"].groupby("pod")["energy"].mean().reindex(feat.index)
     summ = d[d["season"] == "summer"].groupby("pod")["energy"].mean().reindex(feat.index)
     feat["seasonal_amplitude"] = (win - summ) / (win + summ).replace(0, np.nan)
 
-    return feat[["E", "load_factor", "par", "weekday_weekend",
-                 "seasonal_amplitude", "zero_day_fraction"]].fillna(0.0)
+    out = feat[["load_factor", "log_par", "weekday_contrast",
+                "seasonal_amplitude", "zero_day_fraction"]]
+    #Lorenzo Giannuzzo: a feature left undefined for a user (no weekend day with a shape, a
+    # season without one) is given the median of the population rather than zero, which
+    # on log_par would be an extreme value and not a neutral one
+    return out.fillna(out.median())
 
 
 def zscore(a: np.ndarray) -> np.ndarray:
@@ -434,10 +469,38 @@ def zscore(a: np.ndarray) -> np.ndarray:
     return (a - m) / s
 
 
+def user_matrix(f: np.ndarray, feat: np.ndarray, delta: float, lam: float,
+                mode: str = "variance") -> tuple[np.ndarray, float, float]:
+    """Eq. 5 and the scale block, joined into the vector Ward reads.
+
+    Ward reads one Euclidean distance over the concatenated vector and has no notion
+    of which coordinates describe behaviour and which describe size, so what settles
+    the balance between the two blocks is the total variance each carries and not the
+    count of coordinates. Dividing each block by its own total variance before lambda
+    is applied makes the declared weight the realised one, at any D.
+
+    Returns the matrix and the variance carried by the two blocks, so that the share
+    of the distance the scale features drive can be reported.
+    """
+    Xf = clr(f, float(delta))
+    Xs_raw = zscore(feat)
+    if mode == "variance":
+        vf, vs = Xf.var(axis=0).sum(), Xs_raw.var(axis=0).sum()
+        Xf = Xf / np.sqrt(vf) if vf > 0 else Xf
+        Xs_raw = Xs_raw / np.sqrt(vs) if vs > 0 else Xs_raw
+        Xf = np.sqrt(1.0 - lam) * Xf
+        Xs = np.sqrt(lam) * Xs_raw
+    elif mode in ("none", "raw"):
+        Xs = lam * Xs_raw
+    else:
+        raise ValueError(f"block_normalisation must be variance | none, got {mode!r}")
+    return np.hstack([Xf, Xs]), float(Xf.var(axis=0).sum()), float(Xs.var(axis=0).sum())
+
+
 def ward_users(X: np.ndarray, k_range: tuple[int, int], k_fixed: int | None,
                out_dir: Path, n_min: int = 30, threshold: float = 0.75,
                n_boot: int = 10, frac: float = 0.8, seed: int = 42,
-               max_small_share: float = 0.01
+               max_small_share: float = 0.01, report_stability: bool = True
                ) -> tuple[np.ndarray, pd.DataFrame, str, np.ndarray]:
     """The K groups, and the table on which K was chosen.
 
@@ -473,8 +536,19 @@ def ward_users(X: np.ndarray, k_range: tuple[int, int], k_fixed: int | None,
     if k_fixed not in (None, "auto", "null"):
         K = int(k_fixed)
         reason = f"K = {K}: fixed in the configuration"
-        val["stability_mean"] = np.nan
-        val["stability_min"] = np.nan
+        if report_stability:
+            #Lorenzo Giannuzzo: a fixed K does not exempt the partition from the
+            # stability test. Section 2.3 reports the agreement at the adopted value
+            # together with its weakness, and that number has to come from this run
+            # rather than from an earlier one in which K was still being searched.
+            print(f"    stability of the partition over {n_boot} pairs of subsamples "
+                  f"(reported, K fixed)...")
+            stab = stability_table(X, k_range, lambda a: linkage(a, method="ward"),
+                                   n_boot=n_boot, frac=frac, seed=seed)
+            val = val.merge(stab, on="K", how="left")
+        else:
+            val["stability_mean"] = np.nan
+            val["stability_min"] = np.nan
     else:
         print(f"    stability of the partition over {n_boot} pairs of subsamples...")
         stab = stability_table(X, k_range, lambda a: linkage(a, method="ward"),
@@ -493,6 +567,9 @@ def ward_users(X: np.ndarray, k_range: tuple[int, int], k_fixed: int | None,
 
 
 # ── representativeness ───────────────────────────────────────────────────────
+_CURVE_WEIGHTING = "energy"
+
+
 def pod_cell_sums(days_daily: pd.DataFrame, shapes, pod_index
                   ) -> tuple[np.ndarray, np.ndarray, list[str], pd.DataFrame]:
     """Per point and per cell, the sum of the daily shapes and the day count.
@@ -511,15 +588,28 @@ def pod_cell_sums(days_daily: pd.DataFrame, shapes, pod_index
     shape_idx = piv["shape_idx"].to_numpy()[ok]
     key = (pod_id[ok].astype("int64") * len(cells) + cell_id[ok]).astype("int64")
 
-    #Lorenzo Giannuzzo: one pass with np.add.at instead of a Python loop over the PODs
-    sums = np.zeros((len(pod_index) * len(cells), 96), dtype="float64")
-    np.add.at(sums, key, np.asarray(shapes[shape_idx], dtype="float64"))
-    cnt = np.bincount(key, minlength=len(pod_index) * len(cells)).astype("float64")
+    #Lorenzo Giannuzzo: one pass with np.add.at instead of a Python loop over the PODs.
+    # The sums are energy-weighted, s times e being the metered day, so that the curve
+    # the sweep scores a group against is the curve generation.py publishes for it;
+    # cnt carries the energy of the cell. With curve_weighting = day the plain sums and
+    # the day counts are used instead, again as in generation.py.
+    n_rows = len(pod_index) * len(cells)
+    sums = np.zeros((n_rows, 96), dtype="float64")
+    blk = np.asarray(shapes[shape_idx], dtype="float64")
+    if _CURVE_WEIGHTING == "energy":
+        e = piv["energy"].to_numpy(dtype="float64")[ok]
+    else:
+        e = np.ones(len(blk))
+    np.add.at(sums, key, blk * e[:, None])
+    cnt = np.bincount(key, weights=e, minlength=n_rows).astype("float64")
+    #Lorenzo Giannuzzo: the weighted sum of squared norms, which together with the sums and the
+    # weights gives the exact within-group sum of squares of any partition, at no extra pass
+    sq = np.bincount(key, weights=e * (blk ** 2).sum(axis=1), minlength=n_rows)
 
     day_view = pd.DataFrame({"pod_id": pod_id[ok].astype("int64"),
                              "cell_id": cell_id[ok].astype("int64"),
                              "shape_idx": shape_idx})
-    return sums, cnt, cells, day_view
+    return sums, cnt, cells, day_view, sq
 
 
 def group_cell_curves(lab: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
@@ -545,7 +635,8 @@ def group_cell_curves(lab: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
 
 def dispersion_by_cell(lab: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
                        cells: list[str], day_view: pd.DataFrame, shapes,
-                       n_min: int, rng, sample: int = 200_000) -> pd.DataFrame:
+                       n_min: int, rng, sample: int = 200_000,
+                       pool: np.ndarray | None = None) -> pd.DataFrame:
     """How far the members sit from the curve that is meant to stand for them.
 
     The curves are exact, built on every day. The quantiles are read on a random
@@ -565,9 +656,14 @@ def dispersion_by_cell(lab: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
     pod_id = day_view["pod_id"].to_numpy()
     group_of_day = lab[pod_id]
     live = np.isin(group_of_day, list(keep))
-    idx = np.flatnonzero(live)
-    if len(idx) > sample:
-        idx = np.sort(rng.choice(idx, size=sample, replace=False))
+    if pool is not None:
+        #Lorenzo Giannuzzo: the same days at every K, so that the difference between two K
+        # is the partition and not the draw; only the days of unpublished groups drop out
+        idx = pool[live[pool]]
+    else:
+        idx = np.flatnonzero(live)
+        if len(idx) > sample:
+            idx = np.sort(rng.choice(idx, size=sample, replace=False))
 
     si = day_view["shape_idx"].to_numpy()[idx]
     x = np.asarray(shapes[si], dtype="float64")
@@ -605,10 +701,42 @@ def _weighted_median(values: np.ndarray, weights: np.ndarray) -> float:
     return float(values[np.searchsorted(total, 0.5 * total[-1])])
 
 
+def n_min_for(K: int, configured) -> int:
+    #Lorenzo Giannuzzo: one rule for the minimum size of a published group, used by
+    # the selection of K, by the sweep and by the run itself, so that a group is
+    # below n_min in the same sense in every table. The configured value wins; left
+    # null it is max(30, 3K), as declared in config.yaml.
+    return int(configured) if configured not in (None, "null") else max(30, 3 * int(K))
+
+
+def within_group_ss(lab: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
+                    sq: np.ndarray, n_cells: int) -> float:
+    """Exact weighted within-group sum of squares of the day shapes around their curve.
+
+    For a group g and a cell c, with w the weight of a day (its energy, or one) and x
+    the weighted mean shape of the cell, sum w ||s - x||^2 = sum w ||s||^2 minus
+    ||sum w s||^2 / sum w. It is the quantity Ward minimises, it cannot increase when a
+    group is split and the members are compared with the mean of their own subgroup,
+    and it is computed from the accumulated sums without sampling a single day.
+    """
+    n_pods = len(lab)
+    rows = np.arange(n_pods, dtype="int64")[:, None] * n_cells + np.arange(n_cells)
+    total = 0.0
+    for g in np.unique(lab):
+        sel = rows[lab == g].ravel()
+        s = sums[sel].reshape(-1, n_cells, 96).sum(axis=0)
+        c = cnt[sel].reshape(-1, n_cells).sum(axis=0)
+        q = sq[sel].reshape(-1, n_cells).sum(axis=0)
+        ok = c > 0
+        total += float((q[ok] - (s[ok] ** 2).sum(axis=1) / c[ok]).sum())
+    return total
+
+
 def sweep_K_dispersion(Z: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
                        cells: list[str], day_view: pd.DataFrame, shapes,
                        k_range: tuple[int, int], out_dir: Path, rng,
-                       n_min: int = 30, sample: int = 200_000) -> pd.DataFrame:
+                       n_min_cfg=None, sample: int = 200_000,
+                       sq: np.ndarray | None = None) -> pd.DataFrame:
     """K read on what the profiles are for, rather than on how compact they are.
 
     The separation indices are computed in the very space the partition was built
@@ -619,10 +747,17 @@ def sweep_K_dispersion(Z: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
     """
     n_cells = len(cells)
     rows = []
+    n_days = len(day_view)
+    ss_total = (within_group_ss(np.ones(len(cnt) // n_cells, dtype=int), sums, cnt, sq, n_cells)
+                if sq is not None else np.nan)
+    weight_total = float(cnt.sum())
+    pool = (np.sort(rng.choice(n_days, size=sample, replace=False)) if n_days > sample
+            else np.arange(n_days))
     print(f"    dispersion over K = {k_range[0]}..{k_range[1]} "
-          f"(quantiles on up to {sample:,} days per K)")
+          f"(quantiles on the same {len(pool):,} days at every K)")
 
     for K in range(k_range[0], k_range[1] + 1):
+        n_min = n_min_for(K, n_min_cfg)
         lab = fcluster(Z, K, criterion="maxclust")
         sizes = pd.Series(lab).value_counts()
         kept = sizes[sizes >= n_min]
@@ -630,14 +765,22 @@ def sweep_K_dispersion(Z: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
             continue
 
         disp = dispersion_by_cell(lab, sums, cnt, cells, day_view, shapes,
-                                  n_min=n_min, rng=rng, sample=sample)
+                                  n_min=n_min, rng=rng, sample=sample, pool=pool)
         p50 = disp["nrmsd_p50"].to_numpy()
         p95 = disp["nrmsd_p95"].to_numpy()
         w_pod = disp["n_pods"].to_numpy(dtype="float64")
         w_day = disp["n_days_sampled"].to_numpy(dtype="float64")
 
+        ss_w = within_group_ss(lab, sums, cnt, sq, n_cells) if sq is not None else np.nan
         rows.append({
             "K": K,
+            #Lorenzo Giannuzzo: exact, on every day and every POD, stranded ones included so that
+            # the cuts of the tree are nested and the share can only fall as K grows
+            "within_share": ss_w / ss_total if ss_total > 0 else np.nan,
+            "explained_share": 1.0 - ss_w / ss_total if ss_total > 0 else np.nan,
+            "nrmsd_pooled": float(np.sqrt(ss_w / (weight_total * 96.0)) * 96.0)
+                            if weight_total > 0 else np.nan,
+            "n_min": n_min,
             "n_profiles": int(len(kept)),
             "pods_covered": int(kept.sum()),
             "pods_below_n_min": int(sizes.sum() - kept.sum()),
@@ -663,6 +806,14 @@ def sweep_K_dispersion(Z: np.ndarray, sums: np.ndarray, cnt: np.ndarray,
     table = pd.DataFrame(rows)
     table.to_csv(out_dir / "validity_K_dispersion.csv", index=False)
 
+    if len(table) > 1 and table["explained_share"].notna().all():
+        ex = table["explained_share"].to_numpy()
+        ks_ = table["K"].to_numpy()
+        print("\n      share of the within-cell variance of the day shapes explained by "
+              "the groups (exact, energy-weighted)")
+        for i in range(len(ks_)):
+            step = "" if i == 0 else f"   +{100 * (ex[i] - ex[i - 1]):.2f} points"
+            print(f"        K={ks_[i]:>3}  {100 * ex[i]:6.2f}%{step}")
     if len(table) > 1:
         v = table["nrmsd_p50_pod_weighted"].to_numpy()
         u = table["nrmsd_p50_unweighted"].to_numpy()
@@ -686,26 +837,29 @@ def plot_K_dispersion(table: pd.DataFrame, path: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3))
+    fig, axes = plt.subplots(1, 4, figsize=(14, 3.3))
+    axes[3].plot(table["K"], 100 * table["explained_share"], "o-", ms=4, color="#0d1f3c")
+    axes[3].set_ylabel("Variance of the day shapes\nexplained by the groups [%]", fontsize=9)
     axes[0].plot(table["K"], table["nrmsd_p50_unweighted"], "o--", ms=4,
-                 color="#9aa5b1", label="unweighted")
+                 color="#9aa5b1", label="Unweighted")
     axes[0].plot(table["K"], table["nrmsd_p50_pod_weighted"], "o-", ms=4,
-                 color="#0d1f3c", label="weighted by PODs")
-    axes[0].set_title("median nRMSD  (lower is better)", fontsize=9)
-    axes[0].legend(fontsize=7, frameon=False)
+                 color="#0d1f3c", label="Weighted by points of delivery")
+    axes[0].set_ylabel("Median nRMSD [-]", fontsize=9)
+    axes[0].legend(fontsize=7, loc="upper center", frameon=True, edgecolor="black",
+                   framealpha=1.0)
 
     axes[1].plot(table["K"], table["nrmsd_p95_pod_weighted"], "o-", ms=4,
                  color="#0d1f3c")
-    axes[1].set_title("p95 nRMSD, weighted  (lower is better)", fontsize=9)
+    axes[1].set_ylabel("Weighted 95th percentile of nRMSD [-]", fontsize=9)
 
     axes[2].plot(table["K"], table["pods_below_n_min"], "o-", ms=4, color="#8c2f2f")
-    axes[2].set_title("PODs left without a profile  (lower is better)", fontsize=9)
+    axes[2].set_ylabel("Points of delivery without a profile [-]", fontsize=9)
 
     for ax in axes:
-        ax.set_xlabel("K")
+        ax.set_xlabel("Number of profiles K [-]")
         ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    fig.savefig(path, dpi=300)
     plt.close(fig)
 
 
@@ -756,9 +910,9 @@ def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
         ax.plot(x, cent[k] * scale, color="#c62828", lw=1.8)
         if unit_integral:
             ax.axhline(100 / 96, color="#64748b", lw=0.7, ls=":")   # a flat day
-        n = int(round(share[k] * (len(code) if code is not None else 0)))
-        sub = f"{share[k]*100:.1f}% of days" + (f"  ·  {n}" if n else "")
-        ax.set_title(f"form {k+1}  ·  {sub}", fontsize=9)
+        n = int((code == k).sum()) if code is not None else 0
+        sub = f"{share[k]*100:.1f}% of days" + (f" ({n} days)" if n else "")
+        ax.set_title(f"Form {k+1}, {sub}", fontsize=9)
         ax.set_xlim(0, 24)
         ax.set_xticks([0, 6, 12, 18, 24])
         ax.set_ylim(0, top * 1.1)
@@ -766,14 +920,24 @@ def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
 
     for k in range(D, len(axes)):
         axes[k].axis("off")
-    fig.supxlabel("hour of day")
-    fig.supylabel("% of the daily energy" if unit_integral else "share of the daily peak")
-    tail = ("   ·   dotted: a perfectly flat day (1/96)" if unit_integral
-            else "   ·   min-max: the peak is 1 whatever it is")
-    fig.suptitle("red: centroid   ·   blue band: 10th-90th percentile of the members"
-                 + tail, fontsize=8, y=0.995)
-    fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    fig.supxlabel("Time of day [h]")
+    fig.supylabel("Share of the daily energy [%]" if unit_integral
+                  else "Share of the daily peak [-]")
+    #Lorenzo Giannuzzo: the reading key is a legend in a box at the top centre rather
+    # than a title, so the caption of the paper can carry the sentence.
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    handles = [Line2D([], [], color="#c62828", lw=1.8, label="Centroid"),
+               Patch(color="#1565c0", alpha=0.18,
+                     label="10th to 90th percentile of the members")]
+    if unit_integral:
+        handles.append(Line2D([], [], color="#64748b", lw=0.7, ls=":",
+                              label="Flat day (1/96)"))
+    fig.legend(handles=handles, loc="upper center", ncol=len(handles), fontsize=8,
+               frameon=True, edgecolor="black", framealpha=1.0,
+               bbox_to_anchor=(0.5, 1.0))
+    fig.tight_layout(rect=[0, 0, 1, 1.0 - 0.35 / fig.get_figheight()])
+    fig.savefig(path, dpi=300)
     plt.close(fig)
 
 
@@ -782,8 +946,8 @@ def plot_groups(f: pd.DataFrame, lab: np.ndarray, path: Path) -> None:
 
     A group is not a curve: it is a set of users spending their year on the same
     mixture of daily forms. The mixture is therefore what describes it, and the
-    heatmap reads as a sentence: the users of group 3 spend 78% of their energy
-    on days of form 5 and 19% on days of form 9.
+    heatmap reads as a sentence: the users of DD-SLP 3 spend 36 per cent of their
+    energy on days of form 7.
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -792,59 +956,107 @@ def plot_groups(f: pd.DataFrame, lab: np.ndarray, path: Path) -> None:
     fcols = [c for c in f.columns if c.startswith("f_")]
     g = pd.DataFrame(f[fcols].to_numpy(), columns=fcols)
     g["group"] = lab
-    mix = g.groupby("group")[fcols].mean()
+    mix = g.groupby("group")[fcols].mean() * 100.0
     sizes = g.groupby("group").size()
     K, D = mix.shape
 
-    fig = plt.figure(figsize=(3.0 + 0.55 * D, 1.8 + 0.5 * K))
+    fig = plt.figure(figsize=(3.4 + 0.55 * D, 1.8 + 0.5 * K))
     gs = fig.add_gridspec(1, 2, width_ratios=[D, 3.0], wspace=0.06)
 
     ax = fig.add_subplot(gs[0])
-    im = ax.imshow(mix.to_numpy(), aspect="auto", cmap="Blues", vmin=0, vmax=1)
+    #Lorenzo Giannuzzo: numbers, colours and colour bar all in per cent, with the colour bar
+    # beside the heatmap it describes rather than beside the bars of the sizes
+    im = ax.imshow(mix.to_numpy(), aspect="auto", cmap="Blues", vmin=0, vmax=100)
     ax.set_xticks(range(D), [c.replace("f_", "") for c in fcols], fontsize=8)
-    ax.set_yticks(range(K), [f"group {i}" for i in mix.index], fontsize=8)
-    ax.set_xlabel("daily form", fontsize=9)
+    ax.set_yticks(range(K), [f"DD-SLP {i}" for i in mix.index], fontsize=8)
+    ax.set_xlabel("Daily form [-]", fontsize=9)
     for i in range(K):
         for j in range(D):
             v = mix.iat[i, j]
-            if v >= 0.04:
-                ax.text(j, i, f"{v*100:.0f}", ha="center", va="center",
-                        fontsize=7, color="white" if v > 0.5 else "#0d1f3c")
-    ax.set_title("share of the annual energy spent on each form  (%)",
-                 fontsize=9, loc="left")
+            if v >= 4:
+                ax.text(j, i, f"{v:.0f}", ha="center", va="center",
+                        fontsize=7, color="white" if v > 50 else "#0d1f3c")
+    cb = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.01)
+    cb.set_label("Share of the energy spent on the form [%]", fontsize=8)
+    cb.outline.set_edgecolor("black")
 
     ax2 = fig.add_subplot(gs[1])
     y = np.arange(K)
     ax2.barh(y, sizes.to_numpy(), color="#0d1f3c", height=0.6)
     ax2.set_yticks(y, [])
     ax2.invert_yaxis()          # imshow counts rows from the top, barh from the bottom
-    ax2.set_xlabel("PODs", fontsize=9)
+    ax2.set_xlabel("Points of delivery [-]", fontsize=9)
     ax2.grid(axis="x", alpha=0.3)
     for i, n in enumerate(sizes.to_numpy()):
         ax2.text(n, i, f" {n}", va="center", fontsize=7)
     ax2.set_xlim(0, sizes.max() * 1.3)
-
-    fig.colorbar(im, ax=ax2, fraction=0.03, pad=0.14)
-    fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    fig.savefig(path, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
-def plot_validity(val: pd.DataFrame, col: str, path: Path) -> None:
+def plot_validity(val: pd.DataFrame, col: str, path: Path, selected: int | None = None,
+                  threshold: float | None = None, tol: float | None = None) -> None:
+    """The criteria behind D or K, with the selected value marked.
+
+    For D the quantization error and the relative gain of one more codeword, which is
+    what decides, beside the silhouette, which is reported. For K the stability of the
+    partition across subsamples against its threshold, beside the silhouette.
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
-    fig, axes = plt.subplots(1, 3, figsize=(11, 3))
-    for ax, m, better in zip(axes,
-                             ["silhouette", "davies_bouldin", "calinski_harabasz"],
-                             ["higher", "lower", "higher"]):
-        ax.plot(val[col], val[m], "o-", color="#0d1f3c", ms=4)
-        ax.set_xlabel(col)
-        ax.set_title(f"{m}  ({better} is better)", fontsize=9)
+    v = val.sort_values(col).reset_index(drop=True)
+    x = v[col].to_numpy()
+    ink, accent = "#0d1f3c", "#c1440e"
+    panels = []
+    if col == "D" and "quantization_error" in v:
+        err = v["quantization_error"].to_numpy(float)
+        gain = np.full(len(err), np.nan)
+        gain[1:] = (err[:-1] - err[1:]) / np.where(err[:-1] > 0, err[:-1], np.nan) * 100.0
+        panels = [("Quantization error [-]", err, None),
+                  ("Error reduction of the last codeword added [%]", gain,
+                   None if tol is None else tol * 100.0),
+                  ("Silhouette of the dictionary [-]", v["silhouette"].to_numpy(float), None)]
+        xlabel = "Number of daily forms D [-]"
+    else:
+        stab = v["stability_mean"].to_numpy(float) if "stability_mean" in v else np.full(len(v), np.nan)
+        panels = [("Mean adjusted Rand index across subsamples [-]", stab, threshold),
+                  ("Silhouette of the partition [-]", v["silhouette"].to_numpy(float), None)]
+        xlabel = "Number of profiles K [-]"
+
+    fig, axes = plt.subplots(1, len(panels), figsize=(3.8 * len(panels), 3.3))
+    for ax, (label, y, ref) in zip(np.atleast_1d(axes), panels):
+        ax.plot(x, y, "o-", color=ink, ms=3.5, lw=1.2)
+        if col == "K" and label.startswith("Mean adjusted") and "stability_min" in v:
+            ax.fill_between(x, v["stability_min"].to_numpy(float), y, color=ink, alpha=0.12, lw=0)
+        if ref is not None:
+            ax.axhline(ref, color=accent, lw=1.0, ls="--")
+        if selected is not None:
+            ax.axvline(selected, color=accent, lw=1.0, ls=":")
+        ax.set_xlabel(xlabel, fontsize=9)
+        ax.set_ylabel(label, fontsize=9)
         ax.grid(alpha=0.3)
-    fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    handles, labels = [], []
+    if selected is not None:
+        handles.append(Line2D([], [], color=accent, ls=":", lw=1.0))
+        labels.append(f"Selected value ({col} = {selected})")
+    if col == "K" and threshold is not None:
+        handles.append(Line2D([], [], color=accent, ls="--", lw=1.0))
+        labels.append(f"Stability threshold ({threshold:.2f})")
+    if col == "K" and "stability_min" in v:
+        from matplotlib.patches import Patch
+        handles.append(Patch(color=ink, alpha=0.12))
+        labels.append("Down to the least favourable replica")
+    if col == "D" and tol is not None:
+        handles.append(Line2D([], [], color=accent, ls="--", lw=1.0))
+        labels.append(f"Tolerance ({tol:.0%})")
+    if handles:
+        fig.legend(handles, labels, loc="upper center", ncol=len(handles), fontsize=8,
+                   frameon=True, edgecolor="black", framealpha=1.0, bbox_to_anchor=(0.5, 1.02))
+    fig.tight_layout(rect=[0, 0, 1, 0.92])
+    fig.savefig(path, dpi=300, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -1007,6 +1219,7 @@ def main() -> None:
                          "ARI": adjusted_rand_score(base, assign_nearest(hold_x.astype("float32"), c2))})
         #Lorenzo Giannuzzo: bias against the full pool, which no replica can reveal
         print("    BIRCH on the whole pool, to bound the sampling bias...")
+        from sklearn.cluster import Birch
         br = Birch(n_clusters=None, threshold=0.02).fit(
             np.asarray(shapes[::5], dtype="float64"))
         sub = br.subcluster_centers_
@@ -1029,37 +1242,14 @@ def main() -> None:
 
     feat = scale_features(days_daily, np.load(cfg.cache_dir / "shapes.npy", mmap_mode="r"),
                           users).reindex(f.index)
-    Xf = clr(f.to_numpy(), float(cl["zero_replacement"]))
     lam = float(cl["scale_weight"])
-    Xs_raw = zscore(feat.to_numpy())
+    delta = float(cl["zero_replacement"])
 
-    #Lorenzo Giannuzzo: Ward reads one Euclidean distance over the concatenated vector and has no
-    # notion of which coordinates describe behaviour and which describe size, so
-    # what settles the balance between the two blocks is the total variance each
-    # carries and not the count of coordinates. Left as they are, the CLR block
-    # carries a variance that grows with D and with the sparsity of the
-    # frequency vectors, while the standardised scale block always carries the
-    # number of its features: lambda then means something different at every D,
-    # which is how a declared weight of one half came to drive three per cent of
-    # the distance. Dividing each block by its own total variance before
-    # applying lambda makes the declared weight the realised one, at any D.
     mode = str(cl.get("block_normalisation", "variance")).lower()
-    if mode == "variance":
-        vf, vs = Xf.var(axis=0).sum(), Xs_raw.var(axis=0).sum()
-        Xf = Xf / np.sqrt(vf) if vf > 0 else Xf
-        Xs_raw = Xs_raw / np.sqrt(vs) if vs > 0 else Xs_raw
-        Xf = np.sqrt(1.0 - lam) * Xf
-        Xs = np.sqrt(lam) * Xs_raw
-    elif mode in ("none", "raw"):
-        Xs = lam * Xs_raw
-    else:
-        raise ValueError(f"block_normalisation must be variance | none, got {mode!r}")
-
-    X = np.hstack([Xf, Xs])
+    X, v_form, v_scale = user_matrix(f.to_numpy(), feat.to_numpy(), delta, lam, mode)
     print(f"    vector: {D} CLR coordinates + {feat.shape[1]} scale features "
           f"weighted by lambda = {lam}   (block normalisation: {mode})")
 
-    v_form, v_scale = Xf.var(axis=0).sum(), Xs.var(axis=0).sum()
     share = v_scale / (v_form + v_scale) if (v_form + v_scale) else 0
     print(f"      variance carried: forms {v_form:8.4f}   scale {v_scale:8.4f}   "
           f"-> scale drives {share*100:.0f}% of the distance "
@@ -1067,25 +1257,27 @@ def main() -> None:
     if mode == "variance" and abs(share - lam) > 0.05:
         print(f"      WARNING: realised weight {share:.2f} differs from the "
               f"declared {lam:.2f}; the blocks did not normalise as expected")
-    if share > 0.5:
+    if share > lam + 0.05:
         print("      WARNING: the partition is driven by size, not by behaviour.")
         print("               Section 2.1 claims the residential divide is an")
         print("               output; at this weight it would be an artefact.")
 
     lab, val_K, k_reason, Z_users = ward_users(
         X, tuple(cl["profiles_range"]), cl.get("n_profiles"), out,
-        n_min=int(cl.get("min_group_size") or 30),
-        threshold=float(cl.get("k_stability", 0.75)),
+        n_min=n_min_for(int(cl.get("n_profiles") or cl["profiles_range"][0]),
+                        cl.get("min_group_size")),
+        threshold=float(cl.get("k_stability", 0.65)),
         n_boot=int(cl.get("k_n_boot", 10)),
         frac=float(cl.get("k_frac", 0.8)),
         seed=int(cl.get("random_state", 42)),
-        max_small_share=float(cl.get("k_max_small_share", 0.01)))
+        max_small_share=float(cl.get("k_max_small_share", 0.01)),
+        report_stability=bool(cl.get("k_stability_report", True)))
     K = len(np.unique(lab))
     print(f"    K = {K} groups")
     print(f"      {k_reason}")
 
     # ── small groups ─────────────────────────────────────────────────────────
-    n_min = cl.get("min_group_size") or max(30, 3 * K)
+    n_min = n_min_for(K, cl.get("min_group_size"))
     sizes = pd.Series(lab).value_counts()
     small = set(sizes[sizes < n_min].index)
     if small:
@@ -1101,8 +1293,11 @@ def main() -> None:
     # unit the dictionary was built on
     shp_daily = np.load(cfg.cache_dir / "shapes.npy", mmap_mode="r")
     #Lorenzo Giannuzzo: the same accumulator serves the baseline here and the sweep below, so the
-    # shapes are walked once for both
-    sums, cnt, cells, day_view = pod_cell_sums(days_daily, shp_daily, f.index)
+    # shapes are walked once for both. The mean curves of the baseline are therefore built
+    # with the weighting of generation.py as well.
+    global _CURVE_WEIGHTING
+    _CURVE_WEIGHTING = str(cfg.get("generation.curve_weighting", "energy")).lower()
+    sums, cnt, cells, day_view, sq = pod_cell_sums(days_daily, shp_daily, f.index)
     means = np.divide(sums, cnt[:, None], out=np.zeros_like(sums), where=cnt[:, None] > 0)
     Xm = zscore(means.reshape(len(f), len(cells) * 96))
 
@@ -1143,6 +1338,40 @@ def main() -> None:
     print(f"    silhouette in the other space: two-stage {sil_two_in_mean:.3f}   "
           f"mean curves {sil_mean_in_two:.3f}")
 
+    # ── sensitivity of the user partition, Section 3.5 ───────────────────────
+    #Lorenzo Giannuzzo: the dictionary and the frequency vectors are held fixed and
+    # only the second stage is rebuilt, at the same K, so that the ARI against the
+    # base partition measures what delta and lambda do to the users and nothing else.
+    sens_rows = []
+    for d_alt in cl.get("sensitivity_zero_replacement", []) or []:
+        Xa, _, _ = user_matrix(f.to_numpy(), feat.to_numpy(), float(d_alt), lam, mode)
+        la = fcluster(linkage(Xa, method="ward"), K, criterion="maxclust")
+        sens_rows.append({"parameter": "zero_replacement", "value": float(d_alt),
+                          "base_value": delta, "K": K,
+                          "ARI_vs_base": adjusted_rand_score(lab, la)})
+    for l_alt in cl.get("sensitivity_scale_weight", []) or []:
+        Xa, vf_a, vs_a = user_matrix(f.to_numpy(), feat.to_numpy(), delta, float(l_alt), mode)
+        la = fcluster(linkage(Xa, method="ward"), K, criterion="maxclust")
+        sens_rows.append({"parameter": "scale_weight", "value": float(l_alt),
+                          "base_value": lam, "K": K,
+                          "ARI_vs_base": adjusted_rand_score(lab, la),
+                          "scale_share_of_distance": vs_a / (vf_a + vs_a) if (vf_a + vs_a) else np.nan})
+    sens = pd.DataFrame(sens_rows)
+    if len(sens) and (sens["parameter"] == "scale_weight").any():
+        #Lorenzo Giannuzzo: the direct test of what drives the partition. With lambda = 0 only the
+        # mixture of forms is left; if the groups cannot be recovered from it, the partition is
+        # a partition of the scale block whatever share of the variance it was declared to carry.
+        z = sens[(sens["parameter"] == "scale_weight") & (sens["value"] == 0.0)]
+        if len(z) and float(z["ARI_vs_base"].iloc[0]) < 0.5:
+            print(f"      NOTE: without the allocation features the partition is recovered at ARI "
+                  f"{float(z['ARI_vs_base'].iloc[0]):.2f}; the groups are separated by how the "
+                  f"energy is spread across days rather than by the mixture of daily forms "
+                  f"(see group_features.csv)")
+    if len(sens):
+        sens.to_csv(out / "sensitivity_users.csv", index=False)
+        print("\n  Sensitivity of the user partition (ARI against the base partition)")
+        print(sens.round(3).to_string(index=False))
+
     # ── K on representativeness ──────────────────────────────────────────────
     disp_K = pd.DataFrame()
     if bool(cl.get("k_sweep_dispersion", True)):
@@ -1150,8 +1379,8 @@ def main() -> None:
         disp_K = sweep_K_dispersion(
             Z_users, sums, cnt, cells, day_view, shp_daily,
             tuple(cl["profiles_range"]), out, rng,
-            n_min=int(cl.get("min_group_size") or 30),
-            sample=int(cl.get("k_sweep_sample", 200_000)))
+            n_min_cfg=cl.get("min_group_size"),
+            sample=int(cl.get("k_sweep_sample", 200_000)), sq=sq)
         if not disp_K.empty:
             plot_K_dispersion(disp_K, out / "validity_K_dispersion.png")
 
@@ -1160,6 +1389,10 @@ def main() -> None:
         cl, {"n_codewords": D, "n_profiles": K,
              "d_reason": d_reason, "k_reason": k_reason}))
     np.save(cfg.cache_dir / "dictionary.npy", cent)
+    #Lorenzo Giannuzzo: the tree of the users is kept, in the order of groups.parquet, so
+    # that the mapping can be recomputed at K +/- 2 on the very partition hierarchy
+    # this run used instead of on a rebuilt one.
+    np.save(cfg.cache_dir / "user_linkage.npy", Z_users)
     np.save(cfg.cache_dir / "day_codeword.npy", code)
     f.join(feat).reset_index().to_parquet(cfg.cache_dir / "user_vectors.parquet", index=False)
     groups.to_parquet(cfg.cache_dir / "groups.parquet", index=False)
@@ -1180,8 +1413,10 @@ def main() -> None:
                     shapes=shapes_full, code=code, rng=rng,
                     unit_integral=unit_integral)
     if not val_D.empty:
-        plot_validity(val_D, "D", out / "validity_D.png")
-    plot_validity(val_K, "K", out / "validity_K.png")
+        plot_validity(val_D, "D", out / "validity_D.png", selected=D,
+                      tol=float(cl.get("d_tol", 0.01)))
+    plot_validity(val_K, "K", out / "validity_K.png", selected=K,
+                  threshold=float(cl.get("k_stability", 0.65)))
 
     plot_groups(f.reset_index(drop=True), lab, out / "groups.png")
 
@@ -1217,10 +1452,51 @@ def main() -> None:
                 if s.notna().any() else "")
     agg["below_n_min"] = agg.index.isin(small)
     agg.to_csv(out / "groups.csv")
+    #Lorenzo Giannuzzo: what each group is, in the units of the features that formed it. The
+    # medians of the allocation features and of the realised forms are what the paper needs
+    # to describe a profile in words, and they show which block separates the groups.
+    gf = feat.copy()
+    gf["group"] = pd.Series(lab, index=f.index).reindex(gf.index)
+    desc = gf.groupby("group").median()
+    top_forms = (f.groupby(pd.Series(lab, index=f.index)).mean())
+    desc["dominant_form"] = top_forms.idxmax(axis=1).str.replace("f_", "", regex=False)
+    desc["dominant_form_share"] = top_forms.max(axis=1)
+    desc.to_csv(out / "group_features.csv")
 
     #Lorenzo Giannuzzo: who is in each group, one row per POD: the table Section 3 needs
     comp.merge(f.reset_index()[["pod"] + fcols], on="pod", how="left").to_csv(
         out / "group_members.csv", index=False)
+
+    st_row = val_K[val_K["K"] == K]
+    facts = {
+        "n_shapes": len(shapes), "n_pods_clustered": len(f), "D": D, "K": K,
+        "n_micro_clusters": n_sub, "n_min_group": n_min,
+        "groups_below_n_min": len(small),
+        "pods_below_n_min": int(groups["below_n_min"].sum()),
+        "published_profiles": int(K - len(small)),
+        "pods_in_published_profiles": int((~groups["below_n_min"]).sum()),
+        "scale_weight_declared": lam, "scale_share_of_distance": float(share),
+        "zero_replacement": delta,
+        "largest_form_share_of_days": float(share_days.max()),
+        "largest_form": int(share_days.argmax()) + 1,
+        "stability_ARI_mean_at_K": float(st_row["stability_mean"].iloc[0]) if len(st_row) else np.nan,
+        "stability_ARI_min_at_K": float(st_row["stability_min"].iloc[0]) if len(st_row) else np.nan,
+        "ARI_two_stage_vs_mean_curves": float(ari),
+        "silhouette_two_stage": float(sil_two), "silhouette_mean_curves": float(sil_mean),
+        "silhouette_two_stage_in_mean_space": float(sil_two_in_mean),
+        "silhouette_mean_curves_in_two_stage_space": float(sil_mean_in_two),
+    }
+    if not val_D.empty and "silhouette" in val_D:
+        v = val_D.sort_values("D").reset_index(drop=True)
+        facts["silhouette_D_at_selected"] = float(v.loc[v["D"] == D, "silhouette"].iloc[0]) \
+            if (v["D"] == D).any() else np.nan
+        facts["silhouette_D_argmax_in_range"] = int(v.loc[v["silhouette"].idxmax(), "D"])
+        loc = [int(v.loc[i, "D"]) for i in range(1, len(v) - 1)
+               if v.loc[i, "silhouette"] > v.loc[i - 1, "silhouette"]
+               and v.loc[i, "silhouette"] > v.loc[i + 1, "silhouette"]]
+        facts["silhouette_D_local_maxima"] = " ".join(map(str, loc))
+    pd.DataFrame({"quantity": list(facts), "value": list(facts.values())}).to_csv(
+        out / "clustering_facts.csv", index=False)
 
     with open(out / "summary.txt", "w", encoding="utf-8") as fh:
         fh.write(f"first-stage unit             {unit}\n")
@@ -1265,14 +1541,6 @@ def main() -> None:
     print(f"\n  cache/   dictionary.npy, day_codeword.npy, user_vectors.parquet, groups.parquet")
     print(f"  results/ {out.name}")
     print(f"{'='*78}\n")
-
-
-if __name__ == "__main__":
-    main()
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":

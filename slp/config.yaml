@@ -66,15 +66,15 @@ preprocessing:                 # Section 2.2
   min_contractual_power: 0.1   # PODs at or below this carry no usable threshold
   # How a daily curve is turned into a shape.
   #   unit_integral  s = p / sum(p), so every shape sums to one and is a
-  #                  distribution over the day. Required by Eq. 2, by the JSD of
-  #                  Eq. 8, and by the comparison of Section 2.5, where the
-  #                  national profiles are normalised on energy.
+  #                  distribution over the day. Required by Eq. 2, by the total
+  #                  variation of Eq. 8, and by the comparison of Section 2.5,
+  #                  where the national profiles are normalised on energy.
   #   min_max        s = (p - min) / (max - min), so every shape runs from 0 to 1
   #                  and the peak is always 1. Isolates the outline and discards
   #                  how much energy sits under the curve. Eq. 2 no longer
   #                  recomposes, the day weights of Eq. 4 lose their basis, and
-  #                  the JSD is undefined; kept as an alternative to be compared
-  #                  rather than argued about.
+  #                  the total variation is undefined; kept as an alternative to be
+  #                  compared rather than argued about.
   shape_normalisation: "unit_integral"   # unit_integral | min_max
   # Compared against min_max on this dataset: unit_integral holds the wider
   # margin over the mean curves (8.6x against 3.3x). min_max separates the
@@ -91,10 +91,11 @@ preprocessing:                 # Section 2.2
 clustering:                    # Section 2.3
   # How the dictionary is built. Ward needs the distance between every pair of
   # shapes, which is quadratic in memory: on 2.5M shapes that is tens of TB.
-  #   summarised_ward  every shape is summarised, in one linear pass, into
-  #                    n_micro micro-clusters; Ward then runs on those, weighted
-  #                    by cardinality. Every shape takes part, and the memory
-  #                    Ward needs is n_micro^2, known in advance.   [default]
+  #   summarised_ward  every shape is summarised, in one linear pass of
+  #                    mini-batch k-means, into n_micro micro-clusters; Ward then
+  #                    runs on those, weighted by cardinality. Every shape takes
+  #                    part, and the memory Ward needs is n_micro^2, known in
+  #                    advance.                                          [default]
   #   sample_ward      Ward on a stratified sample of `sample_size`, the rest
   #                    assigned by nearest centroid. Kept for comparison.
   #   minibatch        exploratory only; the paper declares Ward.
@@ -132,23 +133,55 @@ clustering:                    # Section 2.3
   # compact by construction: it indicates, it does not decide. The paper's third
   # criterion rules here, that every codeword admit a verbal description, and it
   # is read off dictionary.png. Set to null to let the silhouette choose.
-  n_codewords: 12
+  # Section 2.3. D is chosen on the quantization error of the dictionary: the
+  # smallest D beyond which no further codeword reduces it by d_tol or more, with
+  # every codeword holding at least d_min_share of the days. The silhouette is
+  # reported in validity_D.csv and does not decide. An integer here forces D.
+  n_codewords: null
+  d_tol: 0.01
+  d_min_share: 0.005
   dictionary_resolution: "quarter_hourly"  # hourly | quarter_hourly
-  codewords_range: [10, 30]     # the range over which validity_D.csv is reported
+  codewords_range: [2, 30]      # the range searched and reported in validity_D.csv
   replicas: 10                 # [R]
   # delta, CLR. The paper asks for a threshold below the resolution of the
   # day weights, which is 1/n_days ~ 0.002 over this period. Tested from
-  # 1e-6 to 2e-3 the partition does not move, so the choice is not
-  # load-bearing; it is varied in Section 3.5 all the same.
+  # 1e-6 to 2e-3. The user partition is sensitive to it (ARI against the base
+  # partition between 0.36 and 0.46 in the September 2026 run), since most
+  # users realise only part of the dictionary; Section 3.5 reports it.
   zero_replacement: 1.0e-4     # delta, CLR
-  # lambda. Not a free parameter: it decides whether the profiles resolve
-  # behaviour or magnitude. What settles the balance is not lambda alone but
+  # Section 3.5. The user partition is rebuilt at the selected K for every value
+  # below and compared with the base partition through the ARI. The dictionary
+  # is not rebuilt, so only the second stage is being tested.
+  sensitivity_zero_replacement: [1.0e-6, 1.0e-5, 1.0e-3, 2.0e-3]
+  sensitivity_scale_weight: [0.0, 0.25, 0.75]
+  # lambda. The weight of the temporal-allocation features (load factor, log
+  # peak-to-average, weekday contrast, seasonal amplitude, zero-day fraction)
+  # against the mixture of forms. None of them depends on the size of the user,
+  # so lambda balances two descriptions of behaviour and never behaviour against
+  # magnitude. What settles the balance is not lambda alone but
   # the variance each block carries, and the CLR block loses its variance
   # when one form dominates the population. The run prints both.
   scale_weight: 0.50            # lambda
-  n_profiles: 8             # [K]; null -> search
-  profiles_range: [4, 20]
-  min_group_size: null         # [n_min]; null -> max(30, 3K
+  # Section 2.3. K is searched over an admissible range of resolutions. The lower
+  # bound is a requirement of the use: a catalogue coarser than six profiles merges
+  # users the national frameworks already keep apart (residency and power within the
+  # domestic category, other uses and public lighting outside it), and at K = 3 it
+  # misallocated more portfolio energy than the ARERA catalogue. The upper bound
+  # exceeds the 19 national profiles the catalogue is compared with. Within the range,
+  # K is the largest value up to which every partition reproduces itself at mean
+  # ARI >= k_stability (0.65, Steinley 2004); when no K of the range reaches it, the
+  # most stable admissible K is taken and its ARI is reported. An integer forces K.
+  n_profiles: null
+  profiles_range: [6, 20]
+  # The stability of the partition across subsamples is computed at every K of
+  # the range even when K is fixed, since Section 2.3 reports it for the adopted
+  # value together with its weakness.
+  k_stability_report: true
+  k_stability: 0.65
+  k_max_small_share: 0.01
+  k_n_boot: 20
+  k_frac: 0.8
+  min_group_size: null         # [n_min]; null -> max(30, 3K)
   random_state: 42
   fast: false                  # true -> MiniBatchKMeans while exploring, Ward for the final run
 
@@ -159,8 +192,11 @@ labels:                        # Section 2.2 / 2.6
   #   ateco_l3 = 6 digits  = NACE Subcategory
   level: 1                     # 1 -> division (base case, matches the paper)
   sensitivity_level: 2         # 2 -> class
-  min_class_size: 30           # classes below this are excluded from the metrics
-  min_class_multiple_of_k: 3   # enforced as max(min_class_size, multiple x K)
+  # Divisions below max(min_class_size, multiple x K), K being the number of
+  # published profiles, are pooled into a single class of minor divisions and are
+  # not discarded. mapping.py reads these two values and nothing else.
+  min_class_size: 25
+  min_class_multiple_of_k: 3
   # Domestic codes. In this dataset the mapping is inverted w.r.t. expectation.
   domestic:
     "DO.01": "Non Residente"
@@ -169,12 +205,46 @@ labels:                        # Section 2.2 / 2.6
 generation:                    # Section 2.4
   normalise_kwh_year: 1000
   grid: season                 # season (default) or month
+  # How the days of the members are averaged within a cell of the grid.
+  #   energy  each quarter-hour of the cell curve is the energy withdrawn by the
+  #           members in that quarter-hour over the energy of the cell, which is
+  #           the normalised aggregate curve of the group. It is the same
+  #           aggregation the cell weights are built on, so curve and weight
+  #           describe one object, and a portfolio settled on the profile is
+  #           unbiased in every cell.                             [default]
+  #   day     unweighted mean of the unit-integral day shapes, so a day of a few
+  #           kWh counts as much as a day of a few hundred. Kept for comparison.
+  curve_weighting: energy
 
 comparison:                    # Section 2.5
-  dtw_band_hours: 2
-  assimilability_percentile: 95
-  percentile_sensitivity: [90, 99]
+  reference_year: 2025         # the year of the GSE workbook and of the calendar
   time_bands: "arera"          # F1/F2/F3 as defined by ARERA
+  # A data-driven profile counts as residential when at least this share of its
+  # points carries a domestic activity label (DO.*). The same label defines the
+  # domestic class of Section 2.6, so the two sections cannot disagree.
+  residential_threshold: 0.80
+  # Eq. 14. Hourly or quarter-hourly price series in EUR/MWh, relative to slp/.
+  # CSV with a timestamp column (local time, start of the interval) and a price
+  # column; quarter-hourly values are averaged to the hour. Without a file the
+  # cost is not computed and numerical_results.csv says so: a constant price
+  # would return zero by construction, since the signed discrepancy of each
+  # user-month sums to zero.
+  price_file: null             # e.g. "../data/prices/pz_nord_2025.csv"
+  price_timestamp_column: "timestamp"
+  price_value_column: "price_EUR_MWh"
+  price_label: "day-ahead zonal price, North zone"
+  imbalance_price_file: null   # same format; optional second valuation
+
+mapping:                       # Section 2.6
+  n_bootstrap: 500
+  # Permutations of the activity labels behind the reference distribution of M1:
+  # for a class of n points, the effective number of profiles spanned by n points
+  # drawn at random from the whole population. It carries the small-sample bias
+  # of the entropy, which the analytical reference exp(H(A)) does not.
+  null_permutations: 1000
+  # Section 3.5: the mapping is recomputed on the same tree cut at K + offset.
+  # Offsets of K explored on the same tree; values below K = 2 are skipped.
+  sensitivity_k_offsets: [-2, -1, 1, 2, 3, 4, 5]
 
 output:
   cache_dir: "cache"

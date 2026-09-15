@@ -68,7 +68,9 @@ DATA = ROOT.parent / "data"
 OUT = _CFG.results_dir("comparison")
 
 PROVINCE = "Trento"
-REFERENCE_YEAR = 2025          # the year the GSE workbook refers to
+#Lorenzo Giannuzzo: the year the GSE workbook refers to, read from the configuration so
+# that the calendar of every stage is declared in one place
+REFERENCE_YEAR = int(_CFG.get("comparison.reference_year", 2025))
 GSE_TREATMENT = "monorario"    # or "fasce"
 #Lorenzo Giannuzzo: Only the two categories that describe the population under study. Public lighting and
 # vehicle charging are 84 points out of 7,524 and their four-letter codes cannot be told
@@ -77,10 +79,12 @@ GSE_PROFILES = ("PDMM", "PAUM", "PDMF", "PAUF")
 #Lorenzo Giannuzzo: A profile is residential or not, which fixes which data-driven profiles it may be
 # compared against in the figures.
 GSE_IS_RESIDENTIAL = {"PDMM": True, "PDMF": True, "PAUM": False, "PAUF": False}
-#Lorenzo Giannuzzo: Share of points that must be domestic for a data-driven profile to count as residential.
-RESIDENTIAL_THRESHOLD = 0.80
+#Lorenzo Giannuzzo: Share of points carrying a domestic activity label (DO.*) for a data-driven
+# profile to count as residential. The label is the one Section 2.6 uses, so the split of
+# the figures and the domestic class of the mapping are the same thing.
+RESIDENTIAL_THRESHOLD = float(_CFG.get("comparison.residential_threshold", 0.80))
+DOMESTIC_PREFIX = ("DO",)
 USE_M_FAMILY = False           # sensitivity only, see common/assignment.py
-IMBALANCE_PRICE = 15.0         # EUR/MWh, Eq. 16. Placeholder, set from the market data.
 MIN_HOURS_PER_MONTH = 240      # a user-month below this is not compared
 MAKE_FIGURES = True            # draw the figures at the end of the stage
 #Lorenzo Giannuzzo: B3 is accumulated twice: once per reference, and once over the whole perimeter a
@@ -120,6 +124,60 @@ def metrics(obs: np.ndarray, ref: np.ndarray, hours_of_day: np.ndarray) -> dict:
             "peak_hour_shift": shift,
             "par_ratio": float(par_r / par_o),
             "pearson": rho}
+
+
+# ------------------------------------------------------------------------------ prices
+def load_price_series(key: str, hcal: pd.DataFrame) -> tuple[np.ndarray | None, str]:
+    """Eq. 14. The price of every hour of the reference calendar, in EUR/MWh.
+
+    The file named under comparison.<key> carries a timestamp and a price. Quarter-hourly
+    prices are averaged to the hour, since the comparison runs on hourly energies. The
+    series is aligned on (month, day, hour) like the GSE workbook; the hour missing on the
+    spring clock change is filled by interpolation and the repeated hour of the autumn one
+    is averaged, which touches two hours of the year.
+
+    Returns (None, reason) when no file is configured. A constant price is deliberately
+    not offered as a fallback: the signed discrepancy of a user-month sums to zero, so a
+    constant price returns a cost of zero whatever the profile, which is not a result.
+    """
+    path = _CFG.get(f"comparison.{key}")
+    if not path:
+        return None, f"comparison.{key} not set: Eq. 14 not computed"
+    p = (ROOT / str(path)).resolve()
+    if not p.exists():
+        return None, f"price file not found: {p}"
+    df = pd.read_csv(p)
+    tcol = str(_CFG.get("comparison.price_timestamp_column", "timestamp"))
+    vcol = str(_CFG.get("comparison.price_value_column", "price_EUR_MWh"))
+    if tcol not in df or vcol not in df:
+        raise ValueError(f"{p.name} must carry the columns {tcol!r} and {vcol!r}")
+    ts = pd.to_datetime(df[tcol], errors="coerce")
+    v = pd.to_numeric(df[vcol], errors="coerce")
+    h = (pd.DataFrame({"month": ts.dt.month, "day": ts.dt.day, "hour": ts.dt.hour, "p": v})
+         .dropna().groupby(["month", "day", "hour"])["p"].mean())
+    idx = pd.MultiIndex.from_arrays([hcal["month"], hcal["date"].dt.day, hcal["hour"]])
+    out = h.reindex(idx).to_numpy(dtype=float)
+    n_nan = int(np.isnan(out).sum())
+    if n_nan:
+        out = pd.Series(out).interpolate(limit_direction="both").to_numpy()
+    if n_nan > 48:
+        print(f"  ! {p.name}: {n_nan} hours of {REFERENCE_YEAR} missing and interpolated")
+    return out, f"{p.name} ({n_nan} hours interpolated)"
+
+
+def valuation(obs: np.ndarray, ref: np.ndarray, price: np.ndarray | None) -> tuple[float, float]:
+    """Eq. 14 and the absolute valuation of Eq. 13, in EUR.
+
+    signed    sum of (ref - obs) x price: positive when the profile places consumption
+              in hours dearer than those in which it occurred
+    absolute  sum of |ref - obs| x price: the market value of the misallocated energy
+              counted in both directions, an upper bound on the signed figure
+    Energies are in kWh and prices in EUR/MWh, hence the division by 1000.
+    """
+    if price is None:
+        return np.nan, np.nan
+    diff = np.asarray(ref, float) - np.asarray(obs, float)
+    return float((diff * price).sum() / 1000.0), float((np.abs(diff) * price).sum() / 1000.0)
 
 
 # ------------------------------------------------------------------- data driven curves
@@ -369,15 +427,27 @@ def ddslp_kind(users: pd.DataFrame, groups: pd.DataFrame) -> pd.DataFrame:
     reported by number of points and by energy, because the two diverge sharply here and
     the divergence is itself worth stating.
     """
+    #Lorenzo Giannuzzo: two definitions of domestic are reported side by side and named. The
+    # activity label (ateco_l1 starting with DO) is the one of Section 2.6 and the one the
+    # residential split uses; the tariff category is the one the GSE assignment rule reads.
+    # They disagree on the points a distributor records under a domestic tariff with a
+    # non-domestic activity code, or the reverse, and a figure quoting one while the text
+    # quotes the other is what produced two different shares for the same profile.
     from common.assignment import gse_category
     u = users.assign(kind=gse_category(users).values)
-    m = groups.merge(u[["pod", "kind", "E"]], on="pod", how="inner")
+    u["dom_activity"] = u["ateco_l1"].astype(str).str.startswith(DOMESTIC_PREFIX)
+    g = groups[~groups["below_n_min"]] if "below_n_min" in groups else groups
+    m = g.merge(u[["pod", "kind", "dom_activity", "E"]], on="pod", how="inner")
     rows = []
-    for g, x in m.groupby("group"):
-        dom = x["kind"] == "domestic"
-        rows.append({"group": int(g), "profile": f"DDSLP_{int(g)}", "n_pod": len(x),
-                     "share_domestic_pod": float(dom.mean()),
-                     "share_domestic_energy": float(x.loc[dom, "E"].sum() / x["E"].sum()),
+    for gid, x in m.groupby("group"):
+        dom_t = x["kind"] == "domestic"
+        dom_a = x["dom_activity"]
+        e = x["E"].sum()
+        rows.append({"group": int(gid), "profile": f"DDSLP_{int(gid)}", "n_pod": len(x),
+                     "share_domestic_pod": float(dom_a.mean()),
+                     "share_domestic_energy": float(x.loc[dom_a, "E"].sum() / e) if e > 0 else np.nan,
+                     "share_domestic_tariff_pod": float(dom_t.mean()),
+                     "share_domestic_tariff_energy": float(x.loc[dom_t, "E"].sum() / e) if e > 0 else np.nan,
                      "mean_annual_kWh": float(x["E"].mean())})
     out = pd.DataFrame(rows)
     out["residential"] = out["share_domestic_pod"] >= RESIDENTIAL_THRESHOLD
@@ -427,12 +497,15 @@ def block_b1(dd: pd.DataFrame, arera: dict, gse: dict, hcal: pd.DataFrame) -> pd
 def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
              assign: pd.DataFrame, groups: pd.DataFrame,
              dd: pd.DataFrame, arera: dict, gse: dict,
-             hcal: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
+             hcal: pd.DataFrame, users: pd.DataFrame,
+             prices: dict | None = None) -> pd.DataFrame:
     """Each point against the profile the regulation gives it, and against its own.
 
     Run at S1: every profile receives the true monthly energy of the point, so the residual
-    is what the shape alone fails to explain.
+    is what the shape alone fails to explain. Eq. 13 is then TV times the monthly energy,
+    and Eq. 14 is evaluated on every price series in `prices`.
     """
+    prices = {k: v for k, v in (prices or {}).items() if v is not None}
     hod = hcal["hour"].to_numpy()
     month = hcal["month"].to_numpy()
     bands = hcal["band"].to_numpy()
@@ -488,6 +561,10 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
                 if r.sum() <= 0:
                     continue
                 mm = metrics(o, r, hod[hours])
+                for pk, pv in prices.items():
+                    sgn, ab = valuation(o, r, pv[hours])
+                    mm[f"cost_signed_EUR_{pk}"] = sgn
+                    mm[f"cost_absolute_EUR_{pk}"] = ab
                 if not complete:
                     agg_ok = False
                 else:
@@ -516,8 +593,9 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
                              "month_energy_kWh": float(o.sum()), **mm})
     out = pd.DataFrame(rows)
     if len(out):
+        #Lorenzo Giannuzzo: Eq. 13 on the user-month: the reference carries the monthly
+        # energy of the point, so half the absolute discrepancy is TV times that energy
         out["misallocated_kWh"] = out["total_variation"] * out["month_energy_kWh"]
-        out["imbalance_cost_EUR"] = out["misallocated_kWh"] / 1000.0 * IMBALANCE_PRICE
 
     arows = []
     for (src, label, m), (so, sr, tot, n) in agg.items():
@@ -532,14 +610,18 @@ def block_b2(pods: np.ndarray, obs: np.ndarray, seen: np.ndarray,
         do = np.bincount(hod, weights=so, minlength=24)
         dr = np.bincount(hod, weights=sr, minlength=24)
         tv_d = float(0.5 * np.abs(do / do.sum() - dr / dr.sum()).sum())
+        costs = {}
+        for pk, pv in prices.items():
+            sgn, ab = valuation(so, sr, pv)
+            costs[f"aggregate_cost_signed_EUR_{pk}"] = sgn
+            costs[f"aggregate_cost_absolute_EUR_{pk}"] = ab
         arows.append({"source": src, "reference": label, "month": m,
                       "scope": "system" if label == SYSTEM_LABEL else "reference",
                       "n_pod": n, "portfolio_energy_kWh": tot,
                       "aggregate_total_variation": tv,
                       "tv_mean_day": tv_d,
                       "tv_day_to_day": tv - tv_d,
-                      "aggregate_misallocated_kWh": tv * tot,
-                      "aggregate_imbalance_cost_EUR": tv * tot / 1000.0 * IMBALANCE_PRICE})
+                      "aggregate_misallocated_kWh": tv * tot, **costs})
     return out, pd.DataFrame(arows)
 
 
@@ -596,7 +678,15 @@ def main() -> None:
     pods, obs, seen, mode = observed_hourly(days, dictionary, CACHE, hcal,
                                             REFERENCE_YEAR, user_vectors=uv)
     print(f"  reconstructed {len(pods)} points over {REFERENCE_YEAR} [{mode}]")
-    b2, b3 = block_b2(pods, obs, seen, assign, groups, dd, arera, gse, hcal, users)
+    prices, price_notes = {}, {}
+    for pk in ("price_file", "imbalance_price_file"):
+        series, note = load_price_series(pk, hcal)
+        label = "dayahead" if pk == "price_file" else "imbalance"
+        prices[label], price_notes[label] = series, note
+        print(f"  prices [{label}]: {note}")
+    pd.DataFrame([{"series": k, "note": v, "available": prices[k] is not None}
+                  for k, v in price_notes.items()]).to_csv(OUT / "price_series.csv", index=False)
+    b2, b3 = block_b2(pods, obs, seen, assign, groups, dd, arera, gse, hcal, users, prices)
     b2.to_csv(OUT / "b2_pod_month.csv", index=False)
     b3.to_csv(OUT / "b3_portfolio_month.csv", index=False)
     if len(b3):
@@ -609,6 +699,7 @@ def main() -> None:
             x3 = b3[b3["scope"] == scope]
             if not len(x3):
                 continue
+            cost_cols = [c for c in x3.columns if c.startswith("aggregate_cost_")]
             pf = (x3.groupby("source")
                     .apply(lambda x: pd.Series({
                         "n_portfolio_months": len(x),
@@ -618,7 +709,8 @@ def main() -> None:
                         "tv_mean_day": float(np.average(
                             x["tv_mean_day"], weights=x["portfolio_energy_kWh"])),
                         "misallocated_kWh": float(x["aggregate_misallocated_kWh"].sum()),
-                        "imbalance_cost_EUR": float(x["aggregate_imbalance_cost_EUR"].sum()),
+                        "portfolio_energy_kWh": float(x["portfolio_energy_kWh"].sum()),
+                        **{c.replace("aggregate_", ""): float(x[c].sum()) for c in cost_cols},
                     }), include_groups=False))
             pf.to_csv(OUT / f"b3_summary_{scope}.csv")
             print(f"\n  B3 [{scope}], {note}:")
@@ -632,11 +724,21 @@ def main() -> None:
         common = wide.dropna().index
         b2["common_set"] = pd.MultiIndex.from_frame(b2[["pod", "month"]]).isin(common)
         b2.to_csv(OUT / "b2_pod_month.csv", index=False)
+        cost_cols = [c for c in b2.columns if c.startswith("cost_")]
         cs = (b2[b2["common_set"]].groupby("source")
                 .agg(n=("pod", "size"),
+                     n_pods=("pod", "nunique"),
+                     tv_p10=("total_variation", lambda x: x.quantile(0.10)),
+                     tv_p25=("total_variation", lambda x: x.quantile(0.25)),
                      tv_median=("total_variation", "median"),
+                     tv_p75=("total_variation", lambda x: x.quantile(0.75)),
+                     tv_p90=("total_variation", lambda x: x.quantile(0.90)),
                      misallocated_kWh=("misallocated_kWh", "sum"),
-                     imbalance_cost_EUR=("imbalance_cost_EUR", "sum")))
+                     month_energy_kWh=("month_energy_kWh", "sum"),
+                     **{c: (c, "sum") for c in cost_cols}))
+        cs["misallocated_share"] = cs["misallocated_kWh"] / cs["month_energy_kWh"]
+        cs["months_covered"] = " ".join(str(int(v)) for v in sorted(
+            b2.loc[b2["common_set"], "month"].unique()))
         cs.to_csv(OUT / "b2_summary_common_set.csv")
         print("\n  common set of user-months (every source evaluated):")
         print(cs.round(4).to_string())
@@ -647,7 +749,7 @@ def main() -> None:
                     nrmse_median=("nrmse", "median"),
                     pearson_median=("pearson", "median"),
                     misallocated_kWh=("misallocated_kWh", "sum"),
-                    imbalance_cost_EUR=("imbalance_cost_EUR", "sum")))
+                    **{c: (c, "sum") for c in cost_cols}))
         s.to_csv(OUT / "b2_summary.csv")
         print("\n" + s.round(4).to_string())
 
@@ -659,7 +761,8 @@ def main() -> None:
         fh.write(f"holidays as sunday      {conv}\n")
         fh.write(f"GSE treatment           {GSE_TREATMENT}\n")
         fh.write(f"GSE M family used       {USE_M_FAMILY}\n")
-        fh.write(f"imbalance price EUR/MWh {IMBALANCE_PRICE}\n")
+        for k, v in price_notes.items():
+            fh.write(f"price series {k:10s} {v}\n")
         fh.write(f"observed curve mode     {mode}\n\n")
         fh.write(prov.to_string(index=False) + "\n")
 
@@ -672,7 +775,7 @@ def main() -> None:
         # available as a stage of their own through `main.py --stage figures`.
         try:
             import figures
-            figures.main()
+            figures.main(include_mapping=False)
         except Exception as exc:
             print(f"\n  ! figures not produced: {type(exc).__name__}: {exc}")
             print("    the comparison tables above are unaffected; "

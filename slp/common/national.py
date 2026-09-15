@@ -151,20 +151,38 @@ def gse_normalisation_report(gse: pd.DataFrame) -> pd.DataFrame:
     For each profile column: the annual total, the monthly total, and the ratio between
     the mean daily energy of a Sunday and of a working day. The last one is the quantity
     that shows whether the profile differentiates day types in level at all.
+
+    The day types follow the calendar of Section 2.2, national holidays counted as
+    Sundays, since the metered ratio it is set against in Figure 13 is built on that
+    convention and two ratios on two calendars are not comparable.
+
+    The ratio is meaningful for the single-rate columns only. A time-band column is
+    normalised to one within each band of each month, so the energy it gives a day
+    depends on how much energy the user it is applied to places in each band; without
+    that quantity its Sunday to working-day ratio is an artefact of the normalisation.
+    It is still reported, flagged, so that nobody draws it by mistake.
     """
+    from common.calendar import italian_holidays
+
     cols = [c for c in gse.columns if c not in ("year", "month", "day", "hour")]
     d = gse.copy()
     d["date"] = pd.to_datetime(dict(year=d.year, month=d.month, day=d.day))
-    d["dow"] = d["date"].dt.dayofweek
+    hol = set()
+    for y in sorted(d["date"].dt.year.unique()):
+        hol |= italian_holidays(int(y))
+    dow = d["date"].dt.dayofweek
+    is_sunday = (dow == 6) | d["date"].dt.date.isin(hol)
+    d["daytype"] = np.where(is_sunday, "sunday", np.where(dow == 5, "saturday", "weekday"))
     rows = []
     for c in cols:
         monthly = d.groupby("month")[c].sum()
-        daily = d.groupby(["date", "dow"])[c].sum().reset_index()
-        wk = daily.loc[daily.dow < 5, c].mean()
-        su = daily.loc[daily.dow == 6, c].mean()
+        daily = d.groupby(["date", "daytype"])[c].sum().reset_index()
+        wk = daily.loc[daily["daytype"] == "weekday", c].mean()
+        su = daily.loc[daily["daytype"] == "sunday", c].mean()
         rows.append({"profile": c,
                      "annual_total": d[c].sum(),
                      "monthly_total_min": monthly.min(),
                      "monthly_total_max": monthly.max(),
-                     "sunday_over_weekday_energy": su / wk if wk else np.nan})
+                     "sunday_over_weekday_energy": su / wk if wk else np.nan,
+                     "ratio_meaningful": str(c).endswith("M")})
     return pd.DataFrame(rows)

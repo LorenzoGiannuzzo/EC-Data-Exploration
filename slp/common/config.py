@@ -5,6 +5,7 @@ declares. Nothing in the pipeline hard-codes a threshold.
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -96,6 +97,10 @@ class Config:
 
 
 def load_config(path: str | Path | None = None) -> Config:
-    path = Path(path) if path else ROOT / "config.yaml"
+    #Lorenzo Giannuzzo: main.py --config sets SLP_CONFIG before any stage is imported. Every
+    # stage imports load_config by name at module level, so rebinding the function in this
+    # module cannot reach them, while an environment variable read here reaches all of them.
+    env = os.environ.get("SLP_CONFIG")
+    path = Path(path) if path else (Path(env) if env else ROOT / "config.yaml")
     with open(path, encoding="utf-8") as f:
         return Config(yaml.safe_load(f))

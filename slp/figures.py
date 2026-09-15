@@ -46,6 +46,54 @@ WARM = "#c1440e"
 NEUTRAL = "#7d8491"
 PALETTE = ["#0b3c5d", "#328cc1", "#c1440e", "#e2a33c", "#4c8055", "#7d5ba6"]
 
+#Lorenzo Giannuzzo: one colour per data-driven profile for every figure of the paper,
+# keyed on the profile number and not on its rank within a figure, so that DD-SLP 3 is
+# the same colour wherever it appears.
+DDSLP_PALETTE = ["#6b6b6b", "#c1440e", "#328cc1", "#e2a33c", "#7d5ba6", "#4c9a6a",
+                 "#a8577e", "#0b3c5d", "#8c6c3f", "#5f7d95", "#d98c3f", "#2e7d4f"]
+
+
+def ddslp_color(group: object) -> str:
+    g = int(str(group).replace("DDSLP_", "").replace("DD-SLP", "").strip())
+    return DDSLP_PALETTE[(g - 1) % len(DDSLP_PALETTE)]
+
+
+def ddslp_label(group: object) -> str:
+    return "DD-SLP " + str(group).replace("DDSLP_", "").replace("DD-SLP", "").strip()
+
+
+#Lorenzo Giannuzzo: the published codes are spelled out in every label, since a reader of
+# the paper should not have to know that PAUM means other uses at a single rate.
+GSE_NAME = {"PDMM": "GSE domestic, single rate", "PDMF": "GSE domestic, time bands",
+            "PAUM": "GSE other uses, single rate", "PAUF": "GSE other uses, time bands"}
+RESIDENCY_EN = {"non residente": "non-resident", "residente": "resident", "tutti": "all"}
+
+
+def national_label(name: object) -> str:
+    """Full name of a national profile, from the spelling the pipeline keys on."""
+    txt = str(name).strip()
+    for code, full in GSE_NAME.items():
+        if txt in (code, f"GSE {code}"):
+            return full
+    if txt.upper().startswith("ARERA"):
+        rest = txt[5:].strip()
+        parts = rest.split(" ", 1)
+        cls = parts[0]
+        res = parts[1].strip().lower() if len(parts) > 1 else ""
+        res = RESIDENCY_EN.get(res, res)
+        return f"ARERA {cls} kW, {res}" if res else f"ARERA {cls} kW"
+    return txt
+
+
+def legend_top(target, handles=None, labels=None, ncol: int = 1, **kw):
+    """Legend centred at the top, inside a box with a black border."""
+    args = [] if handles is None else ([handles] if labels is None else [handles, labels])
+    opts = dict(loc="upper center", ncol=ncol, frameon=True, framealpha=1.0,
+                edgecolor="black", fontsize=7.5)
+    opts.update(kw)
+    return target.legend(*args, **opts)
+
+
 mpl.rcParams.update({
     "font.family": "DejaVu Sans",
     "font.size": 8.5,
@@ -58,7 +106,9 @@ mpl.rcParams.update({
     "ytick.color": INK,
     "xtick.major.width": 0.7,
     "ytick.major.width": 0.7,
-    "legend.frameon": False,
+    "legend.frameon": True,
+    "legend.edgecolor": "black",
+    "legend.framealpha": 1.0,
     "figure.dpi": 120,
 })
 
@@ -75,39 +125,49 @@ def save(fig, name: str) -> None:
     print(f"  {name}")
 
 
+def pretty_season(s: str) -> str:
+    return {"mid": "Autumn/Spring"}.get(str(s), str(s)[:1].upper() + str(s)[1:])
+
+
 # ------------------------------------------------------------------------ figure 1
 def fig_b1_heatmap() -> None:
-    """How far each national profile sits from each data-driven profile."""
+    """How far each national profile sits from each data-driven profile.
+
+    The nearest data-driven profile of every row is framed, since that pairing is the
+    positioning Section 2.5 defines. The colour scale is sequential and starts at zero,
+    because the total variation is non-negative and a diverging map would suggest a sign.
+    """
     b1 = pd.read_csv(RES / "b1_ddslp_vs_national.csv")
     d = b1[b1["setting"] == "S1_monthly"]
     m = d.pivot_table(index="national", columns="ddslp", values="total_variation")
-    m = m.loc[m.mean(axis=1).sort_values().index]
+    m = m.loc[m.min(axis=1).sort_values().index]
     order = sorted(m.columns, key=lambda c: int(c.split("_")[1]))
     m = m[order]
 
-    fig, ax = plt.subplots(figsize=(5.6, 8.2))
-    im = ax.imshow(m.to_numpy(), aspect="auto", cmap="RdYlBu_r", vmin=0,
-                   vmax=float(np.nanpercentile(m.to_numpy(), 98)))
+    fig, ax = plt.subplots(figsize=(5.8, 0.38 * len(m) + 1.4))
+    vals = m.to_numpy()
+    im = ax.imshow(vals, aspect="auto", cmap="YlOrRd", vmin=0,
+                   vmax=float(np.nanmax(vals)))
     ax.set_xticks(range(len(m.columns)))
-    #Lorenzo Giannuzzo: Beyond about six columns the labels collide; rotating is cheaper than shortening
-    # them, which would cost the reader the profile numbers.
     rot = 0 if len(m.columns) <= 6 else 45
-    ax.set_xticklabels([c.replace("DDSLP_", "DD-SLP ") for c in m.columns],
+    ax.set_xticklabels([ddslp_label(c) for c in m.columns],
                        rotation=rot, ha="center" if rot == 0 else "right", fontsize=8)
     ax.set_yticks(range(len(m.index)))
-    ax.set_yticklabels(m.index, fontsize=7)
+    ax.set_yticklabels([national_label(n) for n in m.index], fontsize=7)
+    hi = np.nanpercentile(vals, 70)
     for i in range(m.shape[0]):
+        j_best = int(np.nanargmin(vals[i]))
         for j in range(m.shape[1]):
-            v = m.iat[i, j]
+            v = vals[i, j]
             if np.isfinite(v):
                 ax.text(j, i, f"{v:.3f}", ha="center", va="center", fontsize=6,
-                        color="white" if v > np.nanpercentile(m.to_numpy(), 70) else INK)
+                        color="white" if v > hi else INK,
+                        fontweight="bold" if j == j_best else "normal")
+        ax.add_patch(plt.Rectangle((j_best - 0.5, i - 0.5), 1, 1, fill=False,
+                                   edgecolor="black", lw=1.2))
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("Total variation (share of energy misallocated)", fontsize=8)
-    cb.outline.set_visible(False)
-    ax.set_title("Distance between national and data-driven profiles\n"
-                 "monthly setting, hourly resolution", loc="left", fontsize=9.5, pad=10)
-    ax.set_xlabel("")
+    cb.set_label("Total variation [-]", fontsize=8)
+    cb.outline.set_edgecolor("black")
     save(fig, "fig1_b1_distance_heatmap")
 
 
@@ -117,52 +177,64 @@ def fig_daily_shapes(cell: str = "winter|weekday") -> None:
 
     A data-driven profile is residential or not by who ended up in it, not by
     construction, so the split is read from the composition table the comparison stage
-    writes. Putting a mostly residential archetype next to the profile for other uses
-    would compare two objects the regulation never intends to meet.
+    writes, on the activity label that Section 2.6 also uses. The share in the legend is
+    the share of points with a domestic activity label.
     """
     arr = np.load(CACHE / "profiles.npy")
     w = pd.read_parquet(CACHE / "profile_weights.parquet")
     groups = sorted(w["group"].unique())
     cells = list(w.loc[w["group"] == groups[0], "cell"])
+    if cell not in cells:
+        #Lorenzo Giannuzzo: on the monthly grid the cell is rebuilt from the first month
+        # of the season rather than failing on a key that does not exist there
+        season, daytype = cell.split("|")
+        cand = [c for c in cells if c.endswith("|" + daytype)]
+        cell = cand[0] if cand else cells[0]
     ci = cells.index(cell)
     hourly = arr.reshape(arr.shape[0], arr.shape[1], 24, 4).sum(axis=3)
 
     comp = pd.read_csv(RES / "ddslp_composition.csv").set_index("group")
     gse = pd.read_parquet(CACHE / "gse.parquet")
     days = pd.read_parquet(CACHE / "days.parquet")
-    cal = C.build_calendar(2025, C.season_map_from_days(days))
+    cal = C.build_calendar(int(_CFG.get("comparison.reference_year", 2025)),
+                           C.season_map_from_days(days))
     season, daytype = cell.split("|")
     sel_days = cal[(cal["season"] == season) & (cal["daytype"] == daytype)]
     sel = gse[pd.to_datetime(dict(year=gse.year, month=gse.month, day=gse.day))
               .dt.date.isin(sel_days["date"].dt.date)]
 
-    panels = [("Residential", True, "PDMM", "Domestic"),
-              ("Other uses", False, "PAUM", "Other uses")]
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.5), sharey=True)
+    panels = [("Residential data-driven profiles", True, "PDMM"),
+              ("Remaining data-driven profiles", False, "PAUM")]
+    #Lorenzo Giannuzzo: two vertical scales. The residential shapes vary between 2 and 7 per cent
+    # of the day per hour, a daytime-only activity reaches 9, and a shared scale flattened the
+    # left panel into the lower half of its height
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.8), sharey=False)
     x = np.arange(24)
-    for ax, (title, want, gse_col, gse_label) in zip(axes, panels):
-        k = 0
+    for ax, (title, want, gse_col) in zip(axes, panels):
         for i, g in enumerate(groups):
-            if bool(comp.loc[int(g), "residential"]) != want:
+            if int(g) not in comp.index or bool(comp.loc[int(g), "residential"]) != want:
                 continue
-            ax.plot(x, hourly[i, ci] * 100, color=PALETTE[k % len(PALETTE)], lw=1.7,
-                    label=f"DD-SLP {int(g)} "
+            ax.plot(x, hourly[i, ci] * 100, color=ddslp_color(g), lw=1.7,
+                    label=f"{ddslp_label(g)} "
                           f"({comp.loc[int(g), 'share_domestic_pod']*100:.0f}% domestic)")
-            k += 1
         if gse_col in sel.columns:
-            prof = sel.groupby("hour")[gse_col].mean()
+            #Lorenzo Giannuzzo: the published daily shape is the ratio of the sums over the
+            # days of the cell, which is the shape of the energy the profile allocates to
+            # that cell, and not the mean of daily ratios
+            prof = sel.groupby("hour")[gse_col].sum()
             prof = prof / prof.sum() * 100
             ax.plot(x, prof.reindex(x).to_numpy(), lw=2.4, ls="--", color=INK,
-                    label=f"GSE {gse_col}, {gse_label}")
-        ax.set_title(title, loc="left", fontsize=9.5)
-        ax.set_xlabel("Hour")
+                    label=GSE_NAME[gse_col])
+        ax.set_title(title, fontsize=9.5)
+        ax.set_xlabel("Time of day [h]")
         ax.set_xticks(range(0, 24, 3))
         ax.grid(axis="y", color=GRID, lw=0.6)
         ax.set_axisbelow(True)
-        ax.legend(fontsize=7.2)
-    axes[0].set_ylabel("Share of daily energy (%)")
-    fig.suptitle(f"Daily shapes, {season} {daytype}, each family against its own "
-                 f"national profile", x=0.005, ha="left", fontsize=10.5)
+        legend_top(ax, fontsize=7.0)
+    axes[0].set_ylabel("Share of the daily energy [%]")
+    for a in axes:
+        lo, hi = a.get_ylim()
+        a.set_ylim(0, hi * 1.35)
     fig.tight_layout()
     save(fig, "fig2_daily_shapes")
 
@@ -186,13 +258,13 @@ def fig_b2_distributions() -> None:
         v = np.sort(b2.loc[b2["source"] == s, "total_variation"].dropna().to_numpy())
         ax.plot(v, np.arange(1, len(v) + 1) / len(v), color=colors[s], lw=1.8,
                 label=labels[s])
-    ax.set_xlabel("Total variation per user-month")
-    ax.set_ylabel("Cumulative share of user-months")
-    ax.set_xlim(0, 0.8)
+    ax.set_xlabel("Total variation per user-month [-]")
+    ax.set_ylabel("Cumulative share of user-months [-]")
+    ax.set_xlim(0, 1.0)
+    ax.set_ylim(0, 1.18)
     ax.grid(color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.legend(loc="lower right")
-    ax.set_title("Distribution of misallocation", loc="left", fontsize=9.5)
+    legend_top(ax, ncol=3)
 
     ax = axes[1]
     data = [b2.loc[b2["source"] == s, "total_variation"].dropna() for s in order]
@@ -208,67 +280,88 @@ def fig_b2_distributions() -> None:
         med.set(color=INK, linewidth=1.4)
     ax.set_xticks(range(1, len(order) + 1))
     ax.set_xticklabels([labels[s] for s in order])
-    ax.set_ylabel("Total variation")
-    ax.set_ylim(0, 0.9)
+    ax.set_ylabel("Total variation per user-month [-]")
+    ax.set_ylim(0, 1.0)
     ax.grid(axis="y", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.set_title("Same data, by profile family", loc="left", fontsize=9.5)
 
     fig.tight_layout()
     save(fig, "fig3_b2_distributions")
 
 
 # ------------------------------------------------------------------------ figure 4
+def sunday_ratio_per_pod() -> pd.Series:
+    """Mean Sunday energy over mean working-day energy, per point of delivery.
+
+    Sunday includes the national holidays, as in the day types of Section 2.2; the
+    working day is Monday to Friday. Days at zero energy count, since a closure is a
+    legitimate day of the week. A point needs at least one day of both kinds with a
+    positive mean working-day energy for the ratio to be defined.
+    """
+    days = pd.read_parquet(CACHE / "days.parquet")
+    #Lorenzo Giannuzzo: the population of the paper is the clustered one. A POD retained by
+    # the completeness filter but without a single day carrying a shape never enters a
+    # profile, and counting it here gave a histogram of more points than the paper has.
+    uv = CACHE / "user_vectors.parquet"
+    if uv.exists():
+        days = days[days["pod"].isin(pd.read_parquet(uv, columns=["pod"])["pod"])]
+    per = days.groupby(["pod", "daytype"])["energy"].mean().unstack()
+    per = per.dropna(subset=["weekday", "sunday"])
+    per = per[per["weekday"] > 0]
+    return (per["sunday"] / per["weekday"]).replace([np.inf, -np.inf], np.nan).dropna()
+
+
 def fig_daytype_energy() -> None:
     """The structural finding: what the national profiles do to the week.
 
-    For each profile family, the ratio between the mean daily energy of a Sunday and of a
-    working day. The metered points are shown as a distribution, the national profiles as
-    single values, because a profile has no distribution.
+    The median is taken over every point for which the ratio is defined; the horizontal
+    axis is cut at 2.2 for legibility only.
     """
-    days = pd.read_parquet(CACHE / "days.parquet")
-    d = days[days["energy"] > 0]
-    per = (d.groupby(["pod", "daytype"])["energy"].mean().unstack())
-    per = per.dropna(subset=["weekday", "sunday"])
-    ratio = (per["sunday"] / per["weekday"]).replace([np.inf, -np.inf], np.nan).dropna()
-    ratio = ratio[ratio < 3]
+    ratio = sunday_ratio_per_pod()
+    shown = ratio[ratio <= 2.2]
 
     g = pd.read_csv(RES / "gse_normalisation.csv")
-    mono = g[g["profile"].str.endswith("M")]
-    band = g[g["profile"].str.endswith("F")]
+    #Lorenzo Giannuzzo: only the single-rate profiles of the categories the audit covers. A
+    # time-band profile is normalised within each band and has no Sunday to working-day
+    # ratio of its own, so drawing one would plot an artefact of the normalisation.
+    from comparison import GSE_PROFILES
+    mono = g[g["profile"].isin(GSE_PROFILES) & g["profile"].str.endswith("M")]
 
-    fig, ax = plt.subplots(figsize=(7.4, 3.6))
-    ax.hist(ratio, bins=70, color=ACCENT, alpha=0.5, edgecolor="none",
-            label=f"Metered points (n = {len(ratio):,})")
+    fig, ax = plt.subplots(figsize=(7.4, 3.8))
+    ax.hist(shown, bins=np.linspace(0, 2.2, 67), color=ACCENT, alpha=0.5,
+            edgecolor="none", label=f"Metered points of delivery ({len(ratio)} PODs)")
     ax.axvline(float(ratio.median()), color=ACCENT, lw=1.8,
-               label=f"Median of metered points ({ratio.median():.2f})")
-    ax.axvline(float(mono["sunday_over_weekday_energy"].mean()), color=WARM, lw=2.0,
-               label=f"GSE, single-rate ({mono['sunday_over_weekday_energy'].mean():.3f})")
-    for i, row in enumerate(band.itertuples()):
-        ax.axvline(row.sunday_over_weekday_energy, color=NEUTRAL, lw=0.9, ls=":",
-                   label="GSE, banded" if i == 0 else None)
-    ax.set_xlabel("Sunday energy / working-day energy")
-    ax.set_ylabel("Points of delivery")
+               label=f"Median of the metered points ({ratio.median():.2f})")
+    #Lorenzo Giannuzzo: profiles with the same ratio are drawn once with a joint label; two
+    # lines on the same abscissa hid the dashed one under the solid one
+    vals = mono["sunday_over_weekday_energy"].round(3)
+    styles = ["-", "--"]
+    for i, (v, grp) in enumerate(mono.groupby(vals, sort=True)):
+        names = [GSE_NAME.get(p, p).replace("GSE ", "").replace(", single rate", "")
+                 for p in grp["profile"]]
+        label = ("GSE " + " and ".join(names) + ", single rate" if len(names) > 1
+                 else GSE_NAME.get(grp["profile"].iloc[0], grp["profile"].iloc[0]))
+        ax.axvline(float(v), color=WARM, lw=2.0, ls=styles[i % 2], label=f"{label} ({v:.3f})")
+    ax.set_xlabel("Sunday energy over working-day energy [-]")
+    ax.set_ylabel("Points of delivery [-]")
     ax.set_xlim(0, 2.2)
+    ax.set_ylim(0, ax.get_ylim()[1] * 1.45)
     ax.grid(axis="y", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.legend(fontsize=7.5)
-    ax.set_title("How much the week is flattened\n"
-                 "single-rate national profiles give a Sunday the energy of a Tuesday",
-                 loc="left", fontsize=9.5, pad=8)
+    legend_top(ax, ncol=2, fontsize=7.2)
     fig.tight_layout()
     save(fig, "fig4_daytype_energy")
 
 
 # ------------------------------------------------------------------------ figure 5
 def fig_misallocated() -> None:
-    """Eq. 15 and Eq. 16, by tariff category, on the common set of user-months."""
+    """Eq. 13 by contractual power class, on the common set of user-months."""
     #Lorenzo Giannuzzo: POD codes contain an "E" and are read as floats unless forced to string:
     # 99999E00010600 is a valid float literal and silently becomes inf.
     b2 = pd.read_csv(RES / "b2_pod_month.csv", dtype={"pod": str})
     if "common_set" in b2.columns:
         b2 = b2[b2["common_set"]]
-    users = pd.read_parquet(CACHE / "users.parquet")[["pod", "D_TIPTA", "D_POTC"]]
+    users = pd.read_parquet(CACHE / "users.parquet")[["pod", "D_POTC"]]
     b2 = b2.merge(users, on="pod", how="left")
     b2["class"] = pd.cut(b2["D_POTC"], [0, 1.5, 3, 4.5, 6, np.inf],
                          labels=["0-1.5", "1.5-3", "3-4.5", "4.5-6", ">6"])
@@ -282,8 +375,9 @@ def fig_misallocated() -> None:
                .apply(lambda x: x["misallocated_kWh"].sum() / x["month_energy_kWh"].sum(),
                       include_groups=False)
                .unstack().reindex(columns=order))
+    n_pods = b2.groupby("class", observed=True)["pod"].nunique().reindex(piv.index)
 
-    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.4))
+    fig, axes = plt.subplots(1, 2, figsize=(9.2, 3.6))
     w = 0.26
     xs = np.arange(len(piv.index))
     for k, s in enumerate(order):
@@ -291,17 +385,16 @@ def fig_misallocated() -> None:
                     color=colors[s], label=labels[s])
         axes[1].bar(xs + (k - 1) * w, share[s].to_numpy() * 100, width=w,
                     color=colors[s], label=labels[s])
-    axes[0].set_ylabel("Misallocated energy (MWh)")
-    axes[0].set_title("Eq. 15, absolute", loc="left", fontsize=9.5)
-    axes[1].set_ylabel("Share of energy misallocated (%)")
-    axes[1].set_title("Eq. 15, relative to consumption", loc="left", fontsize=9.5)
+    axes[0].set_ylabel("Misallocated energy [MWh]")
+    axes[1].set_ylabel("Share of the energy misallocated [%]")
     for ax in axes:
         ax.set_xticks(xs)
-        ax.set_xticklabels(piv.index.astype(str))
-        ax.set_xlabel("Contractual power class (kW)")
+        ax.set_xticklabels([f"{c}\n({int(n)} PODs)" for c, n in zip(piv.index.astype(str), n_pods)])
+        ax.set_xlabel("Contractual power class [kW]")
         ax.grid(axis="y", color=GRID, lw=0.6)
         ax.set_axisbelow(True)
-    axes[0].legend()
+        ax.set_ylim(0, ax.get_ylim()[1] * 1.22)
+    legend_top(axes[0], ncol=3)
     fig.tight_layout()
     save(fig, "fig5_misallocated_energy")
 
@@ -309,7 +402,7 @@ def fig_misallocated() -> None:
 REQUIRED = ("b1_ddslp_vs_national.csv", "b2_pod_month.csv", "gse_normalisation.csv")
 
 
-def main() -> None:
+def main(include_mapping: bool = True) -> None:
     print(f"\n{'='*78}\n  FIGURES, Section 2.5\n{'='*78}")
     missing = [f for f in REQUIRED if not (RES / f).exists()]
     if missing:
@@ -329,6 +422,11 @@ def main() -> None:
     #Lorenzo Giannuzzo: The stage is called "figures", so it draws every figure the pipeline has, not only
     # the ones belonging to Section 2.5. The mapping figures are skipped in silence when
     # that stage has not been run, which is the only case in which they cannot exist.
+    if not include_mapping:
+        #Lorenzo Giannuzzo: called from the comparison stage, which runs before the mapping.
+        # Drawing the mapping figures there would draw them from the tables of the previous
+        # run, which is what produced the missing m3_reach_pod.csv in the log.
+        return
     try:
         import mapping_figures
         if mapping_figures.inputs_ready():
@@ -341,6 +439,44 @@ def main() -> None:
                   + ", ".join(mapping_figures.missing_inputs()))
     except Exception as exc:
         print(f"  ! mapping figures not produced: {type(exc).__name__}: {exc}")
+
+    collect_figures()
+
+
+def collect_figures() -> None:
+    """Copy every figure of the pipeline into paper_results/figures, one folder per format.
+
+    Each stage keeps its figures next to its own tables, which is where they are checked
+    against the numbers. The manuscript needs them all in one place, so they are also
+    copied, flat, into paper_results/figures/png and paper_results/figures/pdf. The folder
+    is emptied first, so that a figure no longer produced does not survive from an earlier
+    run. Two figures with the same file name in different stages are prefixed with the
+    stage folder, so that neither overwrites the other.
+    """
+    import shutil
+
+    root = RES.parent
+    target = root / "figures"
+    if target.exists():
+        shutil.rmtree(target)
+    found: dict[str, list] = {}
+    for ext in ("png", "pdf"):
+        for p in sorted(root.rglob(f"*.{ext}")):
+            if target in p.parents:
+                continue
+            found.setdefault(p.name, []).append(p)
+    n = 0
+    for name, paths in found.items():
+        for p in paths:
+            ext = p.suffix.lstrip(".")
+            out = target / ext
+            out.mkdir(parents=True, exist_ok=True)
+            #Lorenzo Giannuzzo: the stage folder is the first component below paper_results
+            stage = p.relative_to(root).parts[0]
+            dest = out / (f"{stage}_{name}" if len(paths) > 1 else name)
+            shutil.copy2(p, dest)
+            n += 1
+    print(f"  {n} figure files collected in {target}\n")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,14 @@ carrying nothing about how much that day consumes; the weights say how much of
 the year falls on each kind of day. A profile is the pair, and neither suffices
 alone.
 
+Both halves are built on the same aggregate. The weight of a cell is the mean
+daily energy of the members in that cell times the days the calendar holds for
+it, and the curve of the cell is, by default, the energy the members withdraw in
+each quarter-hour of the cell over the energy of the cell, which is the
+normalised aggregate curve of the group. A curve taken as the unweighted mean of
+unit-integral days would let a day of two kWh weigh as much as a day of two
+hundred, and curve and weight would then describe two different objects.
+
 The profile is then rescaled to 1000 kWh a year, which is what makes a standard
 profile reusable: a group holds users of every size, and what they share is the
 shape of their consumption, not its magnitude. Whoever applies the profile
@@ -125,8 +133,13 @@ def cell_index(days: pd.DataFrame, cells: list[tuple[str, str]]) -> np.ndarray:
 
 # ── Eq. 6 ────────────────────────────────────────────────────────────────────
 def typical_curves(shapes: np.ndarray, days: pd.DataFrame, groups: pd.DataFrame,
-                   cells: list[tuple[str, str]]) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
+                   cells: list[tuple[str, str]],
+                   weighting: str = "energy") -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
     """Average the members' days over the grid.
+
+    weighting = "energy": x(a,g,t) = sum over the user-days of p(i,d,t) divided by
+    the sum of their daily energies, since p(i,d,t) = e(i,d) s(i,d,t).
+    weighting = "day":    x(a,g,t) = the unweighted mean of s(i,d,t).
 
     Returns (curves, counts, per-cell daily energy), where curves is
     (K, n_cells, 96) with each curve summing to one.
@@ -139,11 +152,22 @@ def typical_curves(shapes: np.ndarray, days: pd.DataFrame, groups: pd.DataFrame,
 
     key = (gcodes.codes[ok].astype("int64") * len(cells) + ci[ok])
     sub = np.asarray(shapes[d.loc[ok, "shape_idx"].to_numpy()], dtype="float64")
+    e_day = d.loc[ok, "energy"].to_numpy(dtype="float64")
 
     sums = np.zeros((K * len(cells), 96))
-    np.add.at(sums, key, sub)
     cnt = np.bincount(key, minlength=K * len(cells)).astype("float64")
-    curves = np.divide(sums, cnt[:, None], out=np.zeros_like(sums), where=cnt[:, None] > 0)
+    if weighting == "energy":
+        #Lorenzo Giannuzzo: s times e is the metered day itself, so the sum over the cell
+        # is the aggregate withdrawal of the group and its normalisation is the curve
+        np.add.at(sums, key, sub * e_day[:, None])
+        e_cell = np.bincount(key, weights=e_day, minlength=K * len(cells))
+        curves = np.divide(sums, e_cell[:, None], out=np.zeros_like(sums),
+                           where=e_cell[:, None] > 0)
+    elif weighting == "day":
+        np.add.at(sums, key, sub)
+        curves = np.divide(sums, cnt[:, None], out=np.zeros_like(sums), where=cnt[:, None] > 0)
+    else:
+        raise ValueError(f"generation.curve_weighting must be energy | day, got {weighting!r}")
 
     #Lorenzo Giannuzzo: each curve is a distribution over the day; renormalise against rounding
     s = curves.sum(axis=1, keepdims=True)
@@ -188,9 +212,7 @@ def dispersion(shapes: np.ndarray, days: pd.DataFrame, groups: pd.DataFrame,
 
     nRMSD between each member day and the curve of its cell, normalised on the
     mean of the curve, which is 1/96 since the curves are distributions. The
-    95th percentile is the criterion of Section 2.5: a national profile is a
-    legitimate representative only where it lies no further from the centroid
-    than the members themselves do.
+    distribution is the yardstick against which K is read in Section 3.5.
     """
     d = days[days["has_shape"]].merge(groups[["pod", "group"]], on="pod", how="inner")
     cats = sorted(groups["group"].unique())
@@ -270,7 +292,7 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
             if i == 0:
                 ax.set_title(pretty(s_), fontsize=9)
             if j == 0:
-                ax.set_ylabel(f"Standard Profile {g}\n({int(sizes.get(g, 0))} PODs)",
+                ax.set_ylabel(f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
                               fontsize=8)
         for j in range(len(seasons)):
             axes[i][j].set_ylim(0, top * 1.12 if top else 1)
@@ -290,11 +312,11 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
     #lines and sized against the height, it fits a grid of two rows as well as one
     #of ten instead of being clipped on the first.
     fig.supylabel(f"Power normalized to an annual\nconsumption of "
-                  f"{kwh_year:,.0f} kWh [kW]",
+                  f"{kwh_year:.0f} kWh [kW]",
                   fontsize=min(11.0, max(7.0, 2.2 * fig.get_figheight())))
     fig_h = fig.get_figheight()
     fig.tight_layout(rect=[0, 0, 1, max(0.80, 1.0 - 0.45 / fig_h)])
-    fig.savefig(path, dpi=150)
+    fig.savefig(path, dpi=300)
     plt.close(fig)
 
 
@@ -309,18 +331,17 @@ def plot_weights(weights: pd.DataFrame, path: Path) -> None:
     ax.set_xticks(range(piv.shape[1]), [pretty_cell(c) for c in piv.columns],
                   rotation=45, ha="right", fontsize=7)
     ax.set_yticks(range(piv.shape[0]),
-                  [f"Standard Profile {g}" for g in piv.index], fontsize=8)
+                  [f"DD-SLP {g}" for g in piv.index], fontsize=8)
     for i in range(piv.shape[0]):
         for j in range(piv.shape[1]):
             v = piv.iat[i, j]
             if v >= 0.02:
                 ax.text(j, i, f"{v*100:.0f}", ha="center", va="center", fontsize=7,
                         color="white" if v > piv.to_numpy().max() * 0.55 else "#0d1f3c")
-    ax.set_title("Share of the annual energy carried by each cell [%]",
-                 fontsize=9, loc="left")
-    fig.colorbar(im, ax=ax, fraction=0.03)
+    cb = fig.colorbar(im, ax=ax, fraction=0.03)
+    cb.set_label("Share of the annual energy carried by the cell [-]", fontsize=8)
     fig.tight_layout()
-    fig.savefig(path, dpi=150)
+    fig.savefig(path, dpi=300)
     plt.close(fig)
 
 
@@ -380,8 +401,9 @@ def main() -> None:
               "those cells carry no curve and their calendar weight is lost")
 
     # ── Eq. 6 ────────────────────────────────────────────────────────────────
-    print("\n  averaging the members' days over the grid...")
-    curves, counts, energy = typical_curves(np.asarray(shapes), days, keep, cells)
+    weighting = str(cfg.get("generation.curve_weighting", "energy")).lower()
+    print(f"\n  averaging the members' days over the grid (curves weighted by {weighting})...")
+    curves, counts, energy = typical_curves(np.asarray(shapes), days, keep, cells, weighting)
     weights = calendar_weights(energy, cal, cells)
     print(f"    {curves.shape[0]} profiles x {curves.shape[1]} cells x 96 values")
 
@@ -395,8 +417,7 @@ def main() -> None:
     med = disp["nrmsd_p95"].median()
     print(f"    nRMSD of the members from their own curve: "
           f"median p95 = {med:.2f}")
-    print(f"      this is the yardstick of Section 2.5: a national profile is a")
-    print(f"      legitimate representative only if it lies closer than this")
+
 
     # ── write ────────────────────────────────────────────────────────────────
     np.save(cfg.cache_dir / "profiles.npy", curves.astype("float32"))
@@ -439,12 +460,13 @@ def main() -> None:
     with open(out / "summary.txt", "w", encoding="utf-8") as fh:
         fh.write(f"Profiles                     {len(glist)}\n")
         fh.write(f"Grid                         {grid}\n")
+        fh.write(f"Curve weighting              {weighting}\n")
         fh.write(f"Cells per profile            {len(cells)}  "
                  f"({len(periods)} {grid}s x {len(DAYTYPE_ORDER)} day types)\n")
         fh.write(f"PODs carrying a profile      {len(keep):,}\n")
         if dropped:
             fh.write(f"PODs in groups below n_min   {dropped:,} (no profile)\n")
-        fh.write(f"Normalised to                {kwh_year:,.0f} kWh per year\n")
+        fh.write(f"Normalised to                {kwh_year:.0f} kWh per year\n")
         fh.write(f"\nDispersion of the members from their own curve, nRMSD:\n")
         fh.write(f"  median p50                 {disp['nrmsd_p50'].median():.3f}\n")
         fh.write(f"  median p95                 {disp['nrmsd_p95'].median():.3f}\n")

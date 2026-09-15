@@ -4,6 +4,7 @@
     python main.py --stage preprocessing
     python main.py --from clustering   from that stage onwards
     python main.py --config alt.yaml
+    python main.py --stage numbers     every number of the paper in one table
 
 Each stage reads the cache the previous one wrote, so re-running a late stage
 after changing a parameter does not recompute the dictionary.
@@ -21,6 +22,11 @@ System programme (Ricerca di Sistema Elettrico).
 from __future__ import annotations
 
 import argparse
+import os
+
+#Lorenzo Giannuzzo: joblib cannot count the physical cores on this Windows machine and prints a
+# traceback every run; the logical count is what it falls back to anyway
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", str(os.cpu_count() or 1))
 import importlib
 import sys
 import time
@@ -35,6 +41,7 @@ STAGES: dict[str, tuple[str, str]] = {
     "generation":    ("generation",    "2.4"),
     "comparison":    ("comparison",    "2.5"),
     "mapping":       ("mapping",       "2.6"),
+    "numbers":       ("numerical_results", "3"),
     "figures":       ("figures",       "2.5"),
 }
 
@@ -58,29 +65,16 @@ def run_stage(name: str) -> float:
 
 
 def apply_config_override(path: str) -> None:
-    """Point common.config at an alternative configuration file.
+    """Point every stage at an alternative configuration file.
 
-    The original function is captured before the module attribute is rebound. Rebinding
-    first and reaching for the original through the same name afterwards would find the
-    replacement instead, so the call would either fail or recurse. `__wrapped__` is
-    consulted in case the loader is cached, and the cache is cleared so that a value read
-    from the default file earlier in the process is not served again.
+    The stages import load_config by name when they are imported, so rebinding the
+    function inside common.config reaches none of them. The path is handed over through
+    the environment instead, which common.config.load_config reads whenever it is called
+    without an explicit path, and it is set before the first stage is imported.
     """
-    import common.config as C
-
-    original = getattr(C.load_config, "__wrapped__", C.load_config)
-    cache_clear = getattr(C.load_config, "cache_clear", None)
-    if cache_clear is not None:
-        cache_clear()
-
-    def load_config(p: str = path):
-        return original(p)
-
-    C.load_config = load_config  # type: ignore[assignment]
+    import os
+    os.environ["SLP_CONFIG"] = str(Path(path).resolve())
     print(f"  configuration overridden: {path}")
-    #Lorenzo Giannuzzo: A stage that did `from common.config import load_config` at import time holds its own
-    # reference and is unaffected. Stages in this pipeline call `config.load_config()`
-    # through the module, which is what makes the override work.
 
 
 def print_timings(timings: list[tuple[str, float]], failed: str | None = None) -> None:

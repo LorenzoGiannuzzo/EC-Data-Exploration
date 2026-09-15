@@ -19,7 +19,8 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from figures import INK, GRID, ACCENT, WARM, NEUTRAL, save as _save  # noqa: E402
+from figures import (INK, GRID, ACCENT, WARM, NEUTRAL, ddslp_color, ddslp_label,  # noqa: E402
+                     national_label, legend_top)
 
 from common import calendar as C  # noqa: E402
 from common.config import load_config  # noqa: E402
@@ -90,7 +91,7 @@ ACTIVITY_NAME = {
     "36": "Water supply",
     "38": "Waste management",
     "41": "Building construction",
-    "43": "Specialised construction",
+    "43": "Specialized construction",
     "45": "Motor vehicle trade",
     "46": "Wholesale trade",
     "47": "Retail trade",
@@ -109,10 +110,32 @@ ACTIVITY_NAME = {
     "85": "Education",
     "86": "Health services",
     "93": "Sport and recreation",
-    "94": "Membership organisations",
+    "94": "Membership organizations",
     "96": "Personal services",
 }
 POOLED = "Other activities"
+
+
+def pct(share: float) -> str:
+    """A share as a percentage for labels: whole numbers, one decimal below one per cent,
+    so that a behaviour holding 0.3 per cent of the points is not labelled 0 per cent."""
+    v = 100.0 * float(share)
+    return f"{v:.0f}%" if v >= 1 or v == 0 else f"{v:.1f}%"
+
+
+def grouped_activity(values: pd.Series) -> pd.Series:
+    """The activity class as the mapping stage groups it.
+
+    Divisions below the class threshold are pooled by mapping.py into one class. The
+    figures read the same pooling from contingency_pod.csv, whose rows are exactly the
+    grouped classes, so that a class is the same class in every figure and in M1 to M3.
+    """
+    path = RES / "contingency_pod.csv"
+    if not path.exists():
+        return values.astype(str)
+    kept = set(pd.read_csv(path, index_col=0).index.astype(str)) - {RESIDUAL}
+    v = values.astype(str)
+    return v.where(v.isin(kept), RESIDUAL)
 
 
 def activity_label(code: object) -> str:
@@ -120,7 +143,7 @@ def activity_label(code: object) -> str:
     if c == RESIDUAL:
         return "Minor classes, pooled"
     if c == POOLED:
-        return c
+        return "Other activities, minor classes included"
     return ACTIVITY_NAME.get(c, f"class {c}")
 
 
@@ -129,26 +152,28 @@ def fig_contingency() -> None:
     ct = pd.read_csv(RES / "contingency_pod.csv", index_col=0)
     share = _order_rows(ct.div(ct.sum(axis=1), axis=0))
 
-    fig, ax = plt.subplots(figsize=(6.2, 0.28 * len(share) + 1.8))
-    im = ax.imshow(share.to_numpy(), aspect="auto", cmap="Blues", vmin=0, vmax=1)
+    #Lorenzo Giannuzzo: the numbers, the colours and the colour bar are all in per cent, so
+    # the bar can no longer read 0 to 1 under a label that says per cent
+    share = share * 100.0
+    n_class = ct.sum(axis=1).reindex(share.index)
+    fig, ax = plt.subplots(figsize=(6.4, 0.28 * len(share) + 1.8))
+    im = ax.imshow(share.to_numpy(), aspect="auto", cmap="Blues", vmin=0, vmax=100)
     ax.set_xticks(range(share.shape[1]))
-    ax.set_xticklabels([c.replace("DDSLP_", "DD-SLP ") for c in share.columns])
+    ax.set_xticklabels([ddslp_label(c) for c in share.columns], rotation=45, ha="right")
     ax.set_yticks(range(share.shape[0]))
-    ax.set_yticklabels([activity_label(c) for c in share.index], fontsize=7)
+    ax.set_yticklabels([f"{activity_label(c)} ({int(n_class[c])} PODs)" for c in share.index],
+                       fontsize=7)
     for i in range(share.shape[0]):
         for j in range(share.shape[1]):
             v = share.iat[i, j]
-            if v >= 0.02:
-                ax.text(j, i, f"{v*100:.0f}", ha="center", va="center", fontsize=6.5,
-                        color="white" if v > 0.55 else INK)
+            if v >= 2:
+                ax.text(j, i, f"{v:.0f}", ha="center", va="center", fontsize=6.5,
+                        color="white" if v > 55 else INK)
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
     cb.set_label("Share of the activity class [%]", fontsize=8)
-    cb.outline.set_visible(False)
+    cb.outline.set_edgecolor("black")
     if RESIDUAL in share.index:
         ax.get_yticklabels()[list(share.index).index(RESIDUAL)].set_color(NEUTRAL)
-    ax.set_title("Where each activity class ends up\n"
-                 "rows sum to 100 per cent, ordered by the profile they mostly land in",
-                 loc="left", fontsize=9.5, pad=10)
     save(fig, "fig6_contingency")
 
 
@@ -158,25 +183,32 @@ def fig_multiplicity() -> None:
     e = pd.read_csv(PART_DIR["multiplicity"] / "m1_multiplicity_energy.csv").set_index("activity")
     y = np.arange(len(d))
 
-    fig, ax = plt.subplots(figsize=(7.2, 0.30 * len(d) + 1.8))
+    fig, ax = plt.subplots(figsize=(7.2, 0.30 * len(d) + 2.3))
+    #Lorenzo Giannuzzo: the band is where a random label of the same size would fall, the
+    # 5th to 95th percentile of the permutation null of Section 2.6, so a class is read
+    # against its own reference and not against a single line that ignores its size
+    if {"null_p05", "null_p95"} <= set(d.columns):
+        for yi, lo, hi in zip(y, d["null_p05"], d["null_p95"]):
+            ax.fill_between([lo, hi], yi - 0.36, yi + 0.36, color="#e6e6e6", lw=0, zorder=0)
+        ax.fill_between([], [], [], color="#e6e6e6", label="Random label of the same size, by points (5th-95th percentile)")
     ax.hlines(y, d["M1_ci_low"], d["M1_ci_high"], color=NEUTRAL, lw=1.4, zorder=1)
     ax.scatter(d["M1_effective"], y, s=34, color=ACCENT, zorder=3,
-               label="Weighted by points")
+               label="Weighted by points (95% bootstrap interval)")
     ax.scatter(e.reindex(d["activity"])["M1_effective"], y, s=30, facecolor="white",
                edgecolor=WARM, lw=1.3, zorder=4, label="Weighted by energy")
-    ax.axvline(1, color=INK, lw=1.0, ls="--")
-    ax.text(1.02, len(d) - 0.4, "one profile per class,\nwhat the classification assumes",
-            fontsize=7, va="top", color=INK)
+    ax.axvline(1, color=INK, lw=1.0, ls="--", label="One profile per class")
+    if "reference_uninformative" in d.columns:
+        ax.axvline(float(d["reference_uninformative"].iloc[0]), color=INK, lw=1.0, ls=":",
+                   label=f"Uninformative label ({d['reference_uninformative'].iloc[0]:.1f})")
     ax.set_yticks(y)
-    ax.set_yticklabels([activity_label(a) for a in d["activity"]], fontsize=7.5)
-    ax.set_xlabel("Effective number of profiles the class spans")
+    ax.set_yticklabels([f"{activity_label(a)} ({int(n)} PODs)"
+                        for a, n in zip(d["activity"], d["n_pod"])], fontsize=7.5)
+    ax.set_xlabel("Effective number of profiles the class spans [-]")
     ax.set_xlim(0.8, None)
+    ax.set_ylim(-0.7, len(d) + 1.6)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.legend(loc="lower right", fontsize=7.5)
-    ax.set_title("M1, class multiplicity\n"
-                 "a class above one is not predicted by its activity code",
-                 loc="left", fontsize=9.5, pad=8)
+    legend_top(ax, ncol=2, fontsize=7)
     save(fig, "fig7_m1_multiplicity", "multiplicity")
 
 
@@ -195,13 +227,16 @@ def fig_aggregation() -> None:
     ax.scatter(e.reindex(d["profile"])["M2_effective"], y, s=40, facecolor="white",
                edgecolor=WARM, lw=1.4, zorder=4, label="Weighted by energy")
     ax.axvline(1, color=INK, lw=1.0, ls="--")
+    #Lorenzo Giannuzzo: the axis starts left of one, so the reference line is not drawn on
+    # top of the spine where it cannot be told apart from it
+    ax.set_xlim(0.7, None)
     ax.set_yticks(y)
-    ax.set_yticklabels([p.replace("DDSLP_", "DD-SLP ") for p in d["profile"]])
-    ax.set_xlabel("Effective number of activity classes subsumed")
+    ax.set_yticklabels([f"{ddslp_label(p)} ({int(n)} PODs)" for p, n in zip(d["profile"], d["n_pod"])])
+    ax.set_xlabel("Effective number of activity classes subsumed [-]")
+    ax.set_ylim(-0.7, len(d) + 0.9)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.legend(loc="lower right", fontsize=7.5)
-    ax.set_title("M2, profile aggregation", loc="left", fontsize=9.5)
+    legend_top(ax, ncol=2, fontsize=7)
 
     ax = axes[1]
     ax.barh(y, d["n_classes_present"], color=NEUTRAL, alpha=0.45, label="Classes present")
@@ -209,11 +244,11 @@ def fig_aggregation() -> None:
             label="Classes covering 80% of the profile")
     ax.set_yticks(y)
     ax.set_yticklabels([])
-    ax.set_xlabel("Number of activity classes")
+    ax.set_xlabel("Number of activity classes [-]")
+    ax.set_ylim(-0.7, len(d) + 0.9)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    ax.legend(fontsize=7.5, loc="lower right")
-    ax.set_title("Raw count against effective concentration", loc="left", fontsize=9.5)
+    legend_top(ax, ncol=2, fontsize=7)
 
     fig.tight_layout()
     save(fig, "fig8_m2_aggregation", "aggregation")
@@ -244,7 +279,7 @@ def fig_coverage() -> None:
     ax.hlines(y - off, d["M3_ddslp_ci_low"], d["M3_ddslp_ci_high"], color=WARM,
               lw=1.6, alpha=0.5, zorder=1)
     ax.scatter(d["M3_ddslp_effective"], y - off, s=58, color=WARM, zorder=3,
-               label="Consumption behaviours subsumed")
+               label="Consumption behaviors subsumed")
 
     for i, r in enumerate(d.itertuples()):
         cls = "class" if r.n_classes_present == 1 else "classes"
@@ -266,62 +301,6 @@ def fig_coverage() -> None:
     save(fig, "fig9_m3_coverage", "coverage")
 
 
-#Lorenzo Giannuzzo: the required inputs now live in different folders, so the check
-#carries the folder with the name. Checking them all against the stage root would report
-#every file as missing the moment the tables moved into their metric sub-folders.
-REQUIRED = ((RES, "contingency_pod.csv"),
-            (PART_DIR["multiplicity"], "m1_multiplicity_pod.csv"),
-            (PART_DIR["aggregation"], "m2_aggregation_pod.csv"),
-            (PART_DIR["coverage"], "m3_coverage_pod.csv"))
-
-
-def missing_inputs() -> list[str]:
-    #Lorenzo Giannuzzo: the check lives here and is called from the figures stage rather
-    #than reimplemented there. The tables sit in three different folders now, so a caller
-    #joining REQUIRED onto a single root gets it wrong, and it did.
-    return [str((d / f).relative_to(RES.parents[1]))
-            for d, f in REQUIRED if not (d / f).exists()]
-
-
-def inputs_ready() -> bool:
-    return not missing_inputs()
-
-
-def main() -> None:
-    print(f"\n{'='*78}\n  FIGURES, Section 2.6\n{'='*78}")
-    missing = missing_inputs()
-    if missing:
-        print(f"  mapping output not found in {RES}")
-        print(f"  missing: {', '.join(missing)}")
-        print("  run  python main.py --stage mapping  first\n")
-        return
-    #Lorenzo Giannuzzo: four figures instead of seven. The stacked-bar renderings of
-    #M1 and M2 carried the same numbers as the contingency table and the dot plots
-    #they sat next to, and fig9 was fig12 without the filter on the categories built
-    #on a handful of points. What the set was missing was not another count but a
-    #curve, which is what the last figure supplies.
-    fig_contingency()
-    fig_multiplicity()
-    fig_aggregation()
-    fig_coverage_gap()
-    try:
-        fig_behaviours_under_national("PDMM")
-    except FileNotFoundError as exc:
-        print(f"  ! fig13 needs the generation output: {exc}")
-    fig_declared_against_actual()
-    fig_reach_beyond_declared()
-    #Lorenzo Giannuzzo: one figure per day type. The published profiles are paired with a
-    #behaviour cell by cell, so a catalogue curve that matches on a working day and misses
-    #on a Sunday shows up only if the Sunday is drawn.
-    for daytype in DAYTYPES:
-        fig_profiles_with_classes(daytype=daytype)
-    fig_classes_across_profiles()
-    fig_national_without_match()
-    print(f"\n  figures under {RES}\n")
-
-
-if __name__ == "__main__":
-    main()
 
 
 # ===========================================================================
@@ -450,29 +429,23 @@ def fig_coverage_gap() -> None:
         if r.M3_classes_effective > 1.05:
             ax.scatter([r.M3_classes_effective], [i], s=30, facecolor="white",
                        edgecolor=NEUTRAL, lw=1.3, zorder=4)
-    ax.axvline(1, color=INK, lw=1.4)
-    #Lorenzo Giannuzzo: anchored below the top row rather than above it. Placed
-    #above, it ran into the title, which is what made the published version of this
-    #figure unreadable at the top.
-    ax.text(1.04, len(d) - 0.72,
-            "what the regulation declares:\none profile for the whole category",
-            fontsize=8, va="top", color=INK)
+    ax.axvline(1, color=INK, lw=1.4, label="Declared: one behavior per published profile")
     ax.scatter([], [], s=30, facecolor="white", edgecolor=NEUTRAL, lw=1.3,
                label="Activity classes represented (shown where above one)")
-    ax.plot([], [], color=WARM, lw=3, label="Consumption behaviours delivered")
+    ax.plot([], [], color=WARM, lw=3, label="Consumption behaviors delivered")
     ax.set_yticks(y)
-    ax.set_yticklabels(d["national_profile"], fontsize=8.5)
+    ax.set_yticklabels([f"{national_label(n)} ({int(k)} PODs)"
+                        for n, k in zip(d["national_profile"], d["n_pod"])], fontsize=8.5)
     ax.set_xlabel("Effective number of categories [-]")
-    ax.set_xlim(0.7, float(d[["M3_ddslp_effective", "M3_classes_effective"]]
-                           .to_numpy().max()) + 0.9)
-    ax.set_ylim(-0.8, len(d) - 0.1)
+    x_max = float(d[["M3_ddslp_effective", "M3_classes_effective"]].to_numpy().max()) + 0.9
+    ax.set_xlim(0.7, x_max)
+    ax.set_xticks(np.arange(1, int(np.ceil(x_max)) + 1))
+    ax.set_ylim(-0.8, len(d) + 1.2)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
-    ax.legend(loc="lower right", fontsize=8)
-    ax.set_title("M3, the distance between what is declared and what is delivered",
-                 loc="left", fontsize=10, pad=10)
+    legend_top(ax, ncol=1, fontsize=8)
     save(fig, "fig12_m3_gap", "coverage")
 
 
@@ -527,8 +500,9 @@ def _national_membership(national: str) -> pd.Series:
     users = pd.read_parquet(CACHE / "users.parquet")
     groups = pd.read_parquet(CACHE / "groups.parquet")
 
+    from mapping import GSE_KEEP
     g = assignment.gse_profile(users)[["pod", "gse_column"]]
-    g = g.rename(columns={"gse_column": "national"})
+    g = g[g["gse_column"].isin(GSE_KEEP)].rename(columns={"gse_column": "national"})
     a = assignment.arera_key(users)
     a = a[a["arera_applicable"]].copy()
     a["national"] = ("ARERA " + a["arera_class"].astype(str) + " "
@@ -554,12 +528,13 @@ def _group_composition() -> pd.DataFrame:
     full = full[full["activity"].notna()]
     if "below_n_min" in full:
         full = full[~full["below_n_min"]]
+    full["activity"] = grouped_activity(full["activity"])
     comp = pd.crosstab(full["group"], full["activity"])
     return comp.div(comp.sum(axis=1), axis=0)
 
 
 def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
-                             top: int = 8, floor: float = 0.1) -> None:
+                             top: int = 8, floor: float = 0.1, per_row: int | None = None) -> None:
     #Lorenzo Giannuzzo: one small panel per behaviour, bars rather than pies. A pie of
     #ten or more classes turns into a ring of slivers, and two pies side by side cannot
     #be compared at a glance; bars on a shared axis can.
@@ -572,7 +547,10 @@ def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
     #comparable to it.
     comp = _group_composition()
     order = list(share.index)
-    axes = [fig.add_subplot(gs[0, j]) for j in range(len(order))]
+    if per_row is None:
+        axes = [fig.add_subplot(gs[0, j]) for j in range(len(order))]
+    else:
+        axes = [fig.add_subplot(gs[j // per_row, j % per_row]) for j in range(len(order))]
 
     for ax, g in zip(axes, order):
         row = pd.Series(dtype=float)
@@ -580,7 +558,9 @@ def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
             r = comp.loc[g] * 100.0
             row = r[r >= floor].sort_values(ascending=False).head(top)
         y = np.arange(len(row))[::-1]
-        ax.barh(y, row.to_numpy(), height=0.72, left=floor,
+        #Lorenzo Giannuzzo: on a logarithmic axis the bar starts at the floor, so its width
+        # is the value minus the floor; a width equal to the value drew every bar too long
+        ax.barh(y, row.to_numpy() - floor, height=0.72, left=floor,
                 color=palette[g], edgecolor="white", lw=0.4)
         for yy, v in zip(y, row.to_numpy()):
             ax.text(v * 1.25, yy, f"{v:.0f}" if v >= 1 else f"{v:.1f}",
@@ -598,10 +578,10 @@ def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
         ax.set_axisbelow(True)
         for sp in ("top", "right", "left"):
             ax.spines[sp].set_visible(False)
-        ax.set_title(f"DD-SLP {g}  ({share[g]*100:.0f}%)", fontsize=7.6,
+        ax.set_title(f"DD-SLP {g} ({pct(share[g])})", fontsize=7.6,
                      color=palette[g], fontweight="bold", pad=4)
     fig.text(0.5, 0.012,
-             "Share of the points in each behaviour [%], logarithmic scale",
+             "Share of the points in each behavior [%], logarithmic scale",
              ha="center", fontsize=8.2, color=INK)
 
 
@@ -623,24 +603,30 @@ def fig_behaviours_under_national(national: str = "PDMM",
         print(f"  ! no points under {national}, figure skipped")
         return
     share = (counts / counts.sum()).sort_values(ascending=False)
-    effective = float(np.exp(-(share * np.log(share)).sum()))
 
     kw = [f"kW{i}" for i in range(1, 97)]
     seasons = [s for s in ("winter", "mid", "summer")
                if (curves["season"] == s).any()] or list(curves["season"].unique())
     x = np.arange(96) / 4.0
-    palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(share.index)}
+    palette = {g: ddslp_color(g) for g in share.index}
 
     #Lorenzo Giannuzzo: the descriptor box is given its own height in inches on top of
     #the panels rather than a slice of them. Taking the space out of the panels flattens
     #the curves and, because the labels on the right are spaced in data units, pushes
     #them back on top of one another as soon as the axes get short.
-    panel_h = 2.55
-    fig_h = 4.2 + panel_h
+    #Lorenzo Giannuzzo: the composition panels wrap onto a second row beyond four
+    # behaviours, and the head room grows with the rows the legend needs, so that neither
+    # the class names nor the season titles are overwritten when the catalogue is larger
+    per_row = 4
+    comp_rows = int(np.ceil(len(share) / per_row))
+    legend_rows = int(np.ceil((len(share) + 1) / 3))
+    panel_h = 2.55 * comp_rows + 0.35 * (comp_rows - 1)
+    head_in = 0.30 + 0.24 * legend_rows
+    fig_h = 4.2 + panel_h + head_in
     fig = plt.figure(figsize=(4.15 * len(seasons), fig_h))
     outer = fig.add_gridspec(2, 1, height_ratios=[4.2, panel_h],
-                             hspace=0.46, left=0.075, right=0.93,
-                             top=1.0 - 0.72 / fig_h, bottom=0.10)
+                             hspace=1.55 / ((4.2 + panel_h) / 2.0), left=0.075, right=0.93,
+                             top=1.0 - head_in / fig_h, bottom=0.55 / fig_h)
     top_gs = outer[0].subgridspec(1, len(seasons), wspace=0.12)
     axes = [fig.add_subplot(top_gs[0, j]) for j in range(len(seasons))]
     for a in axes[1:]:
@@ -655,7 +641,19 @@ def fig_behaviours_under_national(national: str = "PDMM",
         if not y:
             continue
         stack = np.vstack([y[g] for g in y])
-        national_curve = sum(y[g] * share[g] for g in y)
+        #Lorenzo Giannuzzo: the black curve is the published profile itself, not the mixture of
+        # the behaviours beneath it. The published daily shape of the cell is given the daily
+        # energy of that mixture, which is the S1 setting of Section 2.5: the comparison is
+        # on the shape of the day and not on how the published profile would split the year
+        mixture = sum(y[g] * share[g] for g in y) / sum(share[g] for g in y)
+        published = _national_curve(national, s, daytype)
+        if published is None:
+            national_curve = mixture
+            print(f"  ! fig13: published curve of {national} not found for {s}, "
+                  f"mixture drawn instead")
+        else:
+            e_day = mixture.sum() / 4.0
+            national_curve = np.repeat(published, 4) * e_day
 
         ax.fill_between(x, stack.min(axis=0), stack.max(axis=0), color=INK,
                         alpha=0.06, lw=0, zorder=1)
@@ -679,28 +677,30 @@ def fig_behaviours_under_national(national: str = "PDMM",
             placed = _spread_labels(ends, 0.052 * span)
             for name, pos in zip(names, placed):
                 if name == "national":
-                    ax.annotate(national, xy=(24.3, pos), fontsize=8, color=INK,
+                    ax.annotate("Published", xy=(24.3, pos), fontsize=8, color=INK,
                                 va="center", fontweight="bold", annotation_clip=False)
                 else:
-                    ax.annotate(f"DD-SLP {name} ({share[name]*100:.0f}%)",
+                    ax.annotate(f"DD-SLP {name} ({pct(share[name])})",
                                 xy=(24.3, pos), fontsize=7.5, color=palette[name],
                                 va="center", annotation_clip=False)
 
-    axes[0].set_ylabel("Power normalized to an annual\nconsumption of 1,000 kWh [kW]",
+    axes[0].set_ylabel("Power normalized to an annual\nconsumption of 1000 kWh [kW]",
                        fontsize=9)
-    axes[0].plot([], [], color=INK, lw=2.6, label=national)
-    axes[0].legend(loc="upper left", fontsize=7.5, frameon=True, framealpha=1.0)
+    handles = [plt.Line2D([], [], color=INK, lw=2.6)] + \
+              [plt.Line2D([], [], color=palette[g], lw=0.9 + 3.4 * share[g]) for g in share.index]
+    labels = [f"{national_label(national)}, published shape ({int(counts.sum())} PODs)"] + \
+             [f"{ddslp_label(g)} ({pct(share[g])} of the PODs)" for g in share.index]
+    fig.legend(handles, labels, loc="upper center", ncol=min(len(labels), 3), fontsize=7.5,
+               frameon=True, edgecolor="black", framealpha=1.0,
+               bbox_to_anchor=(0.5, 1.0))
 
     #Lorenzo Giannuzzo: without this box the reader is looking at five coloured lines
     #with numbers on them and no way to tell what any of them is. The descriptors are
     #measured on the curves themselves, so the box cannot fall out of step with what
     #is drawn above it, and they are quantities rather than names because naming a
     #behaviour is an interpretation and belongs to the text.
-    fig.suptitle(f"{national}: one published curve, {effective:.0f} effective "
-                 f"behaviours beneath it, {int(counts.sum())} points",
-                 fontsize=10.5, x=0.012, y=1.0 - 0.24 / fig_h, ha="left")
-    bottom_gs = outer[1].subgridspec(1, len(share), wspace=0.75)
-    _draw_composition_panels(fig, bottom_gs, share, palette)
+    bottom_gs = outer[1].subgridspec(comp_rows, per_row, wspace=0.95, hspace=0.55)
+    _draw_composition_panels(fig, bottom_gs, share, palette, per_row=per_row)
     save(fig, "fig13_behaviours_under_national", "coverage")
 
 
@@ -852,11 +852,8 @@ def _national_color(name: str) -> str:
 
 
 def _national_caption(name: str) -> str:
-    """How a published profile is named in a legend: code, and meaning when opaque."""
-    meaning = _declared_meaning(name)
-    self_describing = str(name).upper().startswith("ARERA")
-    return _english_residency(str(name) if self_describing or not meaning
-                              else f"{name}{SEP}{meaning}")
+    """How a published profile is named in a legend: its full name."""
+    return national_label(name)
 
 
 def _english_residency(text: str) -> str:
@@ -902,17 +899,24 @@ def _national_frame() -> pd.DataFrame:
     users = pd.read_parquet(CACHE / "users.parquet")
     groups = pd.read_parquet(CACHE / "groups.parquet")
 
+    #Lorenzo Giannuzzo: the same national profiles and the same published groups as the
+    # mapping stage, so that a count in these figures is the count of m3_coverage
+    from mapping import GSE_KEEP
     g = assignment.gse_profile(users)[["pod", "gse_column"]]
-    g = g.rename(columns={"gse_column": "national"})
+    g = g[g["gse_column"].isin(GSE_KEEP)].rename(columns={"gse_column": "national"})
     a = assignment.arera_key(users)
     a = a[a["arera_applicable"]].copy()
     a["national"] = ("ARERA " + a["arera_class"].astype(str) + " "
                      + a["arera_residency"].astype(str))
     both = pd.concat([g[["pod", "national"]], a[["pod", "national"]]], ignore_index=True)
 
+    if "below_n_min" in groups:
+        groups = groups[~groups["below_n_min"]]
     act = users[["pod", "ateco_l1"]].rename(columns={"ateco_l1": "activity"})
     m = groups.merge(both, on="pod", how="inner").merge(act, on="pod", how="left")
-    return m[m["activity"].notna()]
+    m = m[m["activity"].notna()].copy()
+    m["activity"] = grouped_activity(m["activity"])
+    return m
 
 
 #Lorenzo Giannuzzo: a palette of its own, long enough that the named classes never
@@ -930,6 +934,7 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
     if m.empty:
         print("  ! no published profile above the point threshold, figure skipped")
         return
+    cov = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv").set_index("national_profile")
 
     share = (pd.crosstab(m["national"], m["activity"])
              .pipe(lambda t: t.div(t.sum(axis=1), axis=0)))
@@ -937,15 +942,19 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
     #is pooled, so that a colour means the same class in every bar. Ranking within each
     #bar would put a different class under the same colour on two neighbouring rows.
     ranked = share.sum(axis=0).sort_values(ascending=False)
-    head = list(ranked.index[:top_classes])
+    #Lorenzo Giannuzzo: the pooled minor classes are not a class and never take a colour of
+    # their own; they join the tail, so the grey bar is the only residual in the figure
+    head = [c for c in ranked.index if c != RESIDUAL][:top_classes]
     tail = [c for c in share.columns if c not in head]
     if tail:
         share[POOLED] = share[tail].sum(axis=1)
         share = share.drop(columns=tail)
     cols = head + ([POOLED] if tail else [])
 
-    effective = share[cols].apply(
-        lambda r: float(np.exp(-((p := r[r > 0]) * np.log(p)).sum())), axis=1)
+    #Lorenzo Giannuzzo: the effective number printed at the edge is the one of M3, on the
+    # full distribution of classes, and not one recomputed on the bars after the tail has
+    # been pooled, which is how the same profile came to show two different values
+    effective = cov["M3_classes_effective"].reindex(share.index)
     order = effective.sort_values().index
     share, effective = share.loc[order], effective.loc[order]
     n_pod = m["national"].value_counts().reindex(order)
@@ -968,16 +977,15 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
         left += v
 
     for i, name in enumerate(order):
-        ax.annotate(f"{effective[name]:.0f}", xy=(101.5, i), fontsize=9,
+        ax.annotate(f"{effective[name]:.1f}", xy=(101.5, i), fontsize=9,
                     fontweight="bold", color=INK, va="center", annotation_clip=False)
 
     ax.set_yticks(y)
-    ax.set_yticklabels([f"{_english_residency(n)}\ndeclared: "
-                        f"{_declared_meaning(n)}{SEP}{int(n_pod[n])} PODs"
-                        for n in order], fontsize=8)
+    ax.set_yticklabels([f"{national_label(n)} ({int(n_pod[n])} PODs)\ndeclared: "
+                        f"{_declared_meaning(n)}" for n in order], fontsize=8)
     ax.set_xlim(0, 100)
     ax.set_xticks([0, 25, 50, 75, 100])
-    ax.set_xticklabels(["0", "25", "50", "75", "100%"])
+    ax.set_xticklabels(["0", "25", "50", "75", "100"])
     ax.set_xlabel("Share of the points the profile is applied to [%]")
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
@@ -988,12 +996,6 @@ def fig_declared_against_actual(min_points: int = 50, top_classes: int = 9) -> N
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16 / (0.32 * len(order))),
               ncol=min(len(cols), 3), fontsize=8, frameon=True, framealpha=1.0,
               edgecolor="black", title="Activity class", title_fontsize=8)
-    #Lorenzo Giannuzzo: matplotlib has no justified text, so the two lines are set
-    #centred over the axes and padded well clear of the top bar. Left alignment made
-    #the block hang off the long y labels instead of sitting over the plot.
-    ax.set_title("What each published profile declares, against who it is applied to\n"
-                 "a profile whose label described its users would be a single bar",
-                 loc="center", fontsize=10, pad=22, linespacing=1.5)
     save(fig, "fig14_declared_against_actual", "coverage")
 
 
@@ -1027,42 +1029,30 @@ def _declared_classes(name: str, present: list) -> set:
 
 
 def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> None:
-    """Who else a published profile would describe, through the behaviours it uses."""
-    from common import assignment  # noqa: F401  (kept for the import check)
+    """Who else a published profile would describe, through the behaviours it uses.
 
-    m = _national_frame()
-    users = pd.read_parquet(CACHE / "users.parquet")
-    groups = pd.read_parquet(CACHE / "groups.parquet")
-    full = groups.merge(users[["pod", "ateco_l1"]].rename(columns={"ateco_l1": "activity"}),
-                        on="pod", how="left")
-    full = full[full["activity"].notna()]
-    if "below_n_min" in full:
-        full = full[~full["below_n_min"]]
-
-    #Lorenzo Giannuzzo: composition of every behaviour, over all its members
-    comp = pd.crosstab(full["group"], full["activity"])
-    comp = comp.div(comp.sum(axis=1), axis=0)
-
-    keep = m["national"].value_counts()
-    m = m[m["national"].isin(keep[keep >= min_points].index)]
-    w = pd.crosstab(m["national"], m["group"])
-    w = w.div(w.sum(axis=1), axis=0)
-
-    shared = [g for g in w.columns if g in comp.index]
-    reach = pd.DataFrame(w[shared].to_numpy() @ comp.loc[shared].to_numpy(),
-                         index=w.index, columns=comp.columns)
-    if reach.empty:
-        print("  ! no overlap between the profiles and the behaviours, figure skipped")
+    Drawn from m3_reach_pod.csv and m3_coverage_pod.csv, which Eq. 12 is computed into by
+    the mapping stage, so the share at the edge is the number the text quotes.
+    """
+    cov = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv")
+    reach_long = pd.read_csv(PART_DIR["coverage"] / "m3_reach_pod.csv")
+    cov = cov[cov["n_pod"] >= min_points]
+    if cov.empty:
+        print("  ! no published profile above the point threshold, figure skipped")
         return
-
-    outside = pd.Series(
-        {n: 1.0 - reach.loc[n, list(_declared_classes(n, list(reach.columns)))].sum()
-         for n in reach.index})
+    reach_long = reach_long[~reach_long["activity"].astype(str).str.startswith("__profile__")]
+    reach = reach_long.pivot_table(index="national_profile", columns="activity",
+                                   values="reach_share", fill_value=0.0)
+    reach = reach.loc[reach.index.intersection(cov["national_profile"])]
+    outside = cov.set_index("national_profile")["reach_outside_category"].reindex(reach.index)
+    n_pod = cov.set_index("national_profile")["n_pod"].reindex(reach.index)
     order = outside.sort_values().index
     reach, outside = reach.loc[order], outside.loc[order]
 
     ranked = reach.sum(axis=0).sort_values(ascending=False)
-    head = list(ranked.index[:top_classes])
+    #Lorenzo Giannuzzo: the pooled minor classes are not a class and never take a colour of
+    # their own; they join the tail, so the grey bar is the only residual in the figure
+    head = [c for c in ranked.index if c != RESIDUAL][:top_classes]
     tail = [c for c in reach.columns if c not in head]
     if tail:
         reach[POOLED] = reach[tail].sum(axis=1)
@@ -1089,12 +1079,12 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
                     fontweight="bold", color=WARM, va="center", annotation_clip=False)
 
     ax.set_yticks(y)
-    ax.set_yticklabels([f"{n}\napplied to: {_declared_meaning(n)}" for n in order],
-                       fontsize=8)
+    ax.set_yticklabels([f"{national_label(n)} ({int(n_pod[n])} PODs)\napplied to: "
+                        f"{_declared_meaning(n)}" for n in order], fontsize=8)
     ax.set_xlim(0, 100)
     ax.set_xticks([0, 25, 50, 75, 100])
-    ax.set_xticklabels(["0", "25", "50", "75", "100%"])
-    ax.set_xlabel("Share of the users whose behaviour the published curve describes [%]")
+    ax.set_xticklabels(["0", "25", "50", "75", "100"])
+    ax.set_xlabel("Share of the users whose behavior the published curve describes [%]")
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
     ax.spines["left"].set_visible(False)
@@ -1104,11 +1094,6 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.20 / (0.30 * len(order))),
               ncol=min(len(cols), 3), fontsize=8, frameon=True, framealpha=1.0,
               edgecolor="black", title="Activity class", title_fontsize=8)
-    ax.set_title("Who each published profile would describe, "
-                 "through the behaviours it is built on\n"
-                 "the figure on the right is the share that falls outside "
-                 "the category the profile is applied to",
-                 loc="center", fontsize=10, pad=22, linespacing=1.5)
     save(fig, "fig15_reach_beyond_declared", "coverage")
 
 
@@ -1143,7 +1128,7 @@ def cells_for(daytype: str) -> list:
     not across the diagonal of a nine-panel grid.
     """
     return [(s, daytype) for s in CURVE_SEASONS]
-YLABEL = "Power normalized to an annual consumption of 1,000 kWh [kW]"
+YLABEL = "Power normalized to an annual consumption of 1000 kWh [kW]"
 
 
 def _effective(counts: np.ndarray) -> float:
@@ -1180,6 +1165,7 @@ def _membership() -> pd.DataFrame:
     full = full[full["activity"].notna()]
     if "below_n_min" in full:
         full = full[~full["below_n_min"]]
+    full["activity"] = grouped_activity(full["activity"])
     return full
 
 
@@ -1201,6 +1187,16 @@ def _calendar() -> pd.DataFrame:
         year = int(pd.to_datetime(days["date"]).dt.year.mode().iloc[0])
         _CALENDAR = C.build_calendar(year, C.season_map_from_days(days))
     return _CALENDAR
+
+
+_GSE_CALENDAR: dict = {}
+
+
+def _gse_calendar(year: int) -> pd.DataFrame:
+    if year not in _GSE_CALENDAR:
+        days = pd.read_parquet(CACHE / "days.parquet")
+        _GSE_CALENDAR[year] = C.build_calendar(year, C.season_map_from_days(days))
+    return _GSE_CALENDAR[year]
 
 
 def _cell_months(season: str) -> list[int]:
@@ -1240,28 +1236,47 @@ def _nearest_per_cell(per_cell: list, cells: list, max_distance: float) -> dict:
     if not names:
         print("  fig16: comparison output absent, national curves omitted")
         return {}
-    curves = {}
+    from common.calendar import band_of
+    hourly = {}
     for j, cell in enumerate(cells):
         for name in names:
             nat = _national_curve(name, *cell)
             if nat is not None:
-                curves[(j, name)] = np.repeat(nat, 4) / 4.0
+                hourly[(j, name)] = nat
+    curves = hourly
 
-    out, rejected, unresolved = {}, [], set(names) - {n for _, n in curves}
+    out, rejected, unresolved = {}, [], set(names) - {n for _, n in hourly}
     for g in per_cell[0]:
-        for j in range(len(cells)):
-            best, best_d = None, np.inf
+        for j, (_season, daytype) in enumerate(cells):
+            bands = np.array([band_of(daytype, h) for h in range(24)])
+            dd_h = per_cell[j][g].reshape(24, 4).sum(axis=1)
+            best, best_d, best_shape = None, np.inf, None
             for name in names:
-                shape = curves.get((j, name))
-                if shape is None:
+                nat = hourly.get((j, name))
+                if nat is None:
                     continue
+                #Lorenzo Giannuzzo: a time-band profile is normalised within each band, so its
+                # daily shape exists only once each band is given an energy. It receives the
+                # energy the behaviour places in that band, as scale_reference does in the
+                # comparison stage, which makes the distance here the one of Section 2.5.
+                #Lorenzo Giannuzzo: a time-band profile is normalised within each band and has no
+                # daily shape of its own. Giving it the band energies of the very behaviour it is
+                # compared with, cell by cell, hands it three free parameters per cell and
+                # makes it the nearest profile almost everywhere by construction, which is what
+                # the previous run showed. It is compared at the monthly scale in the heatmap,
+                # where every family receives the energy the regulation gives it, and is left
+                # out of the cell-by-cell pairing.
+                if str(name).rstrip().endswith("F") and not str(name).startswith("ARERA"):
+                    continue
+                ref = nat.astype(float).copy()
+                shape = np.repeat(ref, 4) / 4.0
                 d = _total_variation(per_cell[j][g], shape)
                 if np.isfinite(d) and d < best_d:
-                    best, best_d = name, d
+                    best, best_d, best_shape = name, d, shape
             if best is None:
                 continue
             if best_d <= max_distance:
-                out.setdefault(g, {})[j] = (best, best_d, curves[(j, best)])
+                out.setdefault(g, {})[j] = (best, best_d, best_shape)
             else:
                 rejected.append(f"DD-SLP {g} in {cells[j][0]}: {best} at {best_d:.3f}")
     if unresolved:
@@ -1317,7 +1332,11 @@ def _gse_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
     col = next((t for t in str(name).replace("_", " ").split() if t in gse.columns), None)
     if col is None:
         return None
-    cal = _calendar()
+    #Lorenzo Giannuzzo: the days of the cell are taken on the calendar of the year the GSE
+    # workbook refers to. The metered archive spans two years and its most frequent year
+    # need not be that one, in which case no date matched and the published curve was
+    # silently dropped from every panel.
+    cal = _gse_calendar(int(pd.Series(gse["year"]).mode().iloc[0]))
     sel_days = cal[(cal["season"] == season) & (cal["daytype"] == daytype)]
     stamp = pd.to_datetime(dict(year=gse.year, month=gse.month, day=gse.day)).dt.date
     sel = gse[stamp.isin(sel_days["date"].dt.date)]
@@ -1397,14 +1416,14 @@ def _row_figure(rows: list, title: str, right_title: str,
                              gridspec_kw={"width_ratios": [1.0] * nc + [1.55],
                                           "hspace": 0.26, "wspace": 0.10},
                              squeeze=False)
-    #Lorenzo Giannuzzo: one vertical scale for every curve in the figure, not per panel.
-    #Per-panel scales made a profile that is flat to within two per cent look as
-    #structured as one that doubles over the day.
+    #Lorenzo Giannuzzo: one vertical scale per row, shared by its three seasons, so that a
+    # behaviour is compared with itself across the year on one scale. A single scale for the
+    # whole figure let one profile peaking at 0.37 kW flatten every other row and push its
+    # own curve under the legend.
     for i in range(n):
         for j in range(nc):
-            if (i, j) != (0, 0):
-                axes[i][j].sharey(axes[0][0])
             if j:
+                axes[i][j].sharey(axes[i][0])
                 axes[i][j].tick_params(labelleft=False)
 
     x = np.arange(96) / 4.0
@@ -1430,21 +1449,17 @@ def _row_figure(rows: list, title: str, right_title: str,
             #The entries are declared by the caller, which is the only place that knows
             #whether the solid line is a behaviour or a published profile, and the night
             #hours leave the upper left corner free in every row of these figures.
-            if reference is not None and row["curves"][j]:
-                measured = row["curves"][j][0][0]
-                rmse = float(np.sqrt(np.mean((measured - reference) ** 2)))
-                level = float(np.mean(reference))
-                #Lorenzo Giannuzzo: reported as a share of the reference level rather
-                #than in kW. On curves normalised to a thousand kilowatt-hours a year the
-                #absolute figure is of the order of one hundredth of a kilowatt and says
-                #nothing on its own, while the ratio is the same quantity on a scale the
-                #reader can weigh against the curves in front of them.
-                ax.annotate(f"RMSE {100 * rmse / level:.1f}%",
-                            xy=(0.975, 0.05), xycoords="axes fraction",
-                            ha="right", va="bottom", fontsize=6.4, color=INK,
-                            bbox=dict(facecolor="white", edgecolor=NEUTRAL,
-                                      linewidth=0.6, pad=2.0, alpha=0.92))
-            entries = row.get("legend", {}).get(j, [])
+            overlay_j = row.get("overlay", {}).get(j, [])
+            entries = list(row.get("legend", {}).get(j, []))
+            if overlay_j and row["curves"][j] and entries:
+                #Lorenzo Giannuzzo: the total variation between the solid and the dashed curve,
+                # the measure the pairing was chosen on and the one of Eq. 8, is written into the
+                # legend entry of the dashed curve instead of a separate box, which sat on the
+                # curves in the bottom right corner of the panels with a late evening peak
+                tv = _total_variation(row["curves"][j][0][0], overlay_j[0][0])
+                k = max(i_ for i_, e in enumerate(entries) if e[2] != "-")
+                lab, col, sty = entries[k]
+                entries[k] = (f"{lab}, TV {tv:.3f}", col, sty)
             if entries:
                 handles = [plt.Line2D([], [], color=c, lw=1.6, ls=st) for _l, c, st in entries]
                 ax.legend(handles, [l for l, _c, _s in entries], loc="upper left",
@@ -1471,6 +1486,13 @@ def _row_figure(rows: list, title: str, right_title: str,
             if i == n - 1:
                 ax.set_xlabel("Time of day [h]", fontsize=7.8)
 
+        #Lorenzo Giannuzzo: head room above the highest curve of the row for the legend
+        peak = max([float(np.max(c)) for j in range(nc) for c, _w, _c in row["curves"][j]] +
+                   [float(np.max(c)) for j in range(nc) for c, _l, _c in row.get("overlay", {}).get(j, [])] +
+                   [0.0])
+        if peak > 0:
+            axes[i][0].set_ylim(0, peak * 1.55)
+
         ax = axes[i][nc]
         bars = row["bars"]
         y = np.arange(len(bars))[::-1]
@@ -1478,7 +1500,8 @@ def _row_figure(rows: list, title: str, right_title: str,
         ax.barh(y, vals, height=0.68,
                 color=[c for _l, _v, c in bars], edgecolor="white", lw=0.4)
         for yy, v in zip(y, vals):
-            ax.text(v + 1.6, yy, f"{v:.0f}", va="center", fontsize=6.4, color=INK)
+            ax.text(v + 1.6, yy, f"{v:.0f}" if v >= 1 else f"{v:.1f}",
+                    va="center", fontsize=6.4, color=INK)
         ax.set_yticks(y)
         ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6)
         ax.set_xlim(0, min(105, vals.max() * 1.22))
@@ -1495,7 +1518,10 @@ def _row_figure(rows: list, title: str, right_title: str,
     #down the whole left side for one line of text, and the row labels already carry the
     #unit. The normalisation it used to state now rides in the title, where it is read
     #once and costs no width.
-    fig.tight_layout(rect=[0.004, 0, 0.99, 1.0 - head / fig_h])
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        fig.tight_layout(rect=[0.004, 0, 0.99, 1.0 - head / fig_h])
     #Lorenzo Giannuzzo: the bar column is shifted right after the layout pass, so its tick
     #labels get their own margin instead of one applied to every gap in the figure. Done
     #before tight_layout it would simply be overwritten by it.
@@ -1515,7 +1541,7 @@ def _row_figure(rows: list, title: str, right_title: str,
     save(fig, name, part)
 
 
-def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
+def fig_profiles_with_classes(top: int = 6, max_distance: float = np.inf,
                               daytype: str = "weekday") -> None:
     """M2 with the behaviour shown: what each profile looks like and who is in it."""
     cells = cells_for(daytype)
@@ -1527,7 +1553,11 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
     sizes = m["group"].value_counts()
 
     ranked = comp.sum(axis=0).sort_values(ascending=False)
-    palette = {c: CLASSES[i] for i, c in enumerate(ranked.index[:len(CLASSES)])}
+    #Lorenzo Giannuzzo: the pooled minor classes are grey here as in Figures 14 and 15, and never
+    # take one of the class colours
+    named = [c for c in ranked.index if c != RESIDUAL]
+    palette = {c: CLASSES[i] for i, c in enumerate(named[:len(CLASSES)])}
+    palette[RESIDUAL] = NEUTRAL
 
     rows = []
     for g in sorted(c for c in comp.index if c in per_cell[0]):
@@ -1559,7 +1589,7 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = 0.15,
         })
     _row_figure(rows,
                 "What each behaviour looks like, and which activity classes it gathers",
-                "Share of the points in the behaviour [%]",
+                "Share of the points in the behavior [%]",
                 f"fig16_profiles_with_classes_{daytype}", "aggregation", cells, YLABEL)
 
 
@@ -1579,7 +1609,7 @@ def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> Non
     eff = eligible.apply(lambda r: _effective(r.to_numpy()), axis=1)
     chosen = eff.sort_values(ascending=False).head(top_classes).index
 
-    palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(sorted(curves))}
+    palette = {g: ddslp_color(g) for g in sorted(curves)}
     rows = []
     for c in chosen:
         row = comp.loc[c]
@@ -1641,7 +1671,7 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
         return
     far.sort(key=lambda r: -r[2])
 
-    palette = {g: UNDER[i % len(UNDER)] for i, g in enumerate(sorted(per_cell[0]))}
+    palette = {g: ddslp_color(g) for g in sorted(per_cell[0])}
     rows, unresolved = [], []
     for national, nearest_g, dist in far:
         curves_per_cell, overlay, legend, reference = [], {}, {}, {}
@@ -1662,13 +1692,13 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
             overlay[j] = [(per_cell[j][nearest_g], f"DD-SLP {nearest_g}", INK)]
             legend[j] = [(_national_caption(national),
                           _national_color(national), "-"),
-                         (f"DD-SLP {nearest_g}, closest behaviour", INK, "--")]
+                         (f"DD-SLP {nearest_g}, closest behavior", INK, "--")]
 
         pts = nat_frame[nat_frame["national"] == national]
         spread = pts["group"].value_counts()
         spread = (spread / spread.sum()).sort_values(ascending=False).head(top)
         rows.append({
-            "label": f"{_english_residency(national)}\n({int(counts[national])} PODs)",
+            "label": f"{national_label(national)}\n({int(counts[national])} PODs)",
             "curves": curves_per_cell,
             "overlay": overlay,
             "legend": legend,
@@ -1685,3 +1715,61 @@ def fig_national_without_match(min_distance: float = 0.15, top: int = 6,
                 f"and the behaviours their own points fall into",
                 "Share of the profile's points [%]",
                 "fig18_national_without_match", "coverage", CURVE_CELLS, YLABEL)
+
+
+#Lorenzo Giannuzzo: the required inputs now live in different folders, so the check
+#carries the folder with the name. Checking them all against the stage root would report
+#every file as missing the moment the tables moved into their metric sub-folders.
+REQUIRED = ((RES, "contingency_pod.csv"),
+            (PART_DIR["multiplicity"], "m1_multiplicity_pod.csv"),
+            (PART_DIR["aggregation"], "m2_aggregation_pod.csv"),
+            (PART_DIR["coverage"], "m3_coverage_pod.csv"))
+
+
+def missing_inputs() -> list[str]:
+    #Lorenzo Giannuzzo: the check lives here and is called from the figures stage rather
+    #than reimplemented there. The tables sit in three different folders now, so a caller
+    #joining REQUIRED onto a single root gets it wrong, and it did.
+    return [str((d / f).relative_to(RES.parents[1]))
+            for d, f in REQUIRED if not (d / f).exists()]
+
+
+def inputs_ready() -> bool:
+    return not missing_inputs()
+
+
+def main() -> None:
+    print(f"\n{'='*78}\n  FIGURES, Section 2.6\n{'='*78}")
+    missing = missing_inputs()
+    if missing:
+        print(f"  mapping output not found in {RES}")
+        print(f"  missing: {', '.join(missing)}")
+        print("  run  python main.py --stage mapping  first\n")
+        return
+    #Lorenzo Giannuzzo: four figures instead of seven. The stacked-bar renderings of
+    #M1 and M2 carried the same numbers as the contingency table and the dot plots
+    #they sat next to, and fig9 was fig12 without the filter on the categories built
+    #on a handful of points. What the set was missing was not another count but a
+    #curve, which is what the last figure supplies.
+    fig_contingency()
+    fig_multiplicity()
+    fig_aggregation()
+    fig_coverage_gap()
+    try:
+        fig_behaviours_under_national("PDMM")
+    except FileNotFoundError as exc:
+        print(f"  ! fig13 needs the generation output: {exc}")
+    fig_declared_against_actual()
+    fig_reach_beyond_declared()
+    #Lorenzo Giannuzzo: one figure per day type. The published profiles are paired with a
+    #behaviour cell by cell, so a catalogue curve that matches on a working day and misses
+    #on a Sunday shows up only if the Sunday is drawn.
+    for daytype in DAYTYPES:
+        fig_profiles_with_classes(daytype=daytype)
+    fig_classes_across_profiles()
+    fig_national_without_match()
+    print(f"\n  figures under {RES}\n")
+
+
+if __name__ == "__main__":
+    main()

@@ -70,8 +70,15 @@ def quantization(points: np.ndarray, weights: np.ndarray,
 
 def select_D(val: pd.DataFrame, tol: float = 0.01,
              min_share: float = 0.005) -> tuple[int, str]:
-    """Smallest D whose marginal reduction of the quantization error falls below
-    tol, among those leaving no codeword under min_share of the days.
+    """Smallest D beyond which no further codeword reduces the quantization error
+    by tol or more, among the D leaving no codeword under min_share of the days.
+
+    The quantization error of nested Ward cuts can only fall as D grows, but its
+    relative gains are not monotone: a split of a small form can gain little and
+    the next split of a large one gain a lot. Taking the first D whose gain dips
+    below tol would stop on such a plateau, so the rule asks that every later gain
+    in the range stay below tol as well, which makes the choice independent of
+    where a single small step happens to fall.
 
     Returns the value and the sentence that justifies it, which goes in the run
     summary so that the choice is reportable and not merely made.
@@ -83,19 +90,28 @@ def select_D(val: pd.DataFrame, tol: float = 0.01,
         return d, (f"no D leaves every codeword above {min_share:.1%} of the days; "
                    f"D = {d} taken as the smallest error")
 
-    gain = v["quantization_error"].shift(1).sub(v["quantization_error"]).div(
-        v["quantization_error"].shift(1))
-    hit = v[(gain < tol) & ok]
-    if len(hit):
-        row = hit.iloc[0]
-        return int(row["D"]), (
-            f"D = {int(row['D'])}: the marginal gain of one more codeword falls "
-            f"to {gain.loc[row.name]:.1%}, below the {tol:.0%} threshold, and the "
-            f"smallest codeword still holds {row['smallest_share']:.1%} of the days")
+    err = v["quantization_error"].to_numpy(dtype=float)
+    #Lorenzo Giannuzzo: gain[i] is what the step from D[i-1] to D[i] buys, relative to the
+    # error at D[i-1]; the gain of adding one codeword to D[i] is therefore gain[i+1]
+    gain = np.full(len(v), np.nan)
+    gain[1:] = (err[:-1] - err[1:]) / np.where(err[:-1] > 0, err[:-1], np.nan)
+    v["gain_next"] = np.append(gain[1:], np.nan)
+    for i in range(len(v) - 1):
+        if not ok.iloc[i]:
+            continue
+        later = gain[i + 1:]
+        later = later[np.isfinite(later)]
+        if len(later) and np.all(later < tol):
+            row = v.iloc[i]
+            return int(row["D"]), (
+                f"D = {int(row['D'])}: from here to the end of the range no further "
+                f"codeword reduces the quantization error by {tol:.0%} or more (largest "
+                f"later gain {later.max():.2%}), and the smallest codeword holds "
+                f"{row['smallest_share']:.1%} of the days")
     row = v[ok].iloc[-1]
     return int(row["D"]), (
-        f"D = {int(row['D'])}: the error is still falling by more than {tol:.0%} at "
-        f"the end of the range, so the top of the range is taken")
+        f"D = {int(row['D'])}: a codeword still buys {tol:.0%} or more near the end of "
+        f"the range, so the top of the range is taken and the range should be widened")
 
 
 # ── stage two, the users ─────────────────────────────────────────────────────
@@ -139,37 +155,55 @@ def stability_table(X: np.ndarray, k_range: tuple[int, int], linkage_fn,
 
 
 def select_K(stab: pd.DataFrame, sizes_at_K: dict[int, int],
-             threshold: float = 0.75, n_min: int = 30,
+             threshold: float = 0.65, n_min: int = 30,
              max_small_share: float = 0.01) -> tuple[int, str]:
-    """Largest K that stays at or above the stability threshold without
-    fragmenting the population.
+    """Largest K up to which every partition of the range reproduces itself.
 
-    The guard is the share of users falling in groups below n_min, not the size
-    of the smallest group. A handful of points with a genuinely singular pattern
-    separate at every K, and the pipeline already reports them and excludes them
-    from the metrics: requiring every group to clear n_min would let six users
-    out of seven thousand veto the whole range, which is what happened on the
-    first run of this criterion.
+    Stability is the mean ARI between the partitions of two independent subsamples.
+    The threshold follows the reading of the ARI proposed by Steinley (2004), where
+    0.65 separates moderate from poor recovery. K is the largest value such that the
+    partitions at that K and at every smaller K of the range all reach it: a single
+    larger K that happens to clear the threshold after coarser ones have failed is a
+    fluctuation of the estimate rather than a stable structure, and taking the largest
+    such value would reward it.
+
+    The guard is the share of users falling in groups below n_min, not the size of the
+    smallest group. A handful of points with a singular pattern separate at every K,
+    and the pipeline reports them and excludes them from the metrics: requiring every
+    group to clear n_min would let six users out of seven thousand veto the range.
     """
-    v = stab.dropna(subset=["stability_mean"]).sort_values("K")
+    v = stab.dropna(subset=["stability_mean"]).sort_values("K").reset_index(drop=True)
     if "small_share" in v.columns:
-        v = v[v["small_share"] <= max_small_share]
+        admissible = v["small_share"] <= max_small_share
     else:
-        v = v[v["K"].map(lambda k: sizes_at_K.get(int(k), 0)) >= n_min]
-    ok = v[v["stability_mean"] >= threshold]
-    if len(ok):
-        row = ok.iloc[-1]
+        admissible = v["K"].map(lambda k: sizes_at_K.get(int(k), 0)) >= n_min
+    passed = (v["stability_mean"] >= threshold) & admissible
+    run = 0
+    while run < len(v) and bool(passed.iloc[run]):
+        run += 1
+    if run:
+        row = v.iloc[run - 1]
+        if run < len(v):
+            stop = v.iloc[run]
+            why = (f"{stop['stability_mean']:.2f}" if stop["stability_mean"] < threshold
+                   else f"{stop['stability_mean']:.2f}, but more than {max_small_share:.0%} "
+                        f"of the users fall in groups below n_min")
+            nxt = f"; at K = {int(stop['K'])} the ARI is {why}"
+        else:
+            nxt = "; the whole range passes, so the range should be widened"
         return int(row["K"]), (
-            f"K = {int(row['K'])}: the largest number of groups whose partition "
-            f"reproduces itself across subsamples at ARI {row['stability_mean']:.2f}, "
-            f"at or above the {threshold:.2f} threshold, and with no more than "
-            f"{max_small_share:.0%} of the users left in groups below n_min")
-    if len(v):
-        row = v.loc[v["stability_mean"].idxmax()]
+            f"K = {int(row['K'])}: the largest K up to which every partition of the range "
+            f"reproduces itself across subsamples at mean ARI of at least {threshold:.2f} "
+            f"(ARI {row['stability_mean']:.2f} at the selected K{nxt}), with no more than "
+            f"{max_small_share:.0%} of the users in groups below n_min")
+    cand = v[admissible]
+    if len(cand):
+        row = cand.loc[cand["stability_mean"].idxmax()]
         return int(row["K"]), (
-            f"K = {int(row['K'])}: no K reaches the {threshold:.2f} stability "
-            f"threshold; the most stable of the range is taken, at "
-            f"ARI {row['stability_mean']:.2f}, and the weakness is reported")
+            f"K = {int(row['K'])}: no K of the admissible range {int(v['K'].min())}-"
+            f"{int(v['K'].max())} reaches the {threshold:.2f} threshold; the most stable "
+            f"admissible K is taken, at mean ARI {row['stability_mean']:.2f}, and the value "
+            f"is reported against the threshold")
     return int(stab["K"].min()), "no K satisfies n_min; the bottom of the range is taken"
 
 
