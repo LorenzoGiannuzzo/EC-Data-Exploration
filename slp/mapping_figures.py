@@ -20,7 +20,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from figures import (INK, GRID, ACCENT, WARM, NEUTRAL, ddslp_color, ddslp_label,  # noqa: E402
-                     national_label, legend_top)
+                     national_label, legend_top, legend_below,
+                     save_table, _drop_retired_figure)
 
 from common import calendar as C  # noqa: E402
 from common.config import load_config  # noqa: E402
@@ -40,7 +41,25 @@ CLU = _CFG.results_dir("clustering")
 CACHE = _CFG.cache_dir
 
 
-def save(fig, name: str, part: str | None = None) -> None:
+def _base_font(size: float):
+    """Draw a figure with a larger base font, restoring the previous one afterwards.
+
+    The figures printed in the paper at a fraction of the width they are drawn at need every
+    text sized up, tick labels and axis titles included, and not only the texts given an
+    explicit size.
+    """
+    import functools
+
+    def wrap(func):
+        @functools.wraps(func)
+        def inner(*args, **kwargs):
+            with plt.rc_context({"font.size": size}):
+                return func(*args, **kwargs)
+        return inner
+    return wrap
+
+
+def save(fig, name: str, part: str | None = None, tight: bool = True) -> None:
     #Lorenzo Giannuzzo: a figure lands in the folder of the metric it illustrates, and the
     #ones built on the contingency table itself land at the root of the stage, because that
     #table is the common origin of all three metrics and belongs to none of them. Within
@@ -49,7 +68,10 @@ def save(fig, name: str, part: str | None = None) -> None:
     for ext in ("png", "pdf"):
         out = base / ext
         out.mkdir(parents=True, exist_ok=True)
-        fig.savefig(out / f"{name}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
+        #Lorenzo Giannuzzo: a figure laid out to be centred on its own canvas is saved without the
+        # tight crop, which trims the two sides by different amounts and moves the centre
+        fig.savefig(out / f"{name}.{ext}", dpi=_CFG.figure_dpi,
+                    bbox_inches="tight" if tight else None, facecolor="white")
     plt.close(fig)
     print(f"  {name}")
 
@@ -205,10 +227,14 @@ def fig_multiplicity() -> None:
                         for a, n in zip(d["activity"], d["n_pod"])], fontsize=7.5)
     ax.set_xlabel("Effective number of profiles the class spans [-]")
     ax.set_xlim(0.8, None)
-    ax.set_ylim(-0.7, len(d) + 1.6)
+    ax.set_ylim(-0.7, len(d) - 0.3)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    legend_top(ax, ncol=2, fontsize=7)
+    fig.tight_layout()
+    #Lorenzo Giannuzzo: centred on the whole image rather than on the axis, which the long
+    # labels on the left push to the right
+    fig.legend(*ax.get_legend_handles_labels(), loc="upper center", bbox_to_anchor=(0.5, 0.0),
+               ncol=2, fontsize=7, frameon=True, framealpha=1.0, edgecolor="black")
     save(fig, "fig7_m1_multiplicity", "multiplicity")
 
 
@@ -233,10 +259,9 @@ def fig_aggregation() -> None:
     ax.set_yticks(y)
     ax.set_yticklabels([f"{ddslp_label(p)} ({int(n)} PODs)" for p, n in zip(d["profile"], d["n_pod"])])
     ax.set_xlabel("Effective number of activity classes subsumed [-]")
-    ax.set_ylim(-0.7, len(d) + 0.9)
+    ax.set_ylim(-0.7, len(d) - 0.3)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    legend_top(ax, ncol=2, fontsize=7)
 
     ax = axes[1]
     ax.barh(y, d["n_classes_present"], color=NEUTRAL, alpha=0.45, label="Classes present")
@@ -245,12 +270,14 @@ def fig_aggregation() -> None:
     ax.set_yticks(y)
     ax.set_yticklabels([])
     ax.set_xlabel("Number of activity classes [-]")
-    ax.set_ylim(-0.7, len(d) + 0.9)
+    ax.set_ylim(-0.7, len(d) - 0.3)
     ax.grid(axis="x", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    legend_top(ax, ncol=2, fontsize=7)
 
     fig.tight_layout()
+    #Lorenzo Giannuzzo: one legend under each panel, each describing its own panel
+    for a in axes:
+        legend_below(a, ncol=2, fontsize=7, pad_in=0.50)
     save(fig, "fig8_m2_aggregation", "aggregation")
 
 
@@ -407,46 +434,23 @@ def fig_aggregation_composition(top: int = 6) -> None:
     save(fig, "fig11_m2_composition", "aggregation")
 
 
-def fig_coverage_gap() -> None:
-    """M3 as the gap it is: one profile declared, several behaviours delivered."""
-    d = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv").sort_values("M3_ddslp_effective")
-    d = d[d["n_pod"] >= 50]
-    y = np.arange(len(d))
+def table_coverage_gap(min_points: int = 50) -> None:
+    """M3 as the gap it is, as a table: one profile declared, several behaviours delivered.
 
-    fig, ax = plt.subplots(figsize=(8.4, 0.52 * len(d) + 2.2))
-    for i, r in enumerate(d.itertuples()):
-        ax.plot([1, r.M3_ddslp_effective], [i, i], color=WARM, lw=6, alpha=0.30,
-                solid_capstyle="butt", zorder=1)
-        ax.annotate("", xy=(r.M3_ddslp_effective, i), xytext=(1, i),
-                    arrowprops=dict(arrowstyle="-|>", color=WARM, lw=1.6,
-                                    shrinkA=0, shrinkB=0), zorder=3)
-        ax.text(r.M3_ddslp_effective + 0.10, i, f"{r.M3_ddslp_effective:.1f}",
-                va="center", fontsize=8.5, color=WARM, fontweight="bold")
-        #Lorenzo Giannuzzo: the grey marker sits exactly on the declared line for
-        #almost every ARERA category, because those categories contain domestic
-        #points only. Drawn there it says nothing and costs half the legend, so it
-        #is shown only where the profile does span more than one activity class.
-        if r.M3_classes_effective > 1.05:
-            ax.scatter([r.M3_classes_effective], [i], s=30, facecolor="white",
-                       edgecolor=NEUTRAL, lw=1.3, zorder=4)
-    ax.axvline(1, color=INK, lw=1.4, label="Declared: one behavior per published profile")
-    ax.scatter([], [], s=30, facecolor="white", edgecolor=NEUTRAL, lw=1.3,
-               label="Activity classes represented (shown where above one)")
-    ax.plot([], [], color=WARM, lw=3, label="Consumption behaviors delivered")
-    ax.set_yticks(y)
-    ax.set_yticklabels([f"{national_label(n)} ({int(k)} PODs)"
-                        for n, k in zip(d["national_profile"], d["n_pod"])], fontsize=8.5)
-    ax.set_xlabel("Effective number of categories [-]")
-    x_max = float(d[["M3_ddslp_effective", "M3_classes_effective"]].to_numpy().max()) + 0.9
-    ax.set_xlim(0.7, x_max)
-    ax.set_xticks(np.arange(1, int(np.ceil(x_max)) + 1))
-    ax.set_ylim(-0.8, len(d) + 1.2)
-    ax.grid(axis="x", color=GRID, lw=0.6)
-    ax.set_axisbelow(True)
-    ax.spines["left"].set_visible(False)
-    ax.tick_params(axis="y", length=0)
-    legend_top(ax, ncol=1, fontsize=8)
-    save(fig, "fig12_m3_gap", "coverage")
+    One row per national profile applied to at least `min_points` points of delivery, ordered
+    by the number of behaviours delivered. The declared number is one for every profile and
+    is stated in the caption rather than repeated in a column.
+    """
+    d = pd.read_csv(PART_DIR["coverage"] / "m3_coverage_pod.csv")
+    d = d[d["n_pod"] >= min_points].sort_values("M3_ddslp_effective", ascending=False)
+    table = pd.DataFrame({
+        "National profile": [national_label(n) for n in d["national_profile"]],
+        "Points of delivery [-]": d["n_pod"].astype(int).to_numpy(),
+        "Consumption behaviors delivered [-]": [f"{v:.1f}" for v in d["M3_ddslp_effective"]],
+        "Activity classes represented [-]": [f"{v:.1f}" for v in d["M3_classes_effective"]],
+    })
+    save_table(table, "table_m3_gap", PART_DIR["coverage"])
+    _drop_retired_figure(PART_DIR["coverage"] / "figures", "fig12_m3_gap")
 
 
 # ===========================================================================
@@ -550,7 +554,13 @@ def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
     if per_row is None:
         axes = [fig.add_subplot(gs[0, j]) for j in range(len(order))]
     else:
-        axes = [fig.add_subplot(gs[j // per_row, j % per_row]) for j in range(len(order))]
+        axes = []
+        n_rows = int(np.ceil(len(order) / per_row))
+        for j in range(len(order)):
+            r, c = divmod(j, per_row)
+            in_row = per_row if r < n_rows - 1 else len(order) - per_row * (n_rows - 1)
+            start = (per_row - in_row) + 2 * c
+            axes.append(fig.add_subplot(gs[r, start:start + 2]))
 
     for ax, g in zip(axes, order):
         row = pd.Series(dtype=float)
@@ -560,32 +570,35 @@ def _draw_composition_panels(fig, gs, share: pd.Series, palette: dict,
         y = np.arange(len(row))[::-1]
         #Lorenzo Giannuzzo: on a logarithmic axis the bar starts at the floor, so its width
         # is the value minus the floor; a width equal to the value drew every bar too long
-        ax.barh(y, row.to_numpy() - floor, height=0.72, left=floor,
+        #Lorenzo Giannuzzo: the panels are drawn two per row and fill the width of the figure,
+        # so bars and text are sized up to the room they now have
+        ax.barh(y, row.to_numpy() - floor, height=0.74, left=floor,
                 color=palette[g], edgecolor="white", lw=0.4)
         for yy, v in zip(y, row.to_numpy()):
             ax.text(v * 1.25, yy, f"{v:.0f}" if v >= 1 else f"{v:.1f}",
-                    va="center", fontsize=6.2, color=INK)
+                    va="center", fontsize=13, color=INK)
         ax.set_xscale("log")
         ax.set_xlim(floor, 260)
         ax.set_xticks([0.1, 1, 10, 100])
         ax.set_xticklabels(["0.1", "1", "10", "100"])
         ax.set_yticks(y)
-        ax.set_yticklabels([activity_label(c) for c in row.index], fontsize=6.4)
+        ax.set_yticklabels([activity_label(c) for c in row.index], fontsize=13)
         ax.set_ylim(-0.7, max(len(row) - 0.3, 0.5))
-        ax.tick_params(axis="x", labelsize=6.4)
+        ax.tick_params(axis="x", labelsize=12)
         ax.tick_params(axis="y", length=0)
         ax.grid(axis="x", color=GRID, lw=0.5)
         ax.set_axisbelow(True)
         for sp in ("top", "right", "left"):
             ax.spines[sp].set_visible(False)
-        ax.set_title(f"DD-SLP {g} ({pct(share[g])})", fontsize=7.6,
-                     color=palette[g], fontweight="bold", pad=4)
+        ax.set_title(f"DD-SLP {g} ({pct(share[g])})", fontsize=14,
+                     color=palette[g], fontweight="bold", pad=5)
     fig.text(0.5, 0.012,
              "Share of the points in each behavior [%], logarithmic scale",
-             ha="center", fontsize=8.2, color=INK)
+             ha="center", fontsize=14, color=INK)
 
 
 
+@_base_font(13.5)
 def fig_behaviours_under_national(national: str = "PDMM",
                                   daytype: str = "weekday") -> None:
     """The curves a single published profile is standing in for.
@@ -617,17 +630,27 @@ def fig_behaviours_under_national(national: str = "PDMM",
     #Lorenzo Giannuzzo: the composition panels wrap onto a second row beyond four
     # behaviours, and the head room grows with the rows the legend needs, so that neither
     # the class names nor the season titles are overwritten when the catalogue is larger
-    per_row = 4
+    #Lorenzo Giannuzzo: two composition panels per row, so that each is wide enough to read
+    per_row = 2
     comp_rows = int(np.ceil(len(share) / per_row))
-    legend_rows = int(np.ceil((len(share) + 1) / 3))
-    panel_h = 2.55 * comp_rows + 0.35 * (comp_rows - 1)
-    head_in = 0.30 + 0.24 * legend_rows
-    fig_h = 4.2 + panel_h + head_in
-    fig = plt.figure(figsize=(4.15 * len(seasons), fig_h))
-    outer = fig.add_gridspec(2, 1, height_ratios=[4.2, panel_h],
-                             hspace=1.55 / ((4.2 + panel_h) / 2.0), left=0.075, right=0.93,
-                             top=1.0 - head_in / fig_h, bottom=0.55 / fig_h)
-    top_gs = outer[0].subgridspec(1, len(seasons), wspace=0.12)
+    legend_rows = int(np.ceil((len(share) + 1) / 2))
+    panel_h = 3.4 * comp_rows + 0.55 * (comp_rows - 1)
+    head_in = 0.35 + 0.34 * legend_rows
+    top_h = 4.8
+    gap_in, bottom_in = 1.75, 1.15
+    fig_h = head_in + top_h + gap_in + panel_h + bottom_in
+    fig_w = 4.8 * len(seasons)
+    #Lorenzo Giannuzzo: the curves are named in the legend alone. The season panels and the bar
+    # panels are laid out on two separate grids, so that the season panels span the whole width
+    # of the image while the bar panels keep inside the figure the margin their class names need
+    fig = plt.figure(figsize=(fig_w, fig_h))
+    #Lorenzo Giannuzzo: equal margins on the two sides, so that the three panels, the legend above
+    # them and the image share one centre; the left margin holds the axis label
+    top_gs = fig.add_gridspec(1, len(seasons), left=0.08, right=0.92, wspace=0.30,
+                              top=1.0 - head_in / fig_h,
+                              bottom=1.0 - (head_in + top_h) / fig_h)
+    bottom_box = dict(left=0.225, right=0.925, top=(bottom_in + panel_h) / fig_h,
+                      bottom=bottom_in / fig_h)
     axes = [fig.add_subplot(top_gs[0, j]) for j in range(len(seasons))]
     for a in axes[1:]:
         a.sharey(axes[0])
@@ -655,42 +678,26 @@ def fig_behaviours_under_national(national: str = "PDMM",
             e_day = mixture.sum() / 4.0
             national_curve = np.repeat(published, 4) * e_day
 
-        ax.fill_between(x, stack.min(axis=0), stack.max(axis=0), color=INK,
-                        alpha=0.06, lw=0, zorder=1)
+        #Lorenzo Giannuzzo: no shaded envelope under the behaviours, which only repeated the
+        # spread the curves already show; the curves are drawn slightly thicker instead
         for g, c in y.items():
-            ax.plot(x, c, color=palette[g], lw=0.9 + 3.4 * share[g], alpha=0.95, zorder=2)
-        ax.plot(x, national_curve, color=INK, lw=2.6, zorder=4)
+            ax.plot(x, c, color=palette[g], lw=1.4 + 3.4 * share[g], alpha=0.95, zorder=2)
+        ax.plot(x, national_curve, color=INK, lw=3.0, zorder=4)
 
         ax.set_xlim(0, 24)
         ax.set_xticks([0, 6, 12, 18, 24])
         ax.grid(color=GRID, lw=0.6)
         ax.set_axisbelow(True)
-        ax.set_title(_pretty(s), fontsize=10)
+        ax.set_title(_pretty(s), fontsize=15)
         ax.set_xlabel("Time of day [h]")
 
-        if j == len(seasons) - 1:
-            names = list(y) + ["national"]
-            ends = np.array([y[g][-1] for g in y] + [national_curve[-1]])
-            #Lorenzo Giannuzzo: the gap is a share of the axis, not of the ends, so it is the
-            # same on every panel whatever the curves happen to do at midnight
-            span = float(np.ptp(ax.get_ylim()))
-            placed = _spread_labels(ends, 0.052 * span)
-            for name, pos in zip(names, placed):
-                if name == "national":
-                    ax.annotate("Published", xy=(24.3, pos), fontsize=8, color=INK,
-                                va="center", fontweight="bold", annotation_clip=False)
-                else:
-                    ax.annotate(f"DD-SLP {name} ({pct(share[name])})",
-                                xy=(24.3, pos), fontsize=7.5, color=palette[name],
-                                va="center", annotation_clip=False)
-
     axes[0].set_ylabel("Power normalized to an annual\nconsumption of 1000 kWh [kW]",
-                       fontsize=9)
-    handles = [plt.Line2D([], [], color=INK, lw=2.6)] + \
-              [plt.Line2D([], [], color=palette[g], lw=0.9 + 3.4 * share[g]) for g in share.index]
+                       fontsize=14)
+    handles = [plt.Line2D([], [], color=INK, lw=3.0)] + \
+              [plt.Line2D([], [], color=palette[g], lw=1.4 + 3.4 * share[g]) for g in share.index]
     labels = [f"{national_label(national)}, published shape ({int(counts.sum())} PODs)"] + \
              [f"{ddslp_label(g)} ({pct(share[g])} of the PODs)" for g in share.index]
-    fig.legend(handles, labels, loc="upper center", ncol=min(len(labels), 3), fontsize=7.5,
+    fig.legend(handles, labels, loc="upper center", ncol=min(len(labels), 2), fontsize=12.5,
                frameon=True, edgecolor="black", framealpha=1.0,
                bbox_to_anchor=(0.5, 1.0))
 
@@ -699,9 +706,13 @@ def fig_behaviours_under_national(national: str = "PDMM",
     #measured on the curves themselves, so the box cannot fall out of step with what
     #is drawn above it, and they are quantities rather than names because naming a
     #behaviour is an interpretation and belongs to the text.
-    bottom_gs = outer[1].subgridspec(comp_rows, per_row, wspace=0.95, hspace=0.55)
+    #Lorenzo Giannuzzo: two grid columns per panel, so that a last row with fewer panels can
+    # be shifted by one column and sit centred under the rows above it
+    #Lorenzo Giannuzzo: a wider gap between the two columns of bar panels; the last panel stays
+    # centred, since it spans the two middle grid columns whatever the gap
+    bottom_gs = fig.add_gridspec(comp_rows, 2 * per_row, wspace=2.7, hspace=0.55, **bottom_box)
     _draw_composition_panels(fig, bottom_gs, share, palette, per_row=per_row)
-    save(fig, "fig13_behaviours_under_national", "coverage")
+    save(fig, "fig13_behaviours_under_national", "coverage", tight=False)
 
 
 def _describe_behaviours(curves: pd.DataFrame, share: pd.Series) -> pd.DataFrame:
@@ -1028,6 +1039,7 @@ def _declared_classes(name: str, present: list) -> set:
     return {c for c in present if str(c).startswith(DOMESTIC)}
 
 
+@_base_font(11.5)
 def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> None:
     """Who else a published profile would describe, through the behaviours it uses.
 
@@ -1062,25 +1074,33 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
     palette[POOLED] = NEUTRAL
 
     y = np.arange(len(order))
-    fig, ax = plt.subplots(figsize=(10.6, 0.62 * len(order) + 2.6))
+    #Lorenzo Giannuzzo: the rows are taller than before, to hold the larger labels on three lines
+    fig, ax = plt.subplots(figsize=(10.6, 0.85 * len(order) + 3.0))
     left = np.zeros(len(order))
     for c in cols:
         v = reach[c].to_numpy() * 100
         ax.barh(y, v, left=left, height=0.62, color=palette[c],
                 edgecolor="white", lw=0.6, label=activity_label(c))
         for i, (val, l0) in enumerate(zip(v, left)):
+            #Lorenzo Giannuzzo: larger numbers carrying their unit, drawn where the segment is
+            # wide enough to hold them
             if val >= 6:
-                ax.text(l0 + val / 2, i, f"{val:.0f}", ha="center", va="center",
-                        fontsize=7.5, color="white" if c != POOLED else INK)
+                ax.text(l0 + val / 2, i, f"{val:.0f}%", ha="center", va="center",
+                        fontsize=12.5, color="white" if c != POOLED else INK)
         left += v
 
     for i, n in enumerate(order):
-        ax.annotate(f"{outside[n]*100:.0f}%", xy=(101.5, i), fontsize=9.5,
+        ax.annotate(f"{outside[n]*100:.0f}%", xy=(101.5, i), fontsize=13,
                     fontweight="bold", color=WARM, va="center", annotation_clip=False)
 
+    import textwrap
     ax.set_yticks(y)
-    ax.set_yticklabels([f"{national_label(n)} ({int(n_pod[n])} PODs)\napplied to: "
-                        f"{_declared_meaning(n)}" for n in order], fontsize=8)
+    #Lorenzo Giannuzzo: shorter labels on three lines at most: the profile, its size, and the
+    # activity dimension of the category it is applied to, which is the one the share at the
+    # right edge is computed on
+    ax.set_yticklabels(["\n".join(textwrap.wrap(national_label(n), 28))
+                        + f"\n({int(n_pod[n])} PODs, "
+                        + f"{_declared_meaning(n).split(',')[0]})" for n in order], fontsize=11)
     ax.set_xlim(0, 100)
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.set_xticklabels(["0", "25", "50", "75", "100"])
@@ -1089,11 +1109,13 @@ def fig_reach_beyond_declared(min_points: int = 50, top_classes: int = 9) -> Non
     ax.set_axisbelow(True)
     ax.spines["left"].set_visible(False)
     ax.tick_params(axis="y", length=0)
-    ax.annotate("Outside the\ncategory", xy=(101.5, len(order) - 0.32), fontsize=8,
+    ax.annotate("Outside the\ncategory", xy=(101.5, len(order) - 0.32), fontsize=11,
                 fontweight="bold", color=WARM, va="bottom", annotation_clip=False)
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.20 / (0.30 * len(order))),
-              ncol=min(len(cols), 3), fontsize=8, frameon=True, framealpha=1.0,
-              edgecolor="black", title="Activity class", title_fontsize=8)
+    fig.tight_layout()
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.0),
+               ncol=min(len(cols), 3), fontsize=11, frameon=True, framealpha=1.0,
+               edgecolor="black")
     save(fig, "fig15_reach_beyond_declared", "coverage")
 
 
@@ -1390,7 +1412,8 @@ def _national_curve(name: str, season: str, daytype: str) -> np.ndarray | None:
 #of figures 7 and 8 and repeating it in the margin here competed with the curves for the
 #reader's attention without adding anything the tables do not already carry.
 def _row_figure(rows: list, title: str, right_title: str,
-                name: str, part: str, cells: list, ylabel: str) -> None:
+                name: str, part: str, cells: list, ylabel: str,
+                text_scale: float = 1.0, bar_shift: float = 0.062) -> None:
     """One row per subject: the curves on the left, the composition on the right.
 
     `rows` carries, per subject: its label, one list of curves per cell, an optional
@@ -1403,7 +1426,14 @@ def _row_figure(rows: list, title: str, right_title: str,
     #Lorenzo Giannuzzo: a short figure needs proportionally more head room, otherwise the
     #title lands on the panel titles. Expressed in inches it would vanish at one row.
     head = 0.22 if n > 2 else 0.42
-    fig_h = 1.55 * n + head + 0.55
+    #Lorenzo Giannuzzo: with a larger text scale every row grows with the text, so the legends
+    # inside the panels keep clear of the curves
+    fs = text_scale
+    #Lorenzo Giannuzzo: the legends inside the panels grow less than the other texts, since they
+    # have to fit the width of a panel, and the panels get wider with the scale
+    fs_leg = 1.0 + 0.75 * (fs - 1.0)
+    row_h = 1.55 * (1.0 + 0.55 * (fs - 1.0))
+    fig_h = row_h * n + head + 0.55 * fs
     #Lorenzo Giannuzzo: the bar column is given both extra width and extra space to its
     #left, because its tick labels are class names and they grow leftwards into whatever
     #panel precedes them. Shrinking the font instead would have cost legibility on the
@@ -1412,9 +1442,9 @@ def _row_figure(rows: list, title: str, right_title: str,
     #buying it with white space between every column shrank the curves, which are what the
     #figure is for. The room comes from a wider figure and from the bar column alone,
     #whose left margin is the only one that has to hold a class name.
-    fig, axes = plt.subplots(n, nc + 1, figsize=(3.35 * nc + 6.2, fig_h),
+    fig, axes = plt.subplots(n, nc + 1, figsize=((3.35 + 0.8 * (fs - 1.0)) * nc + 6.2 + 1.2 * (fs - 1.0), fig_h),
                              gridspec_kw={"width_ratios": [1.0] * nc + [1.55],
-                                          "hspace": 0.26, "wspace": 0.10},
+                                          "hspace": 0.26 * fs, "wspace": 0.10},
                              squeeze=False)
     #Lorenzo Giannuzzo: one vertical scale per row, shared by its three seasons, so that a
     # behaviour is compared with itself across the year on one scale. A single scale for the
@@ -1463,35 +1493,38 @@ def _row_figure(rows: list, title: str, right_title: str,
             if entries:
                 handles = [plt.Line2D([], [], color=c, lw=1.6, ls=st) for _l, c, st in entries]
                 ax.legend(handles, [l for l, _c, _s in entries], loc="upper left",
-                          fontsize=6.2, frameon=True, framealpha=0.9,
+                          fontsize=6.2 * fs_leg, frameon=True, framealpha=0.9,
                           edgecolor=NEUTRAL, handlelength=1.7, borderpad=0.35,
                           labelspacing=0.25, borderaxespad=0.3)
             ax.set_xlim(0, 24)
             ax.set_xticks([0, 6, 12, 18, 24])
             ax.grid(color=GRID, lw=0.5)
             ax.set_axisbelow(True)
-            ax.tick_params(labelsize=6.5)
+            ax.tick_params(labelsize=6.5 * fs)
             if j == 0:
                 #Lorenzo Giannuzzo: the unit repeated on the row, because the label of the
                 #whole figure sits far to the left and a reader looking at the fifth row
                 #has no reason to travel back to it.
-                ax.set_ylabel(row["label"] + "\nNormalized power [kW]",
-                              fontsize=7.4, color=INK)
+                #Lorenzo Giannuzzo: on a larger text scale the row label takes two lines instead of
+                # three, so that it does not run into the rows above and below
+                label = row["label"].replace("\n", " ") if fs > 1.0 else row["label"]
+                ax.set_ylabel(label + "\nNormalized power [kW]",
+                              fontsize=7.4 * fs_leg, color=INK)
             if i == 0:
                 #Lorenzo Giannuzzo: the padding is back to normal. It was opened up to
                 #clear the national caption that used to sit above the panel, and that
                 #caption is now a legend inside it.
                 ax.set_title(f"{_pretty(season)}, {_pretty(daytype)}",
-                             fontsize=8.3, color=INK, pad=6)
+                             fontsize=8.3 * fs, color=INK, pad=6)
             if i == n - 1:
-                ax.set_xlabel("Time of day [h]", fontsize=7.8)
+                ax.set_xlabel("Time of day [h]", fontsize=7.8 * fs)
 
         #Lorenzo Giannuzzo: head room above the highest curve of the row for the legend
         peak = max([float(np.max(c)) for j in range(nc) for c, _w, _c in row["curves"][j]] +
                    [float(np.max(c)) for j in range(nc) for c, _l, _c in row.get("overlay", {}).get(j, [])] +
                    [0.0])
         if peak > 0:
-            axes[i][0].set_ylim(0, peak * 1.55)
+            axes[i][0].set_ylim(0, peak * (1.55 + 0.25 * (fs - 1.0)))
 
         ax = axes[i][nc]
         bars = row["bars"]
@@ -1501,19 +1534,19 @@ def _row_figure(rows: list, title: str, right_title: str,
                 color=[c for _l, _v, c in bars], edgecolor="white", lw=0.4)
         for yy, v in zip(y, vals):
             ax.text(v + 1.6, yy, f"{v:.0f}" if v >= 1 else f"{v:.1f}",
-                    va="center", fontsize=6.4, color=INK)
+                    va="center", fontsize=6.4 * fs, color=INK)
         ax.set_yticks(y)
-        ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6)
+        ax.set_yticklabels([l for l, _v, _c in bars], fontsize=6.6 * fs)
         ax.set_xlim(0, min(105, vals.max() * 1.22))
         ax.set_ylim(-0.7, max(len(bars) - 0.3, 0.5))
         ax.grid(axis="x", color=GRID, lw=0.5)
         ax.set_axisbelow(True)
-        ax.tick_params(axis="x", labelsize=6.5)
+        ax.tick_params(axis="x", labelsize=6.5 * fs)
         ax.tick_params(axis="y", length=0)
         for sp in ("top", "right", "left"):
             ax.spines[sp].set_visible(False)
         if i == 0:
-            ax.set_title(right_title, fontsize=8.5, loc="left", color=INK)
+            ax.set_title(right_title, fontsize=8.5 * fs, loc="left", color=INK)
     #Lorenzo Giannuzzo: no figure-wide vertical label. It reserved a column of its own
     #down the whole left side for one line of text, and the row labels already carry the
     #unit. The normalisation it used to state now rides in the title, where it is read
@@ -1525,7 +1558,7 @@ def _row_figure(rows: list, title: str, right_title: str,
     #Lorenzo Giannuzzo: the bar column is shifted right after the layout pass, so its tick
     #labels get their own margin instead of one applied to every gap in the figure. Done
     #before tight_layout it would simply be overwritten by it.
-    shift = 0.062
+    shift = bar_shift
     for i in range(n):
         box = axes[i][nc].get_position()
         axes[i][nc].set_position([box.x0 + shift, box.y0,
@@ -1590,7 +1623,8 @@ def fig_profiles_with_classes(top: int = 6, max_distance: float = np.inf,
     _row_figure(rows,
                 "What each behaviour looks like, and which activity classes it gathers",
                 "Share of the points in the behavior [%]",
-                f"fig16_profiles_with_classes_{daytype}", "aggregation", cells, YLABEL)
+                f"fig16_profiles_with_classes_{daytype}", "aggregation", cells, YLABEL,
+                text_scale=1.6, bar_shift=0.125)
 
 
 def fig_classes_across_profiles(top_classes: int = 6, min_pods: int = 25) -> None:
@@ -1754,7 +1788,7 @@ def main() -> None:
     fig_contingency()
     fig_multiplicity()
     fig_aggregation()
-    fig_coverage_gap()
+    table_coverage_gap()
     try:
         fig_behaviours_under_national("PDMM")
     except FileNotFoundError as exc:

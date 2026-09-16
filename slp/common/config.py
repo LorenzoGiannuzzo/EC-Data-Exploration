@@ -92,8 +92,29 @@ class Config:
         return p
 
     @property
+    def figure_dpi(self) -> int:
+        """Resolution of every figure of the pipeline, PNG and PDF alike."""
+        return int(self.get("output.figure_dpi", 500))
+
+    @property
     def year(self) -> int:
         return int(self.raw["data"]["year"])
+
+
+def save_figure(fig, path: str | Path, **kw) -> None:
+    """Write a figure as PNG and as PDF, side by side, at the configured resolution.
+
+    Used by the stages that keep their figures next to their own tables, so that every
+    figure of the pipeline exists in both formats at the same resolution and the figures
+    stage can collect both sets.
+    """
+    #Lorenzo Giannuzzo: the resolution is read from config.yaml at every call rather than
+    # passed around, so that a single line of the configuration governs every figure
+    kw.setdefault("dpi", load_config().figure_dpi)
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    for ext in (".png", ".pdf"):
+        fig.savefig(path.with_suffix(ext), **kw)
 
 
 def load_config(path: str | Path | None = None) -> Config:

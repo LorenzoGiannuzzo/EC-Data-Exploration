@@ -55,7 +55,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common.config import load_config
+from common.config import load_config, save_figure
 
 from scipy.cluster.hierarchy import fcluster, linkage
 from sklearn.cluster import MiniBatchKMeans
@@ -859,17 +859,57 @@ def plot_K_dispersion(table: pd.DataFrame, path: Path) -> None:
         ax.set_xlabel("Number of profiles K [-]")
         ax.grid(alpha=0.3)
     fig.tight_layout()
-    fig.savefig(path, dpi=300)
+    save_figure(fig, path)
     plt.close(fig)
 
 
 # ── plots ────────────────────────────────────────────────────────────────────
+def _months_by_shape(days: pd.DataFrame, n_shapes: int) -> np.ndarray:
+    """Calendar month of every daily shape, in the order of shapes.npy and of its codewords."""
+    has = days[days["has_shape"]]
+    out = np.zeros(n_shapes, dtype=int)
+    out[has["shape_idx"].to_numpy()] = pd.to_datetime(has["date"]).dt.month.to_numpy()
+    return out
+
+
+MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+
+def _peak_months(code: np.ndarray, months: np.ndarray, k: int, top: int = 3) -> str:
+    """The months in which form k is most over-represented, in calendar order.
+
+    Over-representation is the share of the days of a month assigned to the form divided
+    by the share of all days assigned to it, so a month is not favoured merely because the
+    archive holds more days of it. The months are listed in the order that spans the
+    fewest months across the turn of the year, so that December, January and February
+    read as Dec-Feb rather than as Jan, Feb, Dec.
+    """
+    present = np.unique(months)
+    base = (code == k).mean()
+    if base == 0:
+        return ""
+    lift = {int(mo): ((code == k) & (months == mo)).sum() / max((months == mo).sum(), 1) / base
+            for mo in present}
+    best = sorted(sorted(lift, key=lambda mo: -lift[mo])[:top])
+    rotations = [best[i:] + best[:i] for i in range(len(best))]
+    order = min(rotations, key=lambda r: (r[-1] - r[0]) % 12)
+    return ", ".join(MONTH_ABBR[mo - 1] for mo in order)
+
+
+#Lorenzo Giannuzzo: opacity of the member curves and of their percentile band in the
+# dictionary figure, shared by the panels and by the legend so the two cannot disagree
+MEMBER_ALPHA = 0.008
+BAND_ALPHA = 0.07
+
+
 def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
                     shapes: np.ndarray | None = None,
                     code: np.ndarray | None = None,
-                    n_show: int = 400,
+                    n_show: int = 80,
                     rng: np.random.Generator | None = None,
-                    unit_integral: bool = True) -> None:
+                    unit_integral: bool = True,
+                    months: np.ndarray | None = None) -> None:
     """One panel per codeword: the member curves, their spread, the centroid.
 
     A centroid on its own says nothing about whether it describes anything. A
@@ -885,11 +925,23 @@ def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
     rng = rng or np.random.default_rng(0)
     scale = 100.0 if unit_integral else 1.0
     D = len(cent)
-    ncol = min(4, D)
+    #Lorenzo Giannuzzo: three panels per row at most. Each panel spans two columns of the grid,
+    # so that a last row holding fewer panels can be shifted by one column and sit centred
+    # under the rows above it; the time axis is labelled only on the panels with no other
+    # panel directly below, which is what a shared axis would do on a regular grid
+    ncol = min(3, D)
     nrow = int(np.ceil(D / ncol))
-    fig, axes = plt.subplots(nrow, ncol, figsize=(3.4 * ncol, 2.6 * nrow),
-                             sharex=True, sharey=False)
-    axes = np.atleast_1d(axes).ravel()
+    #Lorenzo Giannuzzo: wide and low panels, drawn at a size close to the one they are printed
+    # at, so that titles and tick labels stay legible once the figure is fitted to the page
+    fig = plt.figure(figsize=(3.6 * ncol, 1.95 * nrow))
+    gs = fig.add_gridspec(nrow, 2 * ncol)
+    spans = []
+    for k in range(D):
+        r, c = divmod(k, ncol)
+        in_row = ncol if r < nrow - 1 else D - ncol * (nrow - 1)
+        start = (ncol - in_row) + 2 * c
+        spans.append((r, start, start + 2))
+    axes = [fig.add_subplot(gs[r, a:b]) for r, a, b in spans]
     x = np.arange(96) / 4.0
 
     for k in range(D):
@@ -899,45 +951,51 @@ def plot_dictionary(cent: np.ndarray, share: np.ndarray, path: Path,
         if shapes is not None and code is not None:
             idx = np.where(code == k)[0]
             if len(idx):
-                pick = rng.choice(idx, size=min(n_show, len(idx)), replace=False)
+                pick = rng.choice(idx, size=min(max(n_show, 400), len(idx)), replace=False)
                 mem = np.asarray(shapes[np.sort(pick)], dtype="float64") * scale
-                #Lorenzo Giannuzzo: the members themselves, faint enough that density reads as shade
-                ax.plot(x, mem.T, color="#0d1f3c", alpha=0.02, lw=0.6)
+                #Lorenzo Giannuzzo: the members themselves, kept very faint. The renderer stores
+                # opacity on 255 levels, so an alpha below 1/255 is rounded up, and hundreds of
+                # overlapping curves at that floor still add up to a dark cloud; the sample is
+                # therefore drawn from fewer members, while the percentile band below is computed
+                # on the whole sample and stays as light as the members
+                few = mem[rng.choice(len(mem), size=min(n_show, len(mem)), replace=False)]
+                ax.plot(x, few.T, color="#0d1f3c", alpha=MEMBER_ALPHA, lw=0.4)
                 lo, hi = np.percentile(mem, [10, 90], axis=0)
-                ax.fill_between(x, lo, hi, color="#1565c0", alpha=0.18, lw=0)
+                ax.fill_between(x, lo, hi, color="#1565c0", alpha=BAND_ALPHA, lw=0)
                 top = max(top, np.percentile(mem, 97))
 
         ax.plot(x, cent[k] * scale, color="#c62828", lw=1.8)
         if unit_integral:
             ax.axhline(100 / 96, color="#64748b", lw=0.7, ls=":")   # a flat day
-        n = int((code == k).sum()) if code is not None else 0
-        sub = f"{share[k]*100:.1f}% of days" + (f" ({n} days)" if n else "")
-        ax.set_title(f"Form {k+1}, {sub}", fontsize=9)
+        #Lorenzo Giannuzzo: the title names the form alone, numbered as in the text
+        ax.set_title(f"Dictionary Profile {k+1}", fontsize=12)
         ax.set_xlim(0, 24)
         ax.set_xticks([0, 6, 12, 18, 24])
         ax.set_ylim(0, top * 1.1)
-        ax.tick_params(labelsize=7)
+        #Lorenzo Giannuzzo: tick labels at the size of the titles
+        ax.tick_params(labelsize=12)
 
-    for k in range(D, len(axes)):
-        axes[k].axis("off")
-    fig.supxlabel("Time of day [h]")
+    for k, (r, a, b) in enumerate(spans):
+        if any(r2 == r + 1 and a2 < b and b2 > a for r2, a2, b2 in spans):
+            axes[k].tick_params(axis="x", labelbottom=False)
+    fig.supxlabel("Time of day [h]", fontsize=13.5)
     fig.supylabel("Share of the daily energy [%]" if unit_integral
-                  else "Share of the daily peak [-]")
-    #Lorenzo Giannuzzo: the reading key is a legend in a box at the top centre rather
+                  else "Share of the daily peak [-]", fontsize=13.5)
+    #Lorenzo Giannuzzo: the reading key is a legend in a box centred under the panels rather
     # than a title, so the caption of the paper can carry the sentence.
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
     handles = [Line2D([], [], color="#c62828", lw=1.8, label="Centroid"),
-               Patch(color="#1565c0", alpha=0.18,
+               Patch(color="#1565c0", alpha=BAND_ALPHA,
                      label="10th to 90th percentile of the members")]
     if unit_integral:
         handles.append(Line2D([], [], color="#64748b", lw=0.7, ls=":",
                               label="Flat day (1/96)"))
-    fig.legend(handles=handles, loc="upper center", ncol=len(handles), fontsize=8,
+    fig.tight_layout()
+    fig.legend(handles=handles, loc="upper center", ncol=len(handles), fontsize=12,
                frameon=True, edgecolor="black", framealpha=1.0,
-               bbox_to_anchor=(0.5, 1.0))
-    fig.tight_layout(rect=[0, 0, 1, 1.0 - 0.35 / fig.get_figheight()])
-    fig.savefig(path, dpi=300)
+               bbox_to_anchor=(0.5, 0.0))
+    save_figure(fig, path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -960,8 +1018,11 @@ def plot_groups(f: pd.DataFrame, lab: np.ndarray, path: Path) -> None:
     sizes = g.groupby("group").size()
     K, D = mix.shape
 
-    fig = plt.figure(figsize=(3.4 + 0.55 * D, 1.8 + 0.5 * K))
-    gs = fig.add_gridspec(1, 2, width_ratios=[D, 3.0], wspace=0.06)
+    fig = plt.figure(figsize=(4.2 + 0.55 * D, 1.8 + 0.5 * K))
+    #Lorenzo Giannuzzo: the colour bar gets a column of its own at the right edge; squeezed
+    # between the heatmap and the bars its top label ran into the bar axis and its title
+    # was hidden behind it
+    gs = fig.add_gridspec(1, 3, width_ratios=[D, 3.0, 0.22], wspace=0.10)
 
     ax = fig.add_subplot(gs[0])
     #Lorenzo Giannuzzo: numbers, colours and colour bar all in per cent, with the colour bar
@@ -976,9 +1037,6 @@ def plot_groups(f: pd.DataFrame, lab: np.ndarray, path: Path) -> None:
             if v >= 4:
                 ax.text(j, i, f"{v:.0f}", ha="center", va="center",
                         fontsize=7, color="white" if v > 50 else "#0d1f3c")
-    cb = fig.colorbar(im, ax=ax, fraction=0.025, pad=0.01)
-    cb.set_label("Share of the energy spent on the form [%]", fontsize=8)
-    cb.outline.set_edgecolor("black")
 
     ax2 = fig.add_subplot(gs[1])
     y = np.arange(K)
@@ -990,7 +1048,11 @@ def plot_groups(f: pd.DataFrame, lab: np.ndarray, path: Path) -> None:
     for i, n in enumerate(sizes.to_numpy()):
         ax2.text(n, i, f" {n}", va="center", fontsize=7)
     ax2.set_xlim(0, sizes.max() * 1.3)
-    fig.savefig(path, dpi=300, bbox_inches="tight")
+    cax = fig.add_subplot(gs[2])
+    cb = fig.colorbar(im, cax=cax)
+    cb.set_label("Share of the energy spent on the form [%]", fontsize=8)
+    cb.outline.set_edgecolor("black")
+    save_figure(fig, path, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -1000,7 +1062,9 @@ def plot_validity(val: pd.DataFrame, col: str, path: Path, selected: int | None 
 
     For D the quantization error and the relative gain of one more codeword, which is
     what decides, beside the silhouette, which is reported. For K the stability of the
-    partition across subsamples against its threshold, beside the silhouette.
+    partition across subsamples, beside the silhouette. The stability threshold is not drawn:
+    no admissible K reaches it, so the line would sit above every point and say only what the
+    text already states, and `threshold` is kept in the signature for the callers alone.
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -1016,20 +1080,20 @@ def plot_validity(val: pd.DataFrame, col: str, path: Path, selected: int | None 
         gain = np.full(len(err), np.nan)
         gain[1:] = (err[:-1] - err[1:]) / np.where(err[:-1] > 0, err[:-1], np.nan) * 100.0
         panels = [("Quantization error [-]", err, None),
-                  ("Error reduction of the last codeword added [%]", gain,
+                  ("Error reduction [%]", gain,
                    None if tol is None else tol * 100.0),
                   ("Silhouette of the dictionary [-]", v["silhouette"].to_numpy(float), None)]
         xlabel = "Number of daily forms D [-]"
     else:
         stab = v["stability_mean"].to_numpy(float) if "stability_mean" in v else np.full(len(v), np.nan)
-        panels = [("Mean adjusted Rand index across subsamples [-]", stab, threshold),
+        panels = [("Mean ARI [-]", stab, None),
                   ("Silhouette of the partition [-]", v["silhouette"].to_numpy(float), None)]
         xlabel = "Number of profiles K [-]"
 
     fig, axes = plt.subplots(1, len(panels), figsize=(3.8 * len(panels), 3.3))
     for ax, (label, y, ref) in zip(np.atleast_1d(axes), panels):
         ax.plot(x, y, "o-", color=ink, ms=3.5, lw=1.2)
-        if col == "K" and label.startswith("Mean adjusted") and "stability_min" in v:
+        if col == "K" and label.startswith("Mean ARI") and "stability_min" in v:
             ax.fill_between(x, v["stability_min"].to_numpy(float), y, color=ink, alpha=0.12, lw=0)
         if ref is not None:
             ax.axhline(ref, color=accent, lw=1.0, ls="--")
@@ -1037,27 +1101,70 @@ def plot_validity(val: pd.DataFrame, col: str, path: Path, selected: int | None 
             ax.axvline(selected, color=accent, lw=1.0, ls=":")
         ax.set_xlabel(xlabel, fontsize=9)
         ax.set_ylabel(label, fontsize=9)
+        ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
         ax.grid(alpha=0.3)
     handles, labels = [], []
     if selected is not None:
         handles.append(Line2D([], [], color=accent, ls=":", lw=1.0))
         labels.append(f"Selected value ({col} = {selected})")
-    if col == "K" and threshold is not None:
-        handles.append(Line2D([], [], color=accent, ls="--", lw=1.0))
-        labels.append(f"Stability threshold ({threshold:.2f})")
     if col == "K" and "stability_min" in v:
         from matplotlib.patches import Patch
         handles.append(Patch(color=ink, alpha=0.12))
-        labels.append("Down to the least favourable replica")
+        labels.append("Range down to the least favorable replica")
     if col == "D" and tol is not None:
         handles.append(Line2D([], [], color=accent, ls="--", lw=1.0))
         labels.append(f"Tolerance ({tol:.0%})")
+    fig.tight_layout()
     if handles:
+        #Lorenzo Giannuzzo: the legend is centred under the panels
         fig.legend(handles, labels, loc="upper center", ncol=len(handles), fontsize=8,
-                   frameon=True, edgecolor="black", framealpha=1.0, bbox_to_anchor=(0.5, 1.02))
-    fig.tight_layout(rect=[0, 0, 1, 0.92])
-    fig.savefig(path, dpi=300, bbox_inches="tight")
+                   frameon=True, edgecolor="black", framealpha=1.0, bbox_to_anchor=(0.5, 0.0))
+    save_figure(fig, path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
+
+
+def redraw_figures() -> None:
+    """Redraw the clustering figures from the cache and the stage tables.
+
+    groups.png, validity_D.png and validity_K.png depend only on what the clustering stage
+    has already written, so a change of style does not require rebuilding the dictionary
+    and the tree. Called by the figures stage; silent when the stage has not been run.
+    """
+    cfg = load_config()
+    cl = cfg["clustering"]
+    out = cfg.results_dir("clustering")
+    cache = cfg.cache_dir
+    uv, gp = cache / "user_vectors.parquet", cache / "groups.parquet"
+    facts_p = out / "clustering_facts.csv"
+    if not (uv.exists() and gp.exists() and facts_p.exists()):
+        return
+    facts = pd.read_csv(facts_p).set_index("quantity")["value"]
+    D, K = int(float(facts["D"])), int(float(facts["K"]))
+    u = pd.read_parquet(uv)
+    g = pd.read_parquet(gp)
+    m = g[["pod", "group"]].merge(u, on="pod", how="inner")
+    fcols = [c for c in u.columns if str(c).startswith("f_")]
+    plot_groups(m[fcols].reset_index(drop=True), m["group"].to_numpy(), out / "groups.png")
+    dict_p, code_p = cache / "dictionary.npy", cache / "day_codeword.npy"
+    if dict_p.exists() and code_p.exists() and (cache / "shapes.npy").exists():
+        #Lorenzo Giannuzzo: the dictionary is redrawn from the cached codewords, the codeword of
+        # every day with a shape and the shapes themselves, without rebuilding the tree
+        cent = np.load(dict_p)
+        code = np.load(code_p)
+        days = pd.read_parquet(cache / "days.parquet", columns=["date", "has_shape", "shape_idx"])
+        shapes = np.load(cache / "shapes.npy", mmap_mode="r")
+        if len(code) == shapes.shape[0] == int(days["has_shape"].sum()):
+            share_days = np.bincount(code, minlength=len(cent)) / len(code)
+            plot_dictionary(cent, share_days, out / "dictionary.png", shapes=shapes, code=code,
+                            rng=np.random.default_rng(0), unit_integral=True,
+                            months=_months_by_shape(days, len(code)))
+    if (out / "validity_D.csv").exists():
+        plot_validity(pd.read_csv(out / "validity_D.csv"), "D", out / "validity_D.png",
+                      selected=D, tol=float(cl.get("d_tol", 0.01)))
+    if (out / "validity_K.csv").exists():
+        plot_validity(pd.read_csv(out / "validity_K.csv"), "K", out / "validity_K.png",
+                      selected=K, threshold=float(cl.get("k_stability", 0.65)))
+    print("  dictionary, groups, validity_D, validity_K (redrawn from the clustering tables)")
 
 
 # ── pipeline ─────────────────────────────────────────────────────────────────
@@ -1411,7 +1518,8 @@ def main() -> None:
     # which is 96 components whatever resolution the vocabulary was built in
     plot_dictionary(cent, share_days, out / "dictionary.png",
                     shapes=shapes_full, code=code, rng=rng,
-                    unit_integral=unit_integral)
+                    unit_integral=unit_integral,
+                    months=_months_by_shape(days, len(code)))
     if not val_D.empty:
         plot_validity(val_D, "D", out / "validity_D.png", selected=D,
                       tol=float(cl.get("d_tol", 0.01)))

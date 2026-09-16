@@ -65,7 +65,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common.cache import check_manifest
-from common.config import load_config
+from common.config import load_config, save_figure
 from preprocessing import day_type, italian_holidays, season
 
 DAYTYPE_ORDER = ["weekday", "saturday", "sunday"]
@@ -260,8 +260,10 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
     K = len(groups_list)
     #Lorenzo Giannuzzo: a monthly grid puts twelve columns on the page, so the column narrows
     col_w = 3.3 if len(seasons) <= 4 else 1.9
+    #Lorenzo Giannuzzo: the rows are a little taller, to hold the larger tick labels and the row
+    # labels on two lines once the figure is fitted to the width of the page
     fig, axes = plt.subplots(K, len(seasons),
-                             figsize=(col_w * len(seasons), 1.9 * K),
+                             figsize=(col_w * len(seasons), 2.1 * K),
                              sharex=True, squeeze=False)
     x = np.arange(96) / 4.0
     colors = {"weekday": "#0d1f3c", "saturday": "#1565c0", "sunday": "#c62828"}
@@ -283,40 +285,37 @@ def plot_profiles(curves: np.ndarray, weights: pd.DataFrame, sizes: pd.Series,
                 #Lorenzo Giannuzzo: kWh on one such day, spread over the quarter-hours -> kW
                 kwh_day = kwh_year * w / nd
                 y = curves[i, cj] * kwh_day * 4.0
-                ax.plot(x, y, color=colors[t_], lw=1.2, label=t_ if i == 0 and j == 0 else None)
+                ax.plot(x, y, color=colors[t_], lw=1.5, label=t_ if i == 0 and j == 0 else None)
                 top = max(top, y.max())
             ax.set_xlim(0, 24)
             ax.set_xticks([0, 6, 12, 18, 24])
-            ax.tick_params(labelsize=7)
+            ax.tick_params(labelsize=11)
             ax.grid(alpha=0.25)
             if i == 0:
-                ax.set_title(pretty(s_), fontsize=9)
+                ax.set_title(pretty(s_), fontsize=14)
             if j == 0:
                 ax.set_ylabel(f"DD-SLP {g}\n({int(sizes.get(g, 0))} PODs)",
-                              fontsize=8)
+                              fontsize=12)
         for j in range(len(seasons)):
             axes[i][j].set_ylim(0, top * 1.12 if top else 1)
 
-    handles = [plt.Line2D([], [], color=colors[t], lw=1.4, label=pretty(t))
+    handles = [plt.Line2D([], [], color=colors[t], lw=1.8, label=pretty(t))
                for t in DAYTYPE_ORDER]
-    #Lorenzo Giannuzzo: the band reserved for the legend is a fixed height in
-    #inches rather than a fraction of the figure, because the figure grows with
-    #the number of profiles and a fraction would leave a hand of white space on a
-    #tall grid and none at all on a short one.
-    fig.legend(handles=handles, loc="upper center", ncol=len(DAYTYPE_ORDER),
-               fontsize=8, frameon=True, framealpha=1.0, edgecolor="black",
-               bbox_to_anchor=(0.5, 1.0), borderaxespad=0.3)
-    fig.supxlabel("Time of day [h]", fontsize=11)
+    fig.supxlabel("Time of day [h]", fontsize=14)
     #Lorenzo Giannuzzo: the label runs along the short side of the figure, and the
     #figure is only as tall as the number of profiles makes it. Broken over two
     #lines and sized against the height, it fits a grid of two rows as well as one
     #of ten instead of being clipped on the first.
     fig.supylabel(f"Power normalized to an annual\nconsumption of "
                   f"{kwh_year:.0f} kWh [kW]",
-                  fontsize=min(11.0, max(7.0, 2.2 * fig.get_figheight())))
-    fig_h = fig.get_figheight()
-    fig.tight_layout(rect=[0, 0, 1, max(0.80, 1.0 - 0.45 / fig_h)])
-    fig.savefig(path, dpi=300)
+                  fontsize=min(14.0, max(7.0, 2.2 * fig.get_figheight())))
+    fig.tight_layout()
+    #Lorenzo Giannuzzo: the legend is centred under all the panels, below the axis title, and
+    # the figure is saved on its tight bounding box so that the legend is not cut off
+    fig.legend(handles=handles, loc="upper center", ncol=len(DAYTYPE_ORDER),
+               fontsize=12, frameon=True, framealpha=1.0, edgecolor="black",
+               bbox_to_anchor=(0.5, -0.004), borderaxespad=0.3)
+    save_figure(fig, path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
 
 
@@ -341,8 +340,39 @@ def plot_weights(weights: pd.DataFrame, path: Path) -> None:
     cb = fig.colorbar(im, ax=ax, fraction=0.03)
     cb.set_label("Share of the annual energy carried by the cell [-]", fontsize=8)
     fig.tight_layout()
-    fig.savefig(path, dpi=300)
+    save_figure(fig, path)
     plt.close(fig)
+
+
+def redraw_figures() -> None:
+    """Redraw profiles.png and weights.png from the tables the stage has already written.
+
+    Both figures depend only on profiles.csv, weights.csv and the groups in the cache, so a
+    change of style reaches them through the figures stage without averaging the members'
+    days again. Silent when the stage has not been run.
+    """
+    cfg = load_config()
+    out = cfg.results_dir("generation")
+    prof_p, w_p, gp = out / "profiles.csv", out / "weights.csv", cfg.cache_dir / "groups.parquet"
+    if not (prof_p.exists() and w_p.exists() and gp.exists()):
+        return
+    prof = pd.read_csv(prof_p)
+    weights = pd.read_csv(w_p)
+    groups = pd.read_parquet(gp)
+    keep = groups[~groups["below_n_min"]] if "below_n_min" in groups else groups
+    sizes = keep.groupby("group").size()
+    glist = sorted(prof["profile"].unique())
+    #Lorenzo Giannuzzo: profiles.csv holds one row per profile and cell, written in the order of
+    # the cells, so the cells and the (K, n_cells, 96) array are read back in that same order
+    first = prof[prof["profile"] == glist[0]]
+    cells = list(zip(first["period"], first["daytype"]))
+    q = [f"q{k + 1}" for k in range(96)]
+    curves = np.stack([prof.loc[prof["profile"] == g, q].to_numpy(dtype="float64")
+                       for g in glist])
+    kwh_year = float(cfg.get("generation.normalise_kwh_year", 1000))
+    plot_profiles(curves, weights, sizes, cells, glist, out / "profiles.png", kwh_year)
+    plot_weights(weights, out / "weights.png")
+    print("  profiles, weights (redrawn from the generation tables)")
 
 
 # ── pipeline ─────────────────────────────────────────────────────────────────

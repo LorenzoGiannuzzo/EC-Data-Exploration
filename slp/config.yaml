@@ -250,4 +250,4 @@ output:
   cache_dir: "cache"
   results_dir: "paper_results"
   figure_format: "png"
-  figure_dpi: 300
+  figure_dpi: 500              # every figure, PNG and PDF alike

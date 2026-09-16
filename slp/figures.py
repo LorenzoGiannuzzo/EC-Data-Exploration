@@ -4,8 +4,8 @@ Run after `python main.py --stage comparison`:
 
     python figures.py
 
-Every figure is written both as PNG at 300 dpi for the manuscript and as PDF for the
-camera-ready version. Nothing is computed here that is not already in the comparison
+Every figure is written both as PNG for the manuscript and as PDF for the camera-ready
+version, at the resolution declared under output.figure_dpi in config.yaml. Nothing is computed here that is not already in the comparison
 outputs or in the cache, so the figures cannot disagree with the tables.
 
 -------------------------------------------------------------------------------
@@ -94,6 +94,22 @@ def legend_top(target, handles=None, labels=None, ncol: int = 1, **kw):
     return target.legend(*args, **opts)
 
 
+def legend_below(ax, handles=None, labels=None, ncol: int = 1, pad_in: float = 0.50, **kw):
+    """Legend centred under an axis, clear of its tick labels and axis title.
+
+    The offset is given in inches below the axis and converted to axes fraction, so the
+    legend sits at the same distance from the axis whatever the height of the panel.
+    Call it after the layout is final (after tight_layout), since it reads the position
+    of the axis in the figure.
+    """
+    h_in = ax.get_position().height * ax.figure.get_figheight()
+    args = [] if handles is None else ([handles] if labels is None else [handles, labels])
+    opts = dict(loc="upper center", bbox_to_anchor=(0.5, -pad_in / max(h_in, 1e-6)),
+                ncol=ncol, frameon=True, framealpha=1.0, edgecolor="black", fontsize=7.5)
+    opts.update(kw)
+    return ax.legend(*args, **opts)
+
+
 mpl.rcParams.update({
     "font.family": "DejaVu Sans",
     "font.size": 8.5,
@@ -119,7 +135,7 @@ def save(fig, name: str) -> None:
     for ext in ("png", "pdf"):
         out = FIG / ext
         out.mkdir(parents=True, exist_ok=True)
-        fig.savefig(out / f"{name}.{ext}", dpi=300, bbox_inches="tight",
+        fig.savefig(out / f"{name}.{ext}", dpi=_CFG.figure_dpi, bbox_inches="tight",
                     facecolor="white")
     plt.close(fig)
     print(f"  {name}")
@@ -129,13 +145,60 @@ def pretty_season(s: str) -> str:
     return {"mid": "Autumn/Spring"}.get(str(s), str(s)[:1].upper() + str(s)[1:])
 
 
-# ------------------------------------------------------------------------ figure 1
-def fig_b1_heatmap() -> None:
-    """How far each national profile sits from each data-driven profile.
+# ------------------------------------------------------------------------- table B1
+def save_table(table: pd.DataFrame, name: str, folder: Path, bold: np.ndarray | None = None) -> None:
+    """Write a table of the paper as CSV and as a formatted Excel sheet.
 
-    The nearest data-driven profile of every row is framed, since that pairing is the
-    positioning Section 2.5 defines. The colour scale is sequential and starts at zero,
-    because the total variation is non-negative and a diverging map would suggest a sign.
+    The tables live in a `tables` folder next to the `figures` folder of the stage, so that a
+    table and the figures of the same section are found in the same place. `bold` is a mask
+    with the shape of the table body marking the cells set in bold in the Excel sheet, since
+    a CSV cannot carry it.
+    """
+    out = Path(folder) / "tables"
+    out.mkdir(parents=True, exist_ok=True)
+    table.to_csv(out / f"{name}.csv", index=False)
+    try:
+        from openpyxl.styles import Alignment, Border, Font, Side
+        with pd.ExcelWriter(out / f"{name}.xlsx", engine="openpyxl") as xw:
+            table.to_excel(xw, index=False, sheet_name="table")
+            ws = xw.sheets["table"]
+            thin = Side(style="thin", color="000000")
+            for j, col in enumerate(table.columns, start=1):
+                c = ws.cell(row=1, column=j)
+                c.font = Font(bold=True)
+                c.border = Border(top=thin, bottom=thin)
+                c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+                width = max(len(str(col)), *(len(str(v)) for v in table[col])) + 2
+                ws.column_dimensions[c.column_letter].width = min(width, 45)
+            for i in range(len(table)):
+                for j in range(len(table.columns)):
+                    c = ws.cell(row=i + 2, column=j + 1)
+                    c.alignment = Alignment(horizontal="left" if j == 0 else "center")
+                    if bold is not None and bold[i, j]:
+                        c.font = Font(bold=True)
+                    if i == len(table) - 1:
+                        c.border = Border(bottom=thin)
+    except ImportError:
+        pass
+    print(f"  {name} (table)")
+
+
+def _drop_retired_figure(folder: Path, name: str) -> None:
+    #Lorenzo Giannuzzo: a figure replaced by a table is removed from the results, so that the
+    # collection step does not carry the old image into paper_results/figures
+    for ext in ("png", "pdf"):
+        p = Path(folder) / ext / f"{name}.{ext}"
+        if p.exists():
+            p.unlink()
+
+
+def table_b1_distance() -> None:
+    """How far each national profile sits from each data-driven profile, as a table.
+
+    Rows are the national profiles, ordered by the distance to their nearest data-driven
+    profile, and columns the data-driven profiles; every cell is the total variation of Eq. 8
+    in the S1 setting. The nearest data-driven profile of every row, the positioning Section
+    2.5 defines, is named in the last column and set in bold in the Excel sheet.
     """
     b1 = pd.read_csv(RES / "b1_ddslp_vs_national.csv")
     d = b1[b1["setting"] == "S1_monthly"]
@@ -143,32 +206,18 @@ def fig_b1_heatmap() -> None:
     m = m.loc[m.min(axis=1).sort_values().index]
     order = sorted(m.columns, key=lambda c: int(c.split("_")[1]))
     m = m[order]
-
-    fig, ax = plt.subplots(figsize=(5.8, 0.38 * len(m) + 1.4))
     vals = m.to_numpy()
-    im = ax.imshow(vals, aspect="auto", cmap="YlOrRd", vmin=0,
-                   vmax=float(np.nanmax(vals)))
-    ax.set_xticks(range(len(m.columns)))
-    rot = 0 if len(m.columns) <= 6 else 45
-    ax.set_xticklabels([ddslp_label(c) for c in m.columns],
-                       rotation=rot, ha="center" if rot == 0 else "right", fontsize=8)
-    ax.set_yticks(range(len(m.index)))
-    ax.set_yticklabels([national_label(n) for n in m.index], fontsize=7)
-    hi = np.nanpercentile(vals, 70)
-    for i in range(m.shape[0]):
-        j_best = int(np.nanargmin(vals[i]))
-        for j in range(m.shape[1]):
-            v = vals[i, j]
-            if np.isfinite(v):
-                ax.text(j, i, f"{v:.3f}", ha="center", va="center", fontsize=6,
-                        color="white" if v > hi else INK,
-                        fontweight="bold" if j == j_best else "normal")
-        ax.add_patch(plt.Rectangle((j_best - 0.5, i - 0.5), 1, 1, fill=False,
-                                   edgecolor="black", lw=1.2))
-    cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("Total variation [-]", fontsize=8)
-    cb.outline.set_edgecolor("black")
-    save(fig, "fig1_b1_distance_heatmap")
+    best = np.nanargmin(vals, axis=1)
+
+    table = pd.DataFrame({"National profile": [national_label(n) for n in m.index]})
+    for j, c in enumerate(m.columns):
+        table[ddslp_label(c)] = [f"{v:.3f}" if np.isfinite(v) else "" for v in vals[:, j]]
+    table["Nearest data-driven profile"] = [ddslp_label(m.columns[j]) for j in best]
+    bold = np.zeros(table.shape, dtype=bool)
+    for i, j in enumerate(best):
+        bold[i, j + 1] = True
+    save_table(table, "table_b1_total_variation", RES, bold=bold)
+    _drop_retired_figure(FIG, "fig1_b1_distance_heatmap")
 
 
 # ------------------------------------------------------------------------ figure 2
@@ -230,12 +279,14 @@ def fig_daily_shapes(cell: str = "winter|weekday") -> None:
         ax.set_xticks(range(0, 24, 3))
         ax.grid(axis="y", color=GRID, lw=0.6)
         ax.set_axisbelow(True)
-        legend_top(ax, fontsize=7.0)
     axes[0].set_ylabel("Share of the daily energy [%]")
     for a in axes:
         lo, hi = a.get_ylim()
-        a.set_ylim(0, hi * 1.35)
+        a.set_ylim(0, hi * 1.05)
     fig.tight_layout()
+    #Lorenzo Giannuzzo: the legends go under the panels, so that no curve runs behind them
+    for a in axes:
+        legend_below(a, fontsize=7.0, ncol=2, pad_in=0.55)
     save(fig, "fig2_daily_shapes")
 
 
@@ -261,10 +312,12 @@ def fig_b2_distributions() -> None:
     ax.set_xlabel("Total variation per user-month [-]")
     ax.set_ylabel("Cumulative share of user-months [-]")
     ax.set_xlim(0, 1.0)
-    ax.set_ylim(0, 1.18)
+    ax.set_ylim(0, 1.05)
     ax.grid(color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    legend_top(ax, ncol=3)
+    #Lorenzo Giannuzzo: at the top left, where the cumulative curves have not risen yet, one
+    # entry per line
+    legend_top(ax, ncol=1, loc="upper left")
 
     ax = axes[1]
     data = [b2.loc[b2["source"] == s, "total_variation"].dropna() for s in order]
@@ -345,10 +398,12 @@ def fig_daytype_energy() -> None:
     ax.set_xlabel("Sunday energy over working-day energy [-]")
     ax.set_ylabel("Points of delivery [-]")
     ax.set_xlim(0, 2.2)
-    ax.set_ylim(0, ax.get_ylim()[1] * 1.45)
+    ax.set_ylim(0, ax.get_ylim()[1] * 1.10)
     ax.grid(axis="y", color=GRID, lw=0.6)
     ax.set_axisbelow(True)
-    legend_top(ax, ncol=2, fontsize=7.2)
+    #Lorenzo Giannuzzo: inside the axis on the right, over the thin tail of the distribution
+    # and clear of the two vertical lines, one entry per line
+    legend_top(ax, ncol=1, fontsize=7.2, loc="upper right")
     fig.tight_layout()
     save(fig, "fig4_daytype_energy")
 
@@ -395,6 +450,7 @@ def fig_misallocated() -> None:
         ax.set_axisbelow(True)
         ax.set_ylim(0, ax.get_ylim()[1] * 1.22)
     legend_top(axes[0], ncol=3)
+    legend_top(axes[1], ncol=3)
     fig.tight_layout()
     save(fig, "fig5_misallocated_energy")
 
@@ -412,7 +468,7 @@ def main(include_mapping: bool = True) -> None:
         print(f"  missing: {', '.join(missing)}")
         print("  run  python main.py --stage comparison  first\n")
         return
-    fig_b1_heatmap()
+    table_b1_distance()
     fig_daily_shapes()
     fig_b2_distributions()
     fig_daytype_energy()
@@ -439,6 +495,21 @@ def main(include_mapping: bool = True) -> None:
                   + ", ".join(mapping_figures.missing_inputs()))
     except Exception as exc:
         print(f"  ! mapping figures not produced: {type(exc).__name__}: {exc}")
+
+    #Lorenzo Giannuzzo: the clustering figures are redrawn from its tables, so that a change of
+    # style reaches them with the figures stage alone
+    try:
+        import clustering
+        clustering.redraw_figures()
+    except Exception as exc:
+        print(f"  ! clustering figures not redrawn: {type(exc).__name__}: {exc}")
+
+    #Lorenzo Giannuzzo: the generation figures likewise, from the tables of that stage
+    try:
+        import generation
+        generation.redraw_figures()
+    except Exception as exc:
+        print(f"  ! generation figures not redrawn: {type(exc).__name__}: {exc}")
 
     collect_figures()
 
@@ -477,6 +548,20 @@ def collect_figures() -> None:
             shutil.copy2(p, dest)
             n += 1
     print(f"  {n} figure files collected in {target}\n")
+
+    #Lorenzo Giannuzzo: the tables of the paper likewise, from the tables folder of each stage
+    tables = root / "tables"
+    if tables.exists():
+        shutil.rmtree(tables)
+    m = 0
+    for p in sorted(root.rglob("tables/*")):
+        if tables in p.parents or p.suffix not in (".csv", ".xlsx"):
+            continue
+        tables.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(p, tables / p.name)
+        m += 1
+    if m:
+        print(f"  {m} table files collected in {tables}\n")
 
 
 if __name__ == "__main__":
