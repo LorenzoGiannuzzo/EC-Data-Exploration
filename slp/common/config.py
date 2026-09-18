@@ -25,6 +25,7 @@ STAGE_FOLDERS: dict[str, str] = {
     "generation": "3_standard_lp_generation",
     "comparison": "4_lp_comparison",
     "mapping": "5_lp_mapping",
+    "extensions": "6_extensions",
 }
 
 #Lorenzo Giannuzzo: the mapping stage splits further because the paper reports its three

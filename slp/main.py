@@ -41,6 +41,10 @@ STAGES: dict[str, tuple[str, str]] = {
     "generation":    ("generation",    "2.4"),
     "comparison":    ("comparison",    "2.5"),
     "mapping":       ("mapping",       "2.6"),
+    #Lorenzo Giannuzzo: the analyses completing Section 3, written as tables of the paper
+    "extensions":    ("extensions",    "3"),
+    #Lorenzo Giannuzzo: the analyses answering the external review, written as tables
+    "review":        ("review_analyses", "3"),
     "numbers":       ("numerical_results", "3"),
     "figures":       ("figures",       "2.5"),
 }

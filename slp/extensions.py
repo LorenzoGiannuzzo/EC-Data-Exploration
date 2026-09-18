@@ -81,10 +81,13 @@ FAMILY_ORDER = list(FAMILY_LABEL)
 
 # ============================================================================ helpers
 def save_table(table: pd.DataFrame, name: str, bold: np.ndarray | None = None) -> None:
-    #Lorenzo Giannuzzo: the writer of the figures stage, so that every table of the paper has
-    # the same Excel format and is collected into paper_results/tables by the same step
-    from figures import save_table as _save
-    _save(table, name, OUT, bold)
+    #Lorenzo Giannuzzo: CSV only. The tables sit in a tables folder like those of the other
+    # stages, so the figures stage still collects them into paper_results/tables. The bold
+    # mask is kept in the signature for the callers but has no effect on a CSV.
+    folder = OUT / "tables"
+    folder.mkdir(parents=True, exist_ok=True)
+    table.to_csv(folder / f"{name}.csv", index=False)
+    print(f"  {name} (table)")
 
 
 def activity_name(code: object) -> str:

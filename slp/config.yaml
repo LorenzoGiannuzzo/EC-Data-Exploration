@@ -246,6 +246,42 @@ mapping:                       # Section 2.6
   # Offsets of K explored on the same tree; values below K = 2 are skipped.
   sensitivity_k_offsets: [-2, -1, 1, 2, 3, 4, 5]
 
+extensions:                    # tables completing Section 3, python main.py --stage extensions
+  n_folds: 5                   # out-of-sample validation: folds of users
+  information_permutations: 1000
+  quarter_hourly_sample_pods: 1000   # domestic points on which the 15-minute error is computed
+  dispersion_max_days_per_cell: 2000
+  # Optional: ARERA conventional load profiling coefficients, CSV with the columns
+  # profile, F1, F2, F3 (shares or energies per band), relative to slp/
+  tilp_file: null
+  # Optional: national figures the dataset is compared with in table_a11. Leave a
+  # value null when the figure is not available. Source: ARERA, Relazione annuale.
+  national_reference:
+    source: null
+    share_domestic: null
+    share_resident: null
+    share_prosumer: null
+    share_power_0-1.5: null
+    share_power_1.5-3: null
+    share_power_3-4.5: null
+    share_power_4.5-6: null
+    share_power_>6: null
+    median_kwh_resident: null
+    median_kwh_nonresident: null
+    median_kwh_other: null
+
+review:                        # tables answering the external review, python main.py --stage review
+  aggregation_sizes: [1, 10, 25, 50, 100, 250, 500, 1000]
+  aggregation_shuffles: 5      # random partitions of the users into aggregates of each size
+  permutations: 199            # permutation tests of R2
+  neighbors: 10                # nearest neighbors of the purity test
+  silhouette_sample: 4000
+  bootstrap_table2: 200        # bootstrap resamples of the members of each data-driven profile
+  sensitivity_portfolio: true  # recompute the allocation error on every sensitivity partition
+  portfolio_jackknife_groups: 20  # R11: groups of users left out in turn for the portfolio intervals
+  label_energy_kwh: 1500       # R13: non-domestic points below this annual energy are doubtful labels
+  label_zero_share: 0.5        # R13: ... or with more than this share of days at zero
+
 output:
   cache_dir: "cache"
   results_dir: "paper_results"
