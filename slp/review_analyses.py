@@ -1239,6 +1239,155 @@ def run_R13(inp: X.Inputs) -> None:
     save(pd.DataFrame(rows), "table_r13_label_quality_classes")
 
 
+# ============================================================ R14 temporal validation
+def pod_cell_from_mask(inp: X.Inputs, mask: np.ndarray) -> dict:
+    """Per-point sums over the grid, restricted to the days selected by mask."""
+    d = inp.days
+    grid = inp.grid
+    cell_of = {c: i for i, c in enumerate(grid["cells"])}
+    ci = np.array([cell_of.get((p_, t), -1) for p_, t in zip(grid["period"], d["daytype"])], dtype="int64")
+    pods = inp.pod_cell["pods"]
+    pod_ix = inp.pod_cell["index"]
+    sel = d["has_shape"].to_numpy() & (ci >= 0) & mask & d["pod"].isin(pod_ix).to_numpy()
+    pi = d.loc[sel, "pod"].map(pod_ix).to_numpy()
+    cj = ci[sel]
+    idx = d.loc[sel, "shape_idx"].to_numpy()
+    e = d.loc[sel, "energy"].to_numpy(dtype="float64")
+    n_c = len(grid["cells"])
+    sums = np.zeros((len(pods), n_c, 96))
+    en = np.zeros((len(pods), n_c))
+    nd = np.zeros((len(pods), n_c))
+    order = np.argsort(idx)
+    for lo in range(0, len(order), 200_000):
+        o = order[lo:lo + 200_000]
+        block = np.asarray(inp.shapes[idx[o]], dtype="float64")
+        np.add.at(sums, (pi[o], cj[o]), block * e[o, None])
+    np.add.at(en, (pi, cj), e)
+    np.add.at(nd, (pi, cj), 1.0)
+    return {"pods": pods, "index": pod_ix, "sums": sums, "energy": en, "ndays": nd}
+
+
+def run_R14(inp: X.Inputs) -> None:
+    """Catalogs built on the days of the year before the one on which they are evaluated."""
+    import comparison as cp
+    hcal = inp.hcal
+    month = hcal["month"].to_numpy()
+    hod = hcal["hour"].to_numpy()
+    bands = hcal["band"].to_numpy()
+    year = int(REV.get("training_year", cp.REFERENCE_YEAR - 1))
+    mask = (inp.days["date"].dt.year == year).to_numpy()
+    months_train = sorted(inp.days.loc[mask & inp.days["has_shape"].to_numpy(), "date"].dt.month.unique())
+    print(f"    training on {int(mask.sum())} days of {year} (months {months_train}), "
+          f"evaluation on {cp.REFERENCE_YEAR}")
+    groups = inp.groups
+    act = X.activity_classes(inp)
+    full = inp.pod_cell
+    ix = full["index"]
+    pc_train = pod_cell_from_mask(inp, mask)
+
+    def catalogs(pc: dict) -> dict:
+        inp._cache["pod_cell"] = pc
+        out = {}
+        for name, frame, col in (("DD", groups, "group"), ("ACT", act, "activity_grouped")):
+            f = frame[frame["pod"].isin(list(ix))]
+            mem = {k: np.array([ix[p] for p in x["pod"]]) for k, x in f.groupby(col)}
+            cat = X.catalog(inp, mem)
+            out[name] = {"curves": X.expand(inp, cat), "keys": cat["keys"],
+                         "of_pod": dict(zip(f["pod"], f[col]))}
+        f = groups[groups["pod"].isin(list(ix))]
+        cat = X.catalog(inp, {"all": np.array([ix[p] for p in f["pod"]])})
+        out["LOCAL"] = {"curves": X.expand(inp, cat), "keys": ["all"],
+                        "of_pod": {p: "all" for p in f["pod"]}}
+        inp._cache["pod_cell"] = full
+        return out
+
+    fam_train = catalogs(pc_train)
+    fam_full = catalogs(full)
+
+    #Lorenzo Giannuzzo: the own profile of each user, built on the training year alone, is the floor a
+    # user could reach by keeping its own curve of the year before
+    labels = inp.grid["labels"]
+    cell_of_label = {c: i for i, c in enumerate(labels)}
+    hour_cell = cp.hcal_cell_key(hcal, labels).map(cell_of_label).to_numpy()
+    own_curves = pc_train["sums"].reshape(*pc_train["sums"].shape[:2], 24, 4).sum(axis=3)
+    tot = own_curves.sum(axis=2, keepdims=True)
+    own_curves = np.divide(own_curves, tot, out=np.zeros_like(own_curves), where=tot > 0)
+    own_mean_e = np.divide(pc_train["energy"], pc_train["ndays"],
+                           out=np.zeros_like(pc_train["energy"]), where=pc_train["ndays"] > 0)
+
+    families = {"GSE": None, "ARERA": None,
+                "DD_24": ("DD", fam_train), "ACT_24": ("ACT", fam_train), "LOCAL_24": ("LOCAL", fam_train),
+                "DD_all": ("DD", fam_full), "ACT_all": ("ACT", fam_full)}
+    refs_of = {"domestic": {}, "non_domestic": {}}
+    for pod in groups["pod"]:
+        r = national_refs(inp, pod)
+        ok = True
+        for name, spec in families.items():
+            if spec is None:
+                continue
+            key, fam = spec
+            k = fam[key]["of_pod"].get(pod)
+            if k is None or k not in fam[key]["keys"]:
+                ok = False
+                break
+            r[name] = (fam[key]["curves"][fam[key]["keys"].index(k)], False)
+        if not ok:
+            continue
+        j = ix.get(pod)
+        if j is None or own_mean_e[j].sum() <= 0:
+            continue
+        r["OWN_24"] = (own_curves[j][hour_cell, hod] * own_mean_e[j][hour_cell], False)
+        if "ARERA" in r and "GSE" in r:
+            refs_of["domestic"][pod] = r
+        elif "GSE" in r:
+            refs_of["non_domestic"][pod] = r
+    order = ["GSE", "ARERA", "DD_24", "ACT_24", "LOCAL_24", "OWN_24", "DD_all", "ACT_all"]
+    label = {"GSE": "GSE", "ARERA": "ARERA",
+             "DD_24": f"Data-driven, built on {year}", "ACT_24": f"Activity-based, built on {year}",
+             "LOCAL_24": f"Single local profile, built on {year}",
+             "OWN_24": f"Own profile of each user, built on {year}",
+             "DD_all": "Data-driven, built on the whole window", "ACT_all": "Activity-based, built on the whole window"}
+    G = int(REV.get("portfolio_jackknife_groups", 20))
+    rng = np.random.default_rng(SEED + 41)
+    rows = []
+    for scope, refs in refs_of.items():
+        if not refs:
+            continue
+        valid = user_month_masks(inp, refs)
+        pods_scope = sorted(valid)
+        N = len(pods_scope)
+        if N == 0:
+            continue
+        print(f"    {scope}: {N} points of delivery")
+        C = np.ones((G + 1, N), dtype="float32")
+        grp_of = rng.permutation(N) % G
+        for g_ in range(G):
+            C[g_ + 1, grp_of == g_] = 0.0
+        O = None
+        for f in order:
+            if f not in refs[pods_scope[0]]:
+                continue
+            Of, R = scaled_matrix(inp, pods_scope, valid, lambda p, f=f: refs[p][f])
+            if O is None:
+                O = Of
+                aggO = C @ O
+            st = user_month_stats(O, R, month, hod)
+            pt = portfolio_tv(aggO, C @ R, month, hod)
+            se_h = np.sqrt((G - 1) / G * np.nansum((pt["hourly"][1:] - np.nanmean(pt["hourly"][1:])) ** 2))
+            se_d = np.sqrt((G - 1) / G * np.nansum((pt["mean_day"][1:] - np.nanmean(pt["mean_day"][1:])) ** 2))
+            rows.append({"Population": SCOPE_TXT[scope], "Family of profiles": label[f],
+                         "User-months [-]": st["n"], "Median TV [-]": X.fmt(st["median"]),
+                         "Misallocated share, user-months [%]": X.pct(st["share"]),
+                         "Misallocated share, portfolio, hourly [%]": X.pct(pt["hourly"][0]),
+                         "95% interval, hourly [%]": f"{X.pct(pt['hourly'][0] - 1.96 * se_h)} to {X.pct(pt['hourly'][0] + 1.96 * se_h)}",
+                         "Misallocated share, portfolio, mean day [%]": X.pct(pt["mean_day"][0]),
+                         "95% interval, mean day [%]": f"{X.pct(pt['mean_day'][0] - 1.96 * se_d)} to {X.pct(pt['mean_day'][0] + 1.96 * se_d)}"})
+            print(f"      {label[f]} done")
+            del R
+        del O
+    save(pd.DataFrame(rows), "table_r14_temporal_validation")
+
+
 # ============================================================================== main
 ANALYSES = {
     "R1": ("misallocation by aggregate size", run_R1),
@@ -1252,6 +1401,7 @@ ANALYSES = {
     "R10": ("scales of the information and of the distances", run_R10),
     "R11": ("uncertainty of the portfolio misallocation and peak errors", run_R11),
     "R13": ("activity labels of doubtful quality", run_R13),
+    "R14": ("temporal validation", run_R14),
 }
 
 

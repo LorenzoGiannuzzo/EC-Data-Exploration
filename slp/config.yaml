@@ -281,6 +281,7 @@ review:                        # tables answering the external review, python ma
   portfolio_jackknife_groups: 20  # R11: groups of users left out in turn for the portfolio intervals
   label_energy_kwh: 1500       # R13: non-domestic points below this annual energy are doubtful labels
   label_zero_share: 0.5        # R13: ... or with more than this share of days at zero
+  training_year: 2024          # R14: year whose days build the catalogs evaluated on the reference year
 
 output:
   cache_dir: "cache"

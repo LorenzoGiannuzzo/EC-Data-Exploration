@@ -4,16 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="General code updates">
-      <change afterPath="$PROJECT_DIR$/slp/config_extensions_block.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/config_review_block.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/extensions.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/prepare_prices.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/slp/review_analyses.py" afterDir="false" />
+    <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="FInal updates">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/common/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/common/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/slp/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/slp/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/slp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/review_analyses.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/review_analyses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -352,7 +346,23 @@
       <option name="project" value="LOCAL" />
       <updated>1789137291545</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="FInal updates">
+      <option name="closed" value="true" />
+      <created>1789725968099</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1789725968099</updated>
+    </task>
+    <task id="LOCAL-00029" summary="FInal updates">
+      <option name="closed" value="true" />
+      <created>1789725977274</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1789725977274</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -373,6 +383,7 @@
     <MESSAGE value="Paper pipeline update" />
     <MESSAGE value="Profiles constructor" />
     <MESSAGE value="General code updates" />
-    <option name="LAST_COMMIT_MESSAGE" value="General code updates" />
+    <MESSAGE value="FInal updates" />
+    <option name="LAST_COMMIT_MESSAGE" value="FInal updates" />
   </component>
 </project>
