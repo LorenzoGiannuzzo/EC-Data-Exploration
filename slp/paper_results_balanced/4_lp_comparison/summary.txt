@@ -1,0 +1,17 @@
+reference year          2025
+province                Trento
+codewords               12
+season map              {1: 'winter', 2: 'winter', 3: 'winter', 4: 'mid', 5: 'mid', 6: 'summer', 7: 'summer', 8: 'summer', 9: 'summer', 10: 'mid', 11: 'winter', 12: 'winter'}
+holidays as sunday      {'weekday_holidays_observed': 12, 'labelled_sunday': 12, 'holidays_folded_into_sunday': True}
+GSE treatment           monorario
+GSE M family used       False
+price series dayahead   comparison.price_file not set: Eq. 14 not computed
+price series imbalance  comparison.imbalance_price_file not set: Eq. 14 not computed
+observed curve mode     measured day shapes (shapes.npy)
+
+power_class                                                                    file         market         sha1  rows
+      0-1.5    Copia di dati prelievo orario per provincia0_a_1_5 anno 2024mkt.xlsx Mercato Libero 9266a07f2ace  2592
+      1.5-3    Copia di dati prelievo orario per provincia1_5_a_3 anno 2024TOT.xlsx          Tutti 39b802e83051  2592
+      3-4.5    Copia di dati prelievo orario per provincia3_a_4_5 anno 2024mkt.xlsx Mercato Libero 6613f72ab783  2592
+      4.5-6    Copia di dati prelievo orario per provincia4_5_a_6 anno 2024TOT.xlsx          Tutti c7424b3a0463  2592
+         >6 Copia di dati prelievo orario per provincia potenza6 anno 2024-mkt.xlsx Mercato Libero 8b67b00724b0  2592

@@ -1,0 +1,12 @@
+Indicator,Dataset,National reference,Source of the reference
+Domestic points among all points [%],48.4,,
+Resident among domestic points [%],36.4,,
+Prosumers among all points [%],5.0,,
+Domestic points in the 0-1.5 kW class [%],1.2,,
+Domestic points in the 1.5-3 kW class [%],77.2,,
+Domestic points in the 3-4.5 kW class [%],14.4,,
+Domestic points in the 4.5-6 kW class [%],6.4,,
+Domestic points in the >6 kW class [%],0.8,,
+"Median annual consumption, resident domestic [kWh]",1591,,
+"Median annual consumption, non-resident domestic [kWh]",367,,
+"Median annual consumption, other uses [kWh]",2767,,

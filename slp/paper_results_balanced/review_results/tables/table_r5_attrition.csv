@@ -1,0 +1,5 @@
+Population,Points of delivery [-],"Domestic, by tariff category [%]",Resident among domestic [%],Domestic in the 0-1.5 kW class [%],Domestic in the 1.5-3 kW class [%],Domestic in the 3-4.5 kW class [%],Domestic in the 4.5-6 kW class [%],Domestic in the >6 kW class [%],Non-domestic points with an activity code [%]
+Points in the metadata,12638,82.5,-15.8,1.8,78.8,13.4,5.3,0.6,100.0
+Excluded by pre-processing,10752,88.5,-14.7,1.8,79.0,13.4,5.3,0.6,100.0
+Retained,1886,48.3,-27.3,1.4,77.3,14.3,6.3,0.8,100.0
+Entering the clustering,1837,48.4,-27.1,1.2,77.2,14.4,6.4,0.8,100.0

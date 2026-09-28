@@ -1,0 +1,10 @@
+# Add this block to config.yaml, just above the 'output:' section.
+
+review:                        # tables answering the external review, python main.py --stage review
+  aggregation_sizes: [1, 10, 25, 50, 100, 250, 500, 1000]
+  aggregation_shuffles: 5      # random partitions of the users into aggregates of each size
+  permutations: 199            # permutation tests of R2
+  neighbors: 10                # nearest neighbors of the purity test
+  silhouette_sample: 4000
+  bootstrap_table2: 200        # bootstrap resamples of the members of each data-driven profile
+  sensitivity_portfolio: true  # recompute the allocation error on every sensitivity partition

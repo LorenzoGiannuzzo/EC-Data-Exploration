@@ -1,0 +1,11 @@
+Space,Labeling,Points of delivery [-],Groups [-],Share of variance explained [%],Pseudo-F [-],"Permutation p-value, variance [-]",Same-label share of the 10 nearest neighbors [%],"Same as random labels, mean [%]",Neighbor purity over random [-],"Permutation p-value, neighbors [-]",Silhouette [-],"Silhouette of random labels, 95th percentile [-]"
+Two-stage representation (Section 2.3),Activity class,1837,15,21.38,35.4,0.0050,56.9,28.2,2.01,0.0050,-0.013,-0.054
+Two-stage representation (Section 2.3),"Activity class, non-domestic points only",916,14,24.88,23.0,0.0050,35.8,12.7,2.82,0.0050,-0.049,-0.054
+Two-stage representation (Section 2.3),Tariff category,1837,4,12.39,86.4,0.0050,78.2,45.7,1.71,0.0050,0.061,-0.012
+Two-stage representation (Section 2.3),Contractual power class,1837,5,8.33,41.6,0.0050,47.8,31.7,1.51,0.0050,-0.028,-0.009
+Two-stage representation (Section 2.3),Data-driven partition (reference),1837,6,36.84,213.6,0.0050,86.9,30.5,2.85,0.0050,0.113,-0.013
+Mean curves on the regulatory grid,Activity class,1837,15,14.40,21.9,0.0050,44.3,28.3,1.56,0.0050,-0.240,-0.060
+Mean curves on the regulatory grid,"Activity class, non-domestic points only",916,14,22.77,20.5,0.0050,35.5,12.8,2.78,0.0050,-0.196,-0.078
+Mean curves on the regulatory grid,Tariff category,1837,4,11.09,76.2,0.0050,68.9,45.7,1.51,0.0050,0.048,-0.004
+Mean curves on the regulatory grid,Contractual power class,1837,5,2.82,13.3,0.0050,37.7,31.7,1.19,0.0050,-0.039,-0.011
+Mean curves on the regulatory grid,Data-driven partition (reference),1837,6,17.66,78.5,0.0050,55.3,30.5,1.81,0.0050,-0.150,-0.016

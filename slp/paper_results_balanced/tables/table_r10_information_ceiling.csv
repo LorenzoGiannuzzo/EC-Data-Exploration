@@ -1,0 +1,5 @@
+Variable,Points of delivery [-],Entropy of the variable [nats],Entropy of the profiles [nats],Mutual information [nats],Profile entropy explained [%],Largest share attainable [%],Share of the attainable largest [%],Entropy of the variable shared with the profile [%]
+Activity class,1837,1.874,1.441,0.361,25.1,100.0,25.1,19.3
+"Activity class, non-domestic points only",916,2.367,1.536,0.445,29.0,100.0,29.0,18.8
+Tariff category,1837,0.868,1.441,0.230,16.0,60.3,26.6,26.6
+Contractual power class,1837,1.355,1.441,0.135,9.3,94.1,9.9,9.9

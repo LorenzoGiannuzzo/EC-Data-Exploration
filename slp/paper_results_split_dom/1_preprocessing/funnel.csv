@@ -1,0 +1,8 @@
+step,pods,user_days,note
+0. as read,12398,4321668,AP only
+1. DST days removed,12398,4292719,"['2024-03-31', '2024-10-27', '2025-03-30', '2025-10-26']"
+2. readings above contractual power,12398,4292719,"193,401 censored (0.047% of readings), 4,444 rows without a usable threshold"
+3. zero runs classified,12398,4292719,"811,719 genuine, 2,154 faults"
+4. long gaps: days dropped,12397,4286959,"5,760 days"
+"5. days without a shape, kept as days",12397,4286959,"811,718 at zero + 77,266 under 12 non-zero quarters = 20.7%"
+6. completeness thresholds,7527,3366330,">= 250 of 576 days, all 3 seasons"

@@ -1,0 +1,17 @@
+Population,Users per aggregate [-],Aggregates evaluated [-],"GSE, median [%]","GSE, 10th to 90th percentile [%]","ARERA, median [%]","ARERA, 10th to 90th percentile [%]","Data-driven, median [%]","Data-driven, 10th to 90th percentile [%]","Data-driven, out-of-sample, median [%]","Data-driven, out-of-sample, 10th to 90th percentile [%]","Activity-based, median [%]","Activity-based, 10th to 90th percentile [%]","Activity-based, out-of-sample, median [%]","Activity-based, out-of-sample, 10th to 90th percentile [%]"
+domestic,1,842,37.2,21.4 to 59.7,36.7,21.5 to 59.2,37.6,22.6 to 59.3,37.2,22.2 to 59.0,36.7,21.5 to 59.0,36.8,21.6 to 59.0
+domestic,10,420,19.2,15.1 to 25.2,18.7,14.7 to 24.6,19.3,15.3 to 25.3,18.9,15.0 to 24.9,18.5,14.5 to 24.1,18.5,14.5 to 24.1
+domestic,25,165,14.0,11.7 to 17.1,13.2,11.1 to 16.3,14.1,11.8 to 17.0,13.4,11.5 to 16.3,12.8,10.7 to 15.8,12.9,10.7 to 15.8
+domestic,50,80,11.2,9.9 to 12.8,10.4,9.0 to 11.9,11.4,9.7 to 13.1,10.7,9.3 to 12.4,9.9,8.4 to 11.4,9.9,8.4 to 11.4
+domestic,100,40,9.1,8.4 to 10.0,8.2,7.3 to 9.1,9.8,8.8 to 10.7,8.9,8.2 to 9.4,7.6,6.9 to 8.4,7.6,6.9 to 8.5
+domestic,250,15,7.8,7.3 to 8.3,6.6,5.9 to 6.9,8.5,7.7 to 9.0,7.2,6.8 to 7.8,5.8,5.2 to 6.2,5.8,5.2 to 6.2
+domestic,500,5,7.2,7.1 to 7.4,5.8,5.7 to 6.1,8.0,7.7 to 8.1,6.6,6.5 to 6.7,4.9,4.9 to 5.1,4.9,4.9 to 5.1
+domestic,842,1,7.0,7.0 to 7.0,5.5,5.5 to 5.5,7.7,7.7 to 7.7,6.3,6.3 to 6.3,4.5,4.5 to 4.5,4.5,4.5 to 4.5
+non_domestic,1,832,26.7,11.2 to 58.0,,,25.5,8.0 to 55.3,25.5,11.2 to 55.3,26.8,10.8 to 56.0,26.9,11.0 to 56.3
+non_domestic,10,415,14.1,9.2 to 21.3,,,12.6,8.1 to 18.4,13.0,8.8 to 18.3,12.3,7.6 to 18.4,12.6,7.8 to 18.6
+non_domestic,25,165,11.0,8.0 to 14.6,,,9.2,6.9 to 12.0,10.0,7.7 to 12.1,9.3,6.5 to 12.1,9.4,6.7 to 12.2
+non_domestic,50,80,8.8,7.3 to 11.5,,,7.3,6.0 to 9.3,7.7,6.3 to 9.4,7.1,5.7 to 9.1,7.4,5.9 to 9.2
+non_domestic,100,40,7.8,6.6 to 9.3,,,6.1,5.4 to 7.0,6.5,5.4 to 7.2,5.9,4.9 to 7.3,6.1,4.9 to 7.5
+non_domestic,250,15,6.8,6.3 to 7.3,,,4.9,4.6 to 5.4,5.1,4.6 to 5.6,4.7,4.4 to 5.3,5.0,4.5 to 5.3
+non_domestic,500,5,6.2,6.1 to 6.7,,,4.4,4.2 to 4.6,4.5,4.4 to 4.8,4.1,4.0 to 4.5,4.2,4.0 to 4.5
+non_domestic,832,1,6.4,6.4 to 6.4,,,4.2,4.2 to 4.2,4.4,4.4 to 4.4,4.1,4.1 to 4.1,4.1,4.1 to 4.1

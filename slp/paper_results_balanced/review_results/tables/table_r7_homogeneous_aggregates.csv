@@ -1,0 +1,16 @@
+Population,Aggregates drawn,Users per aggregate [-],Aggregates evaluated [-],"GSE, median [%]","GSE, 10th to 90th percentile [%]","ARERA, median [%]","ARERA, 10th to 90th percentile [%]","Data-driven, median [%]","Data-driven, 10th to 90th percentile [%]","Activity-based, median [%]","Activity-based, 10th to 90th percentile [%]","Single local profile, median [%]","Single local profile, 10th to 90th percentile [%]"
+Domestic points carrying an ARERA profile,Within the same data-driven profile,10,410,19.0,14.3 to 32.8,18.6,13.7 to 31.9,19.8,14.6 to 30.9,18.5,13.6 to 31.8,20.3,15.4 to 33.1
+Domestic points carrying an ARERA profile,Within the same data-driven profile,25,160,14.2,11.3 to 25.6,13.4,10.5 to 24.5,15.5,10.9 to 23.2,13.4,10.0 to 24.0,16.1,12.3 to 25.1
+Domestic points carrying an ARERA profile,Within the same data-driven profile,50,75,11.2,9.4 to 20.8,10.4,8.3 to 19.5,12.8,8.9 to 18.5,10.2,7.8 to 18.9,13.4,10.8 to 21.0
+Domestic points carrying an ARERA profile,Within the same data-driven profile,100,35,9.3,8.2 to 17.2,8.5,6.9 to 15.6,11.2,7.8 to 14.0,8.2,6.3 to 14.9,11.8,9.9 to 17.1
+Domestic points carrying an ARERA profile,Within the same data-driven profile,250,5,8.4,8.1 to 9.1,7.5,7.0 to 8.2,10.8,10.3 to 11.3,7.2,6.5 to 7.8,11.4,11.0 to 11.8
+Domestic points carrying an ARERA profile,Within the same ARERA profile,10,405,23.1,13.0 to 31.9,22.7,12.5 to 31.1,22.8,13.3 to 31.5,22.3,12.4 to 31.0,23.4,14.4 to 32.3
+Domestic points carrying an ARERA profile,Within the same ARERA profile,25,150,18.3,9.3 to 22.7,17.6,8.6 to 21.7,17.8,10.0 to 22.6,17.4,8.4 to 21.6,19.0,11.5 to 23.4
+Domestic points carrying an ARERA profile,Within the same ARERA profile,50,70,15.5,7.8 to 18.4,14.7,6.8 to 17.4,14.7,8.6 to 17.9,14.1,6.6 to 17.1,16.1,10.3 to 19.1
+Domestic points carrying an ARERA profile,Within the same ARERA profile,100,30,13.6,6.5 to 15.7,12.5,5.5 to 14.5,12.8,7.8 to 14.4,12.1,5.2 to 13.8,14.6,9.4 to 16.1
+Domestic points carrying an ARERA profile,Within the same ARERA profile,250,5,12.6,12.0 to 13.2,11.3,10.8 to 11.9,11.7,11.5 to 12.4,10.5,10.2 to 11.3,13.7,13.0 to 14.0
+Points outside the ARERA tables,Within the same data-driven profile,10,405,15.1,8.8 to 33.0,,,13.7,6.1 to 23.1,13.5,6.5 to 26.7,15.2,7.9 to 32.6
+Points outside the ARERA tables,Within the same data-driven profile,25,155,12.4,7.8 to 32.9,,,10.6,4.8 to 18.4,10.3,5.9 to 21.4,12.2,6.6 to 32.0
+Points outside the ARERA tables,Within the same data-driven profile,50,65,10.5,7.9 to 16.0,,,8.6,3.8 to 12.4,8.5,5.8 to 13.3,10.1,6.9 to 15.4
+Points outside the ARERA tables,Within the same data-driven profile,100,30,9.6,7.3 to 12.5,,,7.3,2.5 to 10.7,7.5,4.9 to 10.4,9.4,6.0 to 11.4
+Points outside the ARERA tables,Within the same data-driven profile,250,5,9.3,8.5 to 9.6,,,6.5,6.1 to 6.9,6.8,6.3 to 7.2,8.9,8.3 to 9.6

@@ -1,0 +1,19 @@
+quantity,value,unit,definition
+rows with a meter constant above one,84692.0,POD-days,"withdrawn active energy rows whose K column is 20, 25 or 40"
+rows with meter constant 20,41321.0,POD-days,
+rows with meter constant 25,41015.0,POD-days,
+rows with meter constant 40,2356.0,POD-days,
+PODs with a meter constant above one,248.0,PODs,
+"PODs recording injected energy (AN rows), as read",502.0,PODs,
+clock-change days in the period,4.0,days,"days of 92 or 100 quarter-hours present in the archive, removed"
+readings censored above the contractual power,193401.0,quarter-hours,reading x 4 above 1.5 x contractual power
+share of readings censored,0.00046930546755853913,-,
+PODs retained,7527.0,PODs,
+prosumers among the retained PODs,298.0,PODs,
+"days at zero, kept as days without a shape",811718.0,days,
+"days under 12 non-zero quarter-hours, kept without a shape",77266.0,days,
+daily shapes,2606345.0,days,
+zero days classified genuine,811719.0,days,
+zero days classified faults,2154.0,days,
+days dropped for gaps longer than four hours,5760.0,days,
+retained PODs without any day carrying a shape,133.0,PODs,they pass the completeness thresholds on zero days alone and cannot be clustered

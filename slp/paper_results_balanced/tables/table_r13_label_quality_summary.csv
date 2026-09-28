@@ -1,0 +1,10 @@
+Quantity,All points,Doubtful non-domestic labels excluded
+Criterion for a doubtful label,,annual energy below 1500 kWh or more than 50% of days at zero (340 points)
+"Profile entropy explained by the activity class, all points [%]",25.1,27.7
+"Profile entropy explained by the activity class, non-domestic points [%]",29.0,33.2
+"Variance of the representation explained, non-domestic points [%]",23.6,23.9
+"Neighbor purity over random labels, non-domestic points [-]",2.78,2.22
+Points of delivery [-],1837,1497
+Non-domestic points of delivery [-],916,576
+Median class multiplicity [-],3.44,2.22
+Classes coherent after correction [-],5,6

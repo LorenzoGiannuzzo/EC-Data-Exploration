@@ -1,0 +1,26 @@
+quantity,value
+n_shapes,682757
+n_pods_clustered,1835
+D,8
+K,6
+n_micro_clusters,4000
+n_min_group,30
+groups_below_n_min,0
+pods_below_n_min,0
+published_profiles,6
+pods_in_published_profiles,1835
+scale_weight_declared,0.5
+scale_share_of_distance,0.4999999999999999
+zero_replacement,0.0001
+largest_form_share_of_days,0.49455955779288974
+largest_form,7
+stability_ARI_mean_at_K,0.5373962663578782
+stability_ARI_min_at_K,0.2863450011840897
+ARI_two_stage_vs_mean_curves,0.1997177709329683
+silhouette_two_stage,0.17317678357073893
+silhouette_mean_curves,0.08449824355218175
+silhouette_two_stage_in_mean_space,-0.16818265209944144
+silhouette_mean_curves_in_two_stage_space,0.05036382928702719
+silhouette_D_at_selected,0.11380655469640925
+silhouette_D_argmax_in_range,2
+silhouette_D_local_maxima,6 9 16 19 24

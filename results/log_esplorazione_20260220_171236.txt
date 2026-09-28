@@ -1,0 +1,141 @@
+================================================================================
+  DATA EXPLORATION - Dati di Consumo Elettrico
+  C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\data
+  20260220_171236
+================================================================================
+
+================================================================================
+  CARICAMENTO DATI
+================================================================================
+  Directory valide: 19
+
+  [Feb24] -> 2024-02
+    [DEBUG] Colonne: ['POD', 'D_DTALL', 'D_DTSMO', 'D_FLG1', 'D_POT1', 'D_POTMA', 'D_POTC', 'D_FLATT', 'D_8POTIM', 'D_TIPTA', 'D_49DES', 'D_VIAFO', 'D_LOCFO', 'D_FRAZFO', 'D_TFOR', 'MKOST', 'CTAR1', 'FDESC', 'CCATETE', 'TATE3DES']
+    Meta: 3399 POD unici
+    Misure: 130941 righe, 2159 POD
+
+  [Mar24] -> 2024-03
+    Meta: 3399 POD unici
+    Misure: 174915 righe, 2707 POD
+
+  [Apr24] -> 2024-04
+    Meta: 3401 POD unici
+    Misure: 207450 righe, 3320 POD
+
+  [Mag24] -> 2024-05
+    Meta: 3853 POD unici
+    Misure: 259236 righe, 4019 POD
+
+  [Giu24] -> 2024-06
+    Meta: 4800 POD unici
+    Misure: 280555 righe, 4453 POD
+
+  [lug24] -> 2024-07
+    Meta: 5058 POD unici
+    Misure: 305559 righe, 4696 POD
+
+  [ago24] -> 2024-08
+    Meta: 5530 POD unici
+    Misure: 322062 righe, 4954 POD
+
+  [Set24] -> 2024-09
+    Meta: 5847 POD unici
+    Misure: 339162 righe, 5401 POD
+
+  [Ott24] -> 2024-10
+    Meta: 6535 POD unici
+    Misure: 369175 righe, 5701 POD
+
+  [Nov24] -> 2024-11
+    Meta: 7030 POD unici
+    Misure: 397679 righe, 6357 POD
+
+  [gen25] -> 2025-01
+    Meta: 7957 POD unici
+    Misure: 490278 righe, 7550 POD
+
+  [Mar25] -> 2025-03
+    Meta: 9407 POD unici
+    Misure: 544974 righe, 8391 POD
+
+  [Giu25] -> 2025-06
+    Meta: 11849 POD unici
+    Misure: 615020 righe, 9782 POD
+
+  [Lug25] -> 2025-07
+    Meta: 12191 POD unici
+    Misure: 748871 righe, 11523 POD
+
+  [Ago25] -> 2025-08
+    Meta: 12390 POD unici
+    Misure: 772397 righe, 11871 POD
+
+  [Set25] -> 2025-09
+    Meta: 12590 POD unici
+    Misure: 757922 righe, 12055 POD
+
+  [Ott25] -> 2025-10
+    Meta: 12598 POD unici
+    Misure: 794314 righe, 12216 POD
+
+  [Nov25] -> 2025-11
+    Meta: 12604 POD unici
+    Misure: 768254 righe, 12204 POD
+
+  [Dic25] -> 2025-12
+    Meta: 12611 POD unici
+    Misure: 795121 righe, 12202 POD
+
+  TOTALE: 153049 righe meta, 9073885 righe misure
+
+================================================================================
+  STEP 1: PANORAMICA - TUTTI I POD
+================================================================================
+  POD unici nei metadati:  12,638
+  POD unici nelle misure:  17,799
+  Periodi nel dataset:     19
+  Range: 2024-02 -> 2025-12
+
+  --- Tipologie utenti identificate ---
+  Combinazioni uniche: 651
+  >> tabelle/step1_tipologie_complete
+  >> grafici/step1_top_tipologie.png
+  >> tabelle/step1_utenti_per_D49DES
+  >> grafici/step1_distribuzione_D49DES.png
+
+  --- POD presenti per mese ---
+  >> tabelle/step1_POD_per_mese
+  >> grafici/step1_POD_per_mese.png
+
+================================================================================
+  STEP 2: FILTRO - POD CON 12+ MESI CONSECUTIVI
+================================================================================
+
+  --- Calcolo mesi consecutivi per POD ---
+  POD totali:                     17,799
+  POD con 12+ mesi consecutivi:   0  (0.0%)
+  POD senza 12 mesi consecutivi:  17,799  (100.0%)
+  >> tabelle/step2_distribuzione_mesi_consecutivi
+  >> grafici/step2_imbuto_e_distribuzione.png
+
+  --- Composizione tipologie - POD con 12+ mesi consecutivi ---
+  >> tabelle/step2_tipologie_filtrate
+  >> grafici/step2_tipologie_filtrate.png
+
+================================================================================
+  STEP 3: COMPLETEZZA DATI (POD con 12+ mesi consecutivi)
+================================================================================
+  Completezza globale: nan%
+  POD analizzati: 0
+  >> tabelle/step3_completezza_per_POD
+  >> tabelle/step3_distribuzione_completezza
+  >> grafici/step3_completezza.png
+
+================================================================================
+  STEP 4: CONSUMO MENSILE PER TIPOLOGIA (POD filtrati)
+================================================================================
+
+  --- Consumo medio mensile per tipologia ---
+  >> tabelle/step4_consumo_mensile_per_tipologia
+
+  [ERRORE FATALE] Dimensions of labels and X must be compatible

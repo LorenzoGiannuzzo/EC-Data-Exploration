@@ -1,0 +1,1887 @@
+pod,gse_category,gse_column,gse_uncertain,arera_class,arera_residency,arera_applicable
+99999E00000053,other,PAUM,False,,,False
+99999E00010036,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010048,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010056,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010098,other,PAUM,False,,,False
+99999E00010122,other,PAUM,False,,,False
+99999E00010123,other,PAUM,False,,,False
+99999E00010127,other,PAUM,False,,,False
+99999E00010131,other,PAUM,False,,,False
+99999E00010132,other,PAUM,False,,,False
+99999E00010148,other,PAUM,False,,,False
+99999E00010161,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010217,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010218,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010219,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010237,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010293,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010323,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010343,domestic,PDMM,False,>6,Non Residente,True
+99999E00010348,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00010359,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010368,other,PAUM,False,,,False
+99999E00010370,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010385,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00010427,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010429,other,PAUM,False,,,False
+99999E00010457,other,PAUM,False,,,False
+99999E00010488,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010508,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010541,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00010570,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010621,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010651,domestic,PDMM,False,3-4.5,Residente,True
+99999E00010675,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010690,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010695,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010717,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010739,other,PAUM,False,,,False
+99999E00010741,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010770,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010833,domestic,PDMM,False,3-4.5,Residente,True
+99999E00010848,domestic,PDMM,False,3-4.5,Residente,True
+99999E00010911,domestic,PDMM,False,1.5-3,Residente,True
+99999E00010933,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00010943,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00010969,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00011020,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011021,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011023,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011033,domestic,PDMM,False,1.5-3,Residente,True
+99999E00011041,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00011042,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011130,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00011197,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011214,other,PAUM,False,,,False
+99999E00011228,domestic,PDMM,False,4.5-6,Residente,True
+99999E00011264,other,PAUM,False,,,False
+99999E00011274,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00011322,domestic,PDMM,False,1.5-3,Residente,True
+99999E00011328,domestic,PDMM,False,3-4.5,Residente,True
+99999E00011548,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00011559,other,PAUM,False,,,False
+99999E00011644,other,PAUM,False,,,False
+99999E00011650,other,PAUM,False,,,False
+99999E00011653,lighting,PIRM,True,,,False
+99999E00011655,other,PAUM,False,,,False
+99999E00011698,domestic,PDMM,False,1.5-3,Residente,True
+99999E00011704,other,PAUM,False,,,False
+99999E00011730,other,PAUM,False,,,False
+99999E00011731,other,PAUM,False,,,False
+99999E00011744,other,PAUM,False,,,False
+99999E00011770,domestic,PDMM,False,>6,Non Residente,True
+99999E00011840,domestic,PDMM,False,1.5-3,Residente,True
+99999E00011857,domestic,PDMM,False,1.5-3,Residente,True
+99999E00011872,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E00011950,other,PAUM,False,,,False
+99999E00011966,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00011985,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00012029,domestic,PDMM,False,1.5-3,Residente,True
+99999E00012035,domestic,PDMM,False,1.5-3,Residente,True
+99999E00012083,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012088,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012127,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00012136,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012169,domestic,PDMM,False,1.5-3,Residente,True
+99999E00012177,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012179,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012224,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00012319,domestic,PDMM,False,1.5-3,Residente,True
+99999E00012426,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012449,other,PAUM,False,,,False
+99999E00012503,other,PAUM,False,,,False
+99999E00012505,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00012532,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012593,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012615,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012616,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00012624,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012658,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00012661,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012665,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012962,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00012977,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013007,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013010,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013030,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013045,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013080,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013085,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013141,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013172,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00013193,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00013195,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013291,domestic,PDMM,False,1.5-3,Residente,True
+99999E00013320,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013325,other,PAUM,False,,,False
+99999E00013332,other,PAUM,False,,,False
+99999E00013345,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013421,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013450,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013453,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013589,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013594,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013601,other,PAUM,False,,,False
+99999E00013697,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013735,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013736,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013737,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013753,other,PAUM,False,,,False
+99999E00013759,domestic,PDMM,False,1.5-3,Residente,True
+99999E00013789,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013809,other,PAUM,False,,,False
+99999E00013835,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013841,other,PAUM,False,,,False
+99999E00013849,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013854,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013895,domestic,PDMM,False,1.5-3,Residente,True
+99999E00013918,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013946,domestic,PDMM,False,4.5-6,Residente,True
+99999E00013957,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00013965,domestic,PDMM,False,>6,Non Residente,True
+99999E00013973,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00013994,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014044,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014061,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014097,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014109,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014116,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014130,other,PAUM,False,,,False
+99999E00014153,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014160,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014172,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014222,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014290,other,PAUM,False,,,False
+99999E00014297,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014303,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014340,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014361,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014367,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014417,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014444,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014471,other,PAUM,False,,,False
+99999E00014483,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014487,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014505,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014508,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014530,other,PAUM,False,,,False
+99999E00014566,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014617,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014631,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00014634,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014649,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014650,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014656,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014657,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014660,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00014674,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014679,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00014765,other,PAUM,False,,,False
+99999E00014789,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014808,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014859,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014866,domestic,PDMM,False,1.5-3,Residente,True
+99999E00014892,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014911,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00014968,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015012,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015079,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015081,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00015092,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015106,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015117,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015119,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015126,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015131,other,PAUM,False,,,False
+99999E00015528,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015569,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015643,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015654,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015728,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015738,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015850,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00015917,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00015959,other,PAUM,False,,,False
+99999E00015966,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015991,domestic,PDMM,False,1.5-3,Residente,True
+99999E00015998,domestic,PDMM,False,1.5-3,Residente,True
+99999E00016020,domestic,PDMM,False,1.5-3,Residente,True
+99999E00016039,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016083,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016131,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016202,domestic,PDMM,False,3-4.5,Residente,True
+99999E00016275,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00016300,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016301,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016302,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016303,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016310,other,PAUM,False,,,False
+99999E00016420,other,PAUM,False,,,False
+99999E00016462,domestic,PDMM,False,1.5-3,Residente,True
+99999E00016486,domestic,PDMM,False,1.5-3,Residente,True
+99999E00016499,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016578,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00016586,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016733,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00016773,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00016789,other,PAUM,False,,,False
+99999E00016791,other,PAUM,False,,,False
+99999E00016801,other,PAUM,False,,,False
+99999E00016814,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00016879,other,PAUM,False,,,False
+99999E00016883,domestic,PDMM,False,1.5-3,Residente,True
+99999E00017161,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00017174,other,PAUM,False,,,False
+99999E00017247,domestic,PDMM,False,1.5-3,Residente,True
+99999E00020060,domestic,PDMM,False,3-4.5,Residente,True
+99999E00020233,domestic,PDMM,False,3-4.5,Residente,True
+99999E00020263,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020279,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020341,other,PAUM,False,,,False
+99999E00020380,other,PAUM,False,,,False
+99999E00020425,other,PAUM,False,,,False
+99999E00020434,other,PAUM,False,,,False
+99999E00020458,other,PAUM,False,,,False
+99999E00020529,other,PAUM,False,,,False
+99999E00020552,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020571,other,PAUM,False,,,False
+99999E00020650,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020739,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020774,other,PAUM,False,,,False
+99999E00020842,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00020859,other,PAUM,False,,,False
+99999E00020938,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00020964,other,PAUM,False,,,False
+99999E00021006,domestic,PDMM,False,1.5-3,Residente,True
+99999E00021047,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00021068,other,PAUM,False,,,False
+99999E00021135,other,PAUM,False,,,False
+99999E00021185,domestic,PDMM,False,3-4.5,Residente,True
+99999E00021210,domestic,PDMM,False,1.5-3,Residente,True
+99999E00021518,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00021541,other,PAUM,False,,,False
+99999E00021609,other,PAUM,False,,,False
+99999E00021618,other,PAUM,False,,,False
+99999E00021646,other,PAUM,False,,,False
+99999E00021755,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00021788,domestic,PDMM,False,3-4.5,Residente,True
+99999E00021801,other,PAUM,False,,,False
+99999E00021815,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00021846,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00021881,other,PAUM,False,,,False
+99999E00021886,other,PAUM,False,,,False
+99999E00021915,other,PAUM,False,,,False
+99999E00021976,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022001,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00022043,other,PAUM,False,,,False
+99999E00022065,other,PAUM,False,,,False
+99999E00022097,other,PAUM,False,,,False
+99999E00022104,domestic,PDMM,False,1.5-3,Residente,True
+99999E00022126,other,PAUM,False,,,False
+99999E00022149,other,PAUM,False,,,False
+99999E00022156,other,PAUM,False,,,False
+99999E00022158,other,PAUM,False,,,False
+99999E00022180,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00022304,domestic,PDMM,False,3-4.5,Residente,True
+99999E00022335,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022347,other,PAUM,False,,,False
+99999E00022354,other,PAUM,False,,,False
+99999E00022435,other,PAUM,False,,,False
+99999E00022494,other,PAUM,False,,,False
+99999E00022502,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022565,other,PAUM,False,,,False
+99999E00022604,other,PAUM,False,,,False
+99999E00022611,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022624,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022625,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022652,other,PAUM,False,,,False
+99999E00022695,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022701,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00022724,domestic,PDMM,False,3-4.5,Residente,True
+99999E00022763,other,PAUM,False,,,False
+99999E00022813,domestic,PDMM,False,1.5-3,Residente,True
+99999E00022827,other,PAUM,False,,,False
+99999E00022948,domestic,PDMM,False,1.5-3,Residente,True
+99999E00022969,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023020,other,PAUM,False,,,False
+99999E00023050,domestic,PDMM,False,1.5-3,Residente,True
+99999E00023092,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023200,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023227,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023235,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023248,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00023291,other,PAUM,False,,,False
+99999E00023306,domestic,PDMM,False,3-4.5,Residente,True
+99999E00023313,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023377,domestic,PDMM,False,3-4.5,Residente,True
+99999E00023382,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023436,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00023482,domestic,PDMM,False,4.5-6,Residente,True
+99999E00023491,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023521,other,PAUM,False,,,False
+99999E00023524,domestic,PDMM,False,1.5-3,Residente,True
+99999E00023574,other,PAUM,False,,,False
+99999E00023616,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023678,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00023753,domestic,PDMM,False,1.5-3,Residente,True
+99999E00023773,domestic,PDMM,False,4.5-6,Residente,True
+99999E00023786,other,PAUM,False,,,False
+99999E00023810,domestic,PDMM,False,>6,Non Residente,True
+99999E00023819,domestic,PDMM,False,1.5-3,Residente,True
+99999E00023861,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023911,other,PAUM,False,,,False
+99999E00023916,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023926,domestic,PDMM,False,1.5-3,Residente,True
+99999E00023956,other,PAUM,False,,,False
+99999E00023959,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00023984,other,PAUM,False,,,False
+99999E00024008,domestic,PDMM,False,3-4.5,Residente,True
+99999E00024019,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024025,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024080,domestic,PDMM,False,3-4.5,Residente,True
+99999E00024104,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024132,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024188,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024232,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024304,other,PAUM,False,,,False
+99999E00024397,domestic,PDMM,False,3-4.5,Residente,True
+99999E00024399,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00024429,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024441,other,PAUM,False,,,False
+99999E00024469,other,PAUM,False,,,False
+99999E00024491,other,PAUM,False,,,False
+99999E00024521,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024592,other,PAUM,False,,,False
+99999E00024596,domestic,PDMM,False,3-4.5,Residente,True
+99999E00024616,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024617,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024643,other,PAUM,False,,,False
+99999E00024644,other,PAUM,False,,,False
+99999E00024683,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024687,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024716,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024726,other,PAUM,False,,,False
+99999E00024737,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024761,domestic,PDMM,False,3-4.5,Residente,True
+99999E00024797,other,PAUM,False,,,False
+99999E00024824,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00024894,other,PAUM,False,,,False
+99999E00024921,domestic,PDMM,False,1.5-3,Residente,True
+99999E00024935,domestic,PDMM,False,4.5-6,Residente,True
+99999E00024971,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025005,other,PAUM,False,,,False
+99999E00025021,other,PAUM,False,,,False
+99999E00025097,domestic,PDMM,False,3-4.5,Residente,True
+99999E00025122,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025124,other,PAUM,False,,,False
+99999E00025146,other,PAUM,False,,,False
+99999E00025190,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025202,domestic,PDMM,False,3-4.5,Residente,True
+99999E00025238,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025265,other,PAUM,False,,,False
+99999E00025267,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E00025330,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025338,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E00025358,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025359,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025373,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025379,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025495,other,PAUM,False,,,False
+99999E00025534,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025591,domestic,PDMM,False,3-4.5,Residente,True
+99999E00025613,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025634,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025685,domestic,PDMM,False,1.5-3,Residente,True
+99999E00025690,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025698,other,PAUM,False,,,False
+99999E00025707,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025804,other,PAUM,False,,,False
+99999E00025806,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025817,other,PAUM,False,,,False
+99999E00025841,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025915,other,PAUM,False,,,False
+99999E00025933,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00025950,other,PAUM,False,,,False
+99999E00025981,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00025989,other,PAUM,False,,,False
+99999E00026011,other,PAUM,False,,,False
+99999E00026039,other,PAUM,False,,,False
+99999E00026049,other,PAUM,False,,,False
+99999E00026050,other,PAUM,False,,,False
+99999E00026052,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026068,other,PAUM,False,,,False
+99999E00026100,domestic,PDMM,False,1.5-3,Residente,True
+99999E00026107,lighting,PIRM,True,,,False
+99999E00026112,lighting,PIRM,True,,,False
+99999E00026147,lighting,PIRM,True,,,False
+99999E00026156,lighting,PIRM,True,,,False
+99999E00026158,lighting,PIRM,True,,,False
+99999E00026159,lighting,PIRM,True,,,False
+99999E00026160,lighting,PIRM,True,,,False
+99999E00026161,lighting,PIRM,True,,,False
+99999E00026178,other,PAUM,False,,,False
+99999E00026193,other,PAUM,False,,,False
+99999E00026195,other,PAUM,False,,,False
+99999E00026225,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026279,domestic,PDMM,False,3-4.5,Residente,True
+99999E00026285,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026330,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026401,domestic,PDMM,False,3-4.5,Residente,True
+99999E00026409,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00026423,other,PAUM,False,,,False
+99999E00026455,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026456,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026465,other,PAUM,False,,,False
+99999E00026471,other,PAUM,False,,,False
+99999E00026481,other,PAUM,False,,,False
+99999E00026505,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026551,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026554,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026572,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026575,other,PAUM,False,,,False
+99999E00026577,other,PAUM,False,,,False
+99999E00026590,other,PAUM,False,,,False
+99999E00026591,other,PAUM,False,,,False
+99999E00026594,lighting,PIRM,True,,,False
+99999E00026644,other,PAUM,False,,,False
+99999E00026650,other,PAUM,False,,,False
+99999E00026658,other,PAUM,False,,,False
+99999E00026701,other,PAUM,False,,,False
+99999E00026709,other,PAUM,False,,,False
+99999E00026719,other,PAUM,False,,,False
+99999E00026723,other,PAUM,False,,,False
+99999E00026728,other,PAUM,False,,,False
+99999E00026745,other,PAUM,False,,,False
+99999E00026773,other,PAUM,False,,,False
+99999E00026778,other,PAUM,False,,,False
+99999E00026835,other,PAUM,False,,,False
+99999E00026850,other,PAUM,False,,,False
+99999E00026858,other,PAUM,False,,,False
+99999E00026870,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026871,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026886,other,PAUM,False,,,False
+99999E00026888,other,PAUM,False,,,False
+99999E00026907,other,PAUM,False,,,False
+99999E00026914,other,PAUM,False,,,False
+99999E00026925,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00026956,other,PAUM,False,,,False
+99999E00026965,other,PAUM,False,,,False
+99999E00026993,other,PAUM,False,,,False
+99999E00026996,other,PAUM,False,,,False
+99999E00027055,other,PAUM,False,,,False
+99999E00027061,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027064,other,PAUM,False,,,False
+99999E00027084,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00027086,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027094,other,PAUM,False,,,False
+99999E00027159,other,PAUM,False,,,False
+99999E00027207,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027228,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00027247,other,PAUM,False,,,False
+99999E00027262,other,PAUM,False,,,False
+99999E00027270,other,PAUM,False,,,False
+99999E00027327,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027379,other,PAUM,False,,,False
+99999E00027464,other,PAUM,False,,,False
+99999E00027466,other,PAUM,False,,,False
+99999E00027494,lighting,PIRM,True,,,False
+99999E00027497,domestic,PDMM,False,3-4.5,Residente,True
+99999E00027518,other,PAUM,False,,,False
+99999E00027520,other,PAUM,False,,,False
+99999E00027529,other,PAUM,False,,,False
+99999E00027541,other,PAUM,False,,,False
+99999E00027550,other,PAUM,False,,,False
+99999E00027572,other,PAUM,False,,,False
+99999E00027580,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00027595,lighting,PIRM,True,,,False
+99999E00027675,other,PAUM,False,,,False
+99999E00027676,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027732,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00027766,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027801,other,PAUM,False,,,False
+99999E00027836,other,PAUM,False,,,False
+99999E00027846,other,PAUM,False,,,False
+99999E00027851,other,PAUM,False,,,False
+99999E00027928,other,PAUM,False,,,False
+99999E00027948,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027951,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00027961,domestic,PDMM,False,1.5-3,Residente,True
+99999E00027966,domestic,PDMM,False,3-4.5,Residente,True
+99999E00028039,other,PAUM,False,,,False
+99999E00028083,other,PAUM,False,,,False
+99999E00028124,other,PAUM,False,,,False
+99999E00028155,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028156,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028157,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00028200,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028242,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028257,other,PAUM,False,,,False
+99999E00028305,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028327,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028387,other,PAUM,False,,,False
+99999E00028397,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00028415,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00028428,other,PAUM,False,,,False
+99999E00028441,domestic,PDMM,False,1.5-3,Residente,True
+99999E00028453,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028466,other,PAUM,False,,,False
+99999E00028492,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00028494,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028502,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028510,other,PAUM,False,,,False
+99999E00028531,other,PAUM,False,,,False
+99999E00028547,other,PAUM,False,,,False
+99999E00028557,other,PAUM,False,,,False
+99999E00028589,domestic,PDMM,False,1.5-3,Residente,True
+99999E00028622,other,PAUM,False,,,False
+99999E00028624,other,PAUM,False,,,False
+99999E00028642,other,PAUM,False,,,False
+99999E00028653,other,PAUM,False,,,False
+99999E00028698,other,PAUM,False,,,False
+99999E00028722,domestic,PDMM,False,3-4.5,Residente,True
+99999E00028728,other,PAUM,False,,,False
+99999E00028769,domestic,PDMM,False,3-4.5,Residente,True
+99999E00028773,other,PAUM,False,,,False
+99999E00028821,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00028864,other,PAUM,False,,,False
+99999E00028875,other,PAUM,False,,,False
+99999E00028879,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00028884,other,PAUM,False,,,False
+99999E00028886,other,PAUM,False,,,False
+99999E00028928,domestic,PDMM,False,3-4.5,Residente,True
+99999E00028952,other,PAUM,False,,,False
+99999E00028955,other,PAUM,False,,,False
+99999E00028961,other,PAUM,False,,,False
+99999E00028963,domestic,PDMM,False,1.5-3,Residente,True
+99999E00028977,domestic,PDMM,False,1.5-3,Residente,True
+99999E00028986,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029010,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00029022,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029023,other,PAUM,False,,,False
+99999E00029111,other,PAUM,False,,,False
+99999E00029137,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029139,other,PAUM,False,,,False
+99999E00029144,other,PAUM,False,,,False
+99999E00029153,other,PAUM,False,,,False
+99999E00029156,other,PAUM,False,,,False
+99999E00029159,other,PAUM,False,,,False
+99999E00029167,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00029182,other,PAUM,False,,,False
+99999E00029213,other,PAUM,False,,,False
+99999E00029221,other,PAUM,False,,,False
+99999E00029227,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029241,other,PAUM,False,,,False
+99999E00029288,other,PAUM,False,,,False
+99999E00029297,other,PAUM,False,,,False
+99999E00029327,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029399,other,PAUM,False,,,False
+99999E00029411,other,PAUM,False,,,False
+99999E00029412,other,PAUM,False,,,False
+99999E00029440,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029447,other,PAUM,False,,,False
+99999E00029456,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E00029465,other,PAUM,False,,,False
+99999E00029474,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029475,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029507,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029572,domestic,PDMM,False,4.5-6,Residente,True
+99999E00029574,other,PAUM,False,,,False
+99999E00029583,other,PAUM,False,,,False
+99999E00029604,other,PAUM,False,,,False
+99999E00029609,domestic,PDMM,False,4.5-6,Residente,True
+99999E00029636,other,PAUM,False,,,False
+99999E00029650,other,PAUM,False,,,False
+99999E00029675,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029716,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029718,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029721,other,PAUM,False,,,False
+99999E00029722,other,PAUM,False,,,False
+99999E00029733,other,PAUM,False,,,False
+99999E00029736,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029737,other,PAUM,False,,,False
+99999E00029749,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029752,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029753,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029776,domestic,PDMM,False,3-4.5,Residente,True
+99999E00029782,other,PAUM,False,,,False
+99999E00029825,other,PAUM,False,,,False
+99999E00029835,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029837,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00029838,other,PAUM,False,,,False
+99999E00029842,other,PAUM,False,,,False
+99999E00029847,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029879,other,PAUM,False,,,False
+99999E00029895,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029907,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00029926,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029934,other,PAUM,False,,,False
+99999E00029937,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00029941,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029963,other,PAUM,False,,,False
+99999E00029967,domestic,PDMM,False,1.5-3,Residente,True
+99999E00029971,domestic,PDMM,False,3-4.5,Residente,True
+99999E00029972,domestic,PDMM,False,4.5-6,Residente,True
+99999E00029973,other,PAUM,False,,,False
+99999E00029976,other,PAUM,False,,,False
+99999E00029979,other,PAUM,False,,,False
+99999E00029988,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030002,other,PAUM,False,,,False
+99999E00030047,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00030054,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00030069,other,PAUM,False,,,False
+99999E00030080,other,PAUM,False,,,False
+99999E00030103,other,PAUM,False,,,False
+99999E00030114,other,PAUM,False,,,False
+99999E00030123,domestic,PDMM,False,4.5-6,Residente,True
+99999E00030124,other,PAUM,False,,,False
+99999E00030125,other,PAUM,False,,,False
+99999E00030126,other,PAUM,False,,,False
+99999E00030131,other,PAUM,False,,,False
+99999E00030132,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030133,domestic,PDMM,False,4.5-6,Residente,True
+99999E00030151,other,PAUM,False,,,False
+99999E00030183,other,PAUM,False,,,False
+99999E00030229,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00030233,other,PAUM,False,,,False
+99999E00030256,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030263,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030277,other,PAUM,False,,,False
+99999E00030325,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030355,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030358,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030390,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030394,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030407,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030409,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030435,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030454,other,PAUM,False,,,False
+99999E00030501,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030512,other,PAUM,False,,,False
+99999E00030517,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030527,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030528,domestic,PDMM,False,3-4.5,Residente,True
+99999E00030533,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00030549,other,PAUM,False,,,False
+99999E00030588,other,PAUM,False,,,False
+99999E00030599,other,PAUM,False,,,False
+99999E00030602,other,PAUM,False,,,False
+99999E00030622,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030631,other,PAUM,False,,,False
+99999E00030634,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030647,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030670,other,PAUM,False,,,False
+99999E00030676,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030677,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00030680,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00030694,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030698,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030715,other,PAUM,False,,,False
+99999E00030753,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030790,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00030794,other,PAUM,False,,,False
+99999E00030829,domestic,PDMM,False,3-4.5,Residente,True
+99999E00030835,other,PAUM,False,,,False
+99999E00030838,other,PAUM,False,,,False
+99999E00030863,other,PAUM,False,,,False
+99999E00030915,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030919,other,PAUM,False,,,False
+99999E00030922,domestic,PDMM,False,1.5-3,Residente,True
+99999E00030958,other,PAUM,False,,,False
+99999E00030995,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031012,other,PAUM,False,,,False
+99999E00031042,other,PAUM,False,,,False
+99999E00031066,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031082,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00031089,other,PAUM,False,,,False
+99999E00031117,other,PAUM,False,,,False
+99999E00031122,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031123,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031130,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031136,other,PAUM,False,,,False
+99999E00031143,other,PAUM,False,,,False
+99999E00031144,other,PAUM,False,,,False
+99999E00031155,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00031174,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031175,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031185,other,PAUM,False,,,False
+99999E00031188,other,PAUM,False,,,False
+99999E00031218,other,PAUM,False,,,False
+99999E00031227,domestic,PDMM,False,3-4.5,Residente,True
+99999E00031234,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031269,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031282,other,PAUM,False,,,False
+99999E00031296,other,PAUM,False,,,False
+99999E00031300,other,PAUM,False,,,False
+99999E00031304,other,PAUM,False,,,False
+99999E00031369,other,PAUM,False,,,False
+99999E00031370,other,PAUM,False,,,False
+99999E00031372,lighting,PIRM,True,,,False
+99999E00031374,lighting,PIRM,True,,,False
+99999E00031376,other,PAUM,False,,,False
+99999E00031377,other,PAUM,False,,,False
+99999E00031378,lighting,PIRM,True,,,False
+99999E00031379,lighting,PIRM,True,,,False
+99999E00031381,lighting,PIRM,True,,,False
+99999E00031382,other,PAUM,False,,,False
+99999E00031385,other,PAUM,False,,,False
+99999E00031386,other,PAUM,False,,,False
+99999E00031387,lighting,PIRM,True,,,False
+99999E00031388,lighting,PIRM,True,,,False
+99999E00031389,lighting,PIRM,True,,,False
+99999E00031393,other,PAUM,False,,,False
+99999E00031394,other,PAUM,False,,,False
+99999E00031425,other,PAUM,False,,,False
+99999E00031490,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031497,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031583,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031610,lighting,PIRM,True,,,False
+99999E00031612,domestic,PDMM,False,3-4.5,Residente,True
+99999E00031639,domestic,PDMM,False,>6,Residente,True
+99999E00031652,other,PAUM,False,,,False
+99999E00031656,other,PAUM,False,,,False
+99999E00031672,other,PAUM,False,,,False
+99999E00031717,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031750,domestic,PDMM,False,3-4.5,Residente,True
+99999E00031778,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00031821,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031823,other,PAUM,False,,,False
+99999E00031834,other,PAUM,False,,,False
+99999E00031839,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031841,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031849,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031857,other,PAUM,False,,,False
+99999E00031873,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031885,other,PAUM,False,,,False
+99999E00031886,other,PAUM,False,,,False
+99999E00031930,other,PAUM,False,,,False
+99999E00031946,domestic,PDMM,False,1.5-3,Residente,True
+99999E00031966,other,PAUM,False,,,False
+99999E00032033,other,PAUM,False,,,False
+99999E00032034,other,PAUM,False,,,False
+99999E00032068,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032087,other,PAUM,False,,,False
+99999E00032096,other,PAUM,False,,,False
+99999E00032098,domestic,PDMM,False,1.5-3,Residente,True
+99999E00032109,other,PAUM,False,,,False
+99999E00032122,other,PAUM,False,,,False
+99999E00032136,other,PAUM,False,,,False
+99999E00032177,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032181,other,PAUM,False,,,False
+99999E00032192,other,PAUM,False,,,False
+99999E00032234,other,PAUM,False,,,False
+99999E00032238,other,PAUM,False,,,False
+99999E00032267,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032289,other,PAUM,False,,,False
+99999E00032300,other,PAUM,False,,,False
+99999E00032302,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032330,other,PAUM,False,,,False
+99999E00032347,domestic,PDMM,False,4.5-6,Residente,True
+99999E00032367,other,PAUM,False,,,False
+99999E00032370,other,PAUM,False,,,False
+99999E00032380,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032385,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032392,other,PAUM,False,,,False
+99999E00032393,other,PAUM,False,,,False
+99999E00032405,other,PAUM,False,,,False
+99999E00032420,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032422,other,PAUM,False,,,False
+99999E00032424,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00032429,other,PAUM,False,,,False
+99999E00032445,other,PAUM,False,,,False
+99999E00032454,other,PAUM,False,,,False
+99999E00032455,other,PAUM,False,,,False
+99999E00032462,other,PAUM,False,,,False
+99999E00032463,other,PAUM,False,,,False
+99999E00032466,other,PAUM,False,,,False
+99999E00032468,other,PAUM,False,,,False
+99999E00032481,other,PAUM,False,,,False
+99999E00032482,other,PAUM,False,,,False
+99999E00032490,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032499,other,PAUM,False,,,False
+99999E00032523,other,PAUM,False,,,False
+99999E00032531,other,PAUM,False,,,False
+99999E00032606,other,PAUM,False,,,False
+99999E00032607,other,PAUM,False,,,False
+99999E00032608,other,PAUM,False,,,False
+99999E00032630,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032632,other,PAUM,False,,,False
+99999E00032671,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032682,other,PAUM,False,,,False
+99999E00032700,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00032710,domestic,PDMM,False,1.5-3,Residente,True
+99999E00032724,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00032773,domestic,PDMM,False,4.5-6,Residente,True
+99999E00032778,other,PAUM,False,,,False
+99999E00032786,other,PAUM,False,,,False
+99999E00032795,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032796,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032811,other,PAUM,False,,,False
+99999E00032845,other,PAUM,False,,,False
+99999E00032888,domestic,PDMM,False,1.5-3,Residente,True
+99999E00032891,other,PAUM,False,,,False
+99999E00032895,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00032908,other,PAUM,False,,,False
+99999E00032925,other,PAUM,False,,,False
+99999E00032966,domestic,PDMM,False,1.5-3,Residente,True
+99999E00032975,other,PAUM,False,,,False
+99999E00032983,other,PAUM,False,,,False
+99999E00032996,other,PAUM,False,,,False
+99999E00033009,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033015,other,PAUM,False,,,False
+99999E00033069,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033085,other,PAUM,False,,,False
+99999E00033092,other,PAUM,False,,,False
+99999E00033098,other,PAUM,False,,,False
+99999E00033126,other,PAUM,False,,,False
+99999E00033129,other,PAUM,False,,,False
+99999E00033130,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033158,other,PAUM,False,,,False
+99999E00033160,other,PAUM,False,,,False
+99999E00033163,other,PAUM,False,,,False
+99999E00033178,other,PAUM,False,,,False
+99999E00033180,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033183,other,PAUM,False,,,False
+99999E00033200,other,PAUM,False,,,False
+99999E00033222,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00033226,other,PAUM,False,,,False
+99999E00033238,other,PAUM,False,,,False
+99999E00033266,other,PAUM,False,,,False
+99999E00033270,other,PAUM,False,,,False
+99999E00033273,other,PAUM,False,,,False
+99999E00033301,other,PAUM,False,,,False
+99999E00033335,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00033342,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033353,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00033359,other,PAUM,False,,,False
+99999E00033364,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033373,other,PAUM,False,,,False
+99999E00033386,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033409,other,PAUM,False,,,False
+99999E00033415,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033449,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033488,other,PAUM,False,,,False
+99999E00033497,other,PAUM,False,,,False
+99999E00033498,other,PAUM,False,,,False
+99999E00033513,other,PAUM,False,,,False
+99999E00033514,other,PAUM,False,,,False
+99999E00033515,other,PAUM,False,,,False
+99999E00033517,other,PAUM,False,,,False
+99999E00033522,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00033549,other,PAUM,False,,,False
+99999E00033558,other,PAUM,False,,,False
+99999E00033563,other,PAUM,False,,,False
+99999E00033592,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033602,other,PAUM,False,,,False
+99999E00033633,other,PAUM,False,,,False
+99999E00033667,other,PAUM,False,,,False
+99999E00033668,domestic,PDMM,False,4.5-6,Residente,True
+99999E00033700,other,PAUM,False,,,False
+99999E00033716,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033724,other,PAUM,False,,,False
+99999E00033725,other,PAUM,False,,,False
+99999E00033728,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033729,other,PAUM,False,,,False
+99999E00033738,other,PAUM,False,,,False
+99999E00033742,domestic,PDMM,False,1.5-3,Residente,True
+99999E00033757,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00033767,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033772,other,PAUM,False,,,False
+99999E00033774,other,PAUM,False,,,False
+99999E00033788,other,PAUM,False,,,False
+99999E00033818,other,PAUM,False,,,False
+99999E00033824,other,PAUM,False,,,False
+99999E00033825,other,PAUM,False,,,False
+99999E00033827,other,PAUM,False,,,False
+99999E00033829,other,PAUM,False,,,False
+99999E00033838,other,PAUM,False,,,False
+99999E00033857,other,PAUM,False,,,False
+99999E00033859,other,PAUM,False,,,False
+99999E00033883,other,PAUM,False,,,False
+99999E00033887,other,PAUM,False,,,False
+99999E00033892,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00033915,domestic,PDMM,False,3-4.5,Residente,True
+99999E00033923,other,PAUM,False,,,False
+99999E00033929,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033930,other,PAUM,False,,,False
+99999E00033936,other,PAUM,False,,,False
+99999E00033952,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00033982,other,PAUM,False,,,False
+99999E00033987,other,PAUM,False,,,False
+99999E00033993,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034001,other,PAUM,False,,,False
+99999E00034003,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034032,other,PAUM,False,,,False
+99999E00034035,other,PAUM,False,,,False
+99999E00034059,other,PAUM,False,,,False
+99999E00034062,other,PAUM,False,,,False
+99999E00034079,other,PAUM,False,,,False
+99999E00034094,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034164,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00034193,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034223,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034293,other,PAUM,False,,,False
+99999E00034294,other,PAUM,False,,,False
+99999E00034295,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00034299,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034337,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034339,other,PAUM,False,,,False
+99999E00034344,other,PAUM,False,,,False
+99999E00034349,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034363,domestic,PDMM,False,3-4.5,Residente,True
+99999E00034369,other,PAUM,False,,,False
+99999E00034370,other,PAUM,False,,,False
+99999E00034389,other,PAUM,False,,,False
+99999E00034402,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034454,other,PAUM,False,,,False
+99999E00034471,other,PAUM,False,,,False
+99999E00034472,other,PAUM,False,,,False
+99999E00034484,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034512,other,PAUM,False,,,False
+99999E00034513,other,PAUM,False,,,False
+99999E00034517,other,PAUM,False,,,False
+99999E00034520,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00034530,other,PAUM,False,,,False
+99999E00034536,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034544,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E00034545,other,PAUM,False,,,False
+99999E00034555,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00034581,other,PAUM,False,,,False
+99999E00034594,other,PAUM,False,,,False
+99999E00034597,other,PAUM,False,,,False
+99999E00034621,other,PAUM,False,,,False
+99999E00034623,other,PAUM,False,,,False
+99999E00034631,domestic,PDMM,False,4.5-6,Residente,True
+99999E00034640,other,PAUM,False,,,False
+99999E00034648,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034679,other,PAUM,False,,,False
+99999E00034680,other,PAUM,False,,,False
+99999E00034685,other,PAUM,False,,,False
+99999E00034688,other,PAUM,False,,,False
+99999E00034690,other,PAUM,False,,,False
+99999E00034735,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034746,other,PAUM,False,,,False
+99999E00034752,other,PAUM,False,,,False
+99999E00034760,other,PAUM,False,,,False
+99999E00034775,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034787,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00034791,other,PAUM,False,,,False
+99999E00034810,other,PAUM,False,,,False
+99999E00034815,other,PAUM,False,,,False
+99999E00034823,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034833,other,PAUM,False,,,False
+99999E00034887,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00034890,domestic,PDMM,False,1.5-3,Residente,True
+99999E00034899,domestic,PDMM,False,3-4.5,Residente,True
+99999E00040016,other,PAUM,False,,,False
+99999E00040067,other,PAUM,False,,,False
+99999E00040070,other,PAUM,False,,,False
+99999E00040072,other,PAUM,False,,,False
+99999E00040080,other,PAUM,False,,,False
+99999E00040099,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040106,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040118,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040120,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040121,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040134,other,PAUM,False,,,False
+99999E00040177,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040204,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040208,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040264,other,PAUM,False,,,False
+99999E00040268,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040269,other,PAUM,False,,,False
+99999E00040270,other,PAUM,False,,,False
+99999E00040295,other,PAUM,False,,,False
+99999E00040313,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040318,other,PAUM,False,,,False
+99999E00040339,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040344,other,PAUM,False,,,False
+99999E00040345,other,PAUM,False,,,False
+99999E00040346,other,PAUM,False,,,False
+99999E00040347,other,PAUM,False,,,False
+99999E00040348,other,PAUM,False,,,False
+99999E00040349,other,PAUM,False,,,False
+99999E00040351,other,PAUM,False,,,False
+99999E00040352,other,PAUM,False,,,False
+99999E00040357,other,PAUM,False,,,False
+99999E00040358,other,PAUM,False,,,False
+99999E00040359,other,PAUM,False,,,False
+99999E00040364,other,PAUM,False,,,False
+99999E00040377,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040382,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E00040390,other,PAUM,False,,,False
+99999E00040398,other,PAUM,False,,,False
+99999E00040400,other,PAUM,False,,,False
+99999E00040401,other,PAUM,False,,,False
+99999E00040411,other,PAUM,False,,,False
+99999E00040433,other,PAUM,False,,,False
+99999E00040434,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040440,other,PAUM,False,,,False
+99999E00040477,other,PAUM,False,,,False
+99999E00040515,other,PAUM,False,,,False
+99999E00040613,other,PAUM,False,,,False
+99999E00040619,domestic,PDMM,False,>6,Residente,True
+99999E00040651,other,PAUM,False,,,False
+99999E00040660,other,PAUM,False,,,False
+99999E00040670,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040704,other,PAUM,False,,,False
+99999E00040705,other,PAUM,False,,,False
+99999E00040706,other,PAUM,False,,,False
+99999E00040707,domestic,PDMM,False,3-4.5,Residente,True
+99999E00040709,other,PAUM,False,,,False
+99999E00040710,other,PAUM,False,,,False
+99999E00040711,other,PAUM,False,,,False
+99999E00040712,other,PAUM,False,,,False
+99999E00040713,other,PAUM,False,,,False
+99999E00040714,other,PAUM,False,,,False
+99999E00040715,other,PAUM,False,,,False
+99999E00040717,other,PAUM,False,,,False
+99999E00040718,other,PAUM,False,,,False
+99999E00040748,other,PAUM,False,,,False
+99999E00040826,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040839,other,PAUM,False,,,False
+99999E00040896,domestic,PDMM,False,1.5-3,Residente,True
+99999E00040954,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00040993,lighting,PIRM,True,,,False
+99999E00041045,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00041046,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E00041058,other,PAUM,False,,,False
+99999E00041059,other,PAUM,False,,,False
+99999E00041145,other,PAUM,False,,,False
+99999E00041169,lighting,PIRM,True,,,False
+99999E00041170,lighting,PIRM,True,,,False
+99999E00041182,other,PAUM,False,,,False
+99999E00041195,other,PAUM,False,,,False
+99999E00041202,other,PAUM,False,,,False
+99999E00041203,domestic,PDMM,False,3-4.5,Residente,True
+99999E00041204,domestic,PDMM,False,3-4.5,Residente,True
+99999E00041205,other,PAUM,False,,,False
+99999E00041210,other,PAUM,False,,,False
+99999E00041224,other,PAUM,False,,,False
+99999E00639916,other,PAUM,False,,,False
+99999E00639917,other,PAUM,False,,,False
+99999E00656629,other,PAUM,False,,,False
+99999E10004622,other,PAUM,False,,,False
+99999E10004700,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004711,other,PAUM,False,,,False
+99999E10004722,other,PAUM,False,,,False
+99999E10004730,other,PAUM,False,,,False
+99999E10004747,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004800,other,PAUM,False,,,False
+99999E10004846,other,PAUM,False,,,False
+99999E10004856,domestic,PDMM,False,1.5-3,Residente,True
+99999E10004861,domestic,PDMM,False,3-4.5,Residente,True
+99999E10004863,other,PAUM,False,,,False
+99999E10004885,other,PAUM,False,,,False
+99999E10004896,other,PAUM,False,,,False
+99999E10004910,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004933,other,PAUM,False,,,False
+99999E10004939,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004943,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004946,domestic,PDMM,False,1.5-3,Residente,True
+99999E10004955,other,PAUM,False,,,False
+99999E10004957,domestic,PDMM,False,1.5-3,Residente,True
+99999E10004968,other,PAUM,False,,,False
+99999E10004971,other,PAUM,False,,,False
+99999E10004976,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10004985,other,PAUM,False,,,False
+99999E10004999,domestic,PDMM,False,1.5-3,Residente,True
+99999E10005015,other,PAUM,False,,,False
+99999E10005029,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10005038,other,PAUM,False,,,False
+99999E10005044,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E10005051,domestic,PDMM,False,1.5-3,Residente,True
+99999E10005068,other,PAUM,False,,,False
+99999E10005075,other,PAUM,False,,,False
+99999E10005118,other,PAUM,False,,,False
+99999E10005146,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000009,domestic,PDMM,False,3-4.5,Residente,True
+99999E20000010,other,PAUM,False,,,False
+99999E20000023,other,PAUM,False,,,False
+99999E20000033,other,PAUM,False,,,False
+99999E20000037,lighting,PIRM,True,,,False
+99999E20000049,domestic,PDMM,False,1.5-3,Residente,True
+99999E20000075,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000087,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000137,other,PAUM,False,,,False
+99999E20000141,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000149,other,PAUM,False,,,False
+99999E20000152,other,PAUM,False,,,False
+99999E20000165,lighting,PIRM,True,,,False
+99999E20000168,charging,PACM,True,,,False
+99999E20000193,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000199,domestic,PDMM,False,1.5-3,Residente,True
+99999E20000207,other,PAUM,False,,,False
+99999E20000235,other,PAUM,False,,,False
+99999E20000236,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000237,other,PAUM,False,,,False
+99999E20000251,other,PAUM,False,,,False
+99999E20000252,other,PAUM,False,,,False
+99999E20000256,other,PAUM,False,,,False
+99999E20000264,other,PAUM,False,,,False
+99999E20000269,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E20000301,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000305,other,PAUM,False,,,False
+99999E20000333,other,PAUM,False,,,False
+99999E20000342,other,PAUM,False,,,False
+99999E20000352,lighting,PIRM,True,,,False
+99999E20000353,lighting,PIRM,True,,,False
+99999E20000388,other,PAUM,False,,,False
+99999E20000392,other,PAUM,False,,,False
+99999E20000409,other,PAUM,False,,,False
+99999E20000449,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E20000483,other,PAUM,False,,,False
+99999E20000505,other,PAUM,False,,,False
+99999E20000519,other,PAUM,False,,,False
+99999E20000548,other,PAUM,False,,,False
+99999E20000564,other,PAUM,False,,,False
+99999E20000569,domestic,PDMM,False,1.5-3,Residente,True
+99999E20000615,other,PAUM,False,,,False
+99999E20000624,other,PAUM,False,,,False
+99999E20000661,other,PAUM,False,,,False
+99999E20000662,other,PAUM,False,,,False
+99999E20000663,other,PAUM,False,,,False
+99999E20000702,lighting,PIRM,True,,,False
+99999E20000727,other,PAUM,False,,,False
+99999E20000735,other,PAUM,False,,,False
+99999E20000737,lighting,PIRM,True,,,False
+99999E20000741,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E20000745,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E20000752,other,PAUM,False,,,False
+99999E20000790,other,PAUM,False,,,False
+99999E20000815,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E20000833,charging,PACM,True,,,False
+99999E20000834,charging,PACM,True,,,False
+99999E20000835,charging,PACM,True,,,False
+99999E20000855,other,PAUM,False,,,False
+99999E20000877,domestic,PDMM,False,1.5-3,Residente,True
+99999E20000894,other,PAUM,False,,,False
+99999E20000895,other,PAUM,False,,,False
+99999E20000903,other,PAUM,False,,,False
+99999E30430511,domestic,PDMM,False,1.5-3,Residente,True
+99999E30430514,domestic,PDMM,False,1.5-3,Residente,True
+99999E30431912,domestic,PDMM,False,1.5-3,Residente,True
+99999E30431931,domestic,PDMM,False,1.5-3,Residente,True
+99999E30461094,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30461097,other,PAUM,False,,,False
+99999E30461111,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478495,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478515,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478577,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478605,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478621,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478644,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30478660,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478663,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478684,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478696,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478782,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478826,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478853,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30478871,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478893,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478940,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478956,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478967,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30478988,domestic,PDMM,False,1.5-3,Residente,True
+99999E30478996,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479000,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479045,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479052,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30479060,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479092,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479132,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479140,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479144,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E30479172,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479175,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479196,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479235,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479321,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479337,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479367,other,PAUM,False,,,False
+99999E30479391,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479403,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479456,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479476,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30479484,domestic,PDMM,False,3-4.5,Residente,True
+99999E30479495,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479528,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479565,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30479621,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479680,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30479692,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479730,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E30479770,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479817,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479821,domestic,PDMM,False,1.5-3,Residente,True
+99999E30479834,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479850,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30479909,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480010,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30480085,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480097,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480117,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480148,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480166,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480207,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480220,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480243,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480249,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480273,domestic,PDMM,False,3-4.5,Residente,True
+99999E30480295,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480322,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480334,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480368,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480387,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480403,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480412,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480426,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480480,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480525,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480554,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480562,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480622,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30480638,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480644,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480671,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480702,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480706,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480809,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480817,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480865,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480909,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480915,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480945,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480951,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480980,domestic,PDMM,False,1.5-3,Residente,True
+99999E30480989,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30480998,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481070,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481082,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481126,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481185,domestic,PDMM,False,4.5-6,Residente,True
+99999E30481199,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481239,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481262,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481368,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481381,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481411,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481453,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481472,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481499,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481507,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481510,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30481531,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481555,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481559,domestic,PDMM,False,3-4.5,Residente,True
+99999E30481567,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481618,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481637,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481720,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481730,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481744,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481783,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481838,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481847,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481850,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481853,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481872,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481875,domestic,PDMM,False,1.5-3,Residente,True
+99999E30481885,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481921,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30481932,domestic,PDMM,False,0-1.5,Residente,True
+99999E30481989,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482002,domestic,PDMM,False,3-4.5,Residente,True
+99999E30482011,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482022,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482070,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30482074,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30482102,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482122,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482154,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482162,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482200,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482224,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482242,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482248,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482273,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482289,domestic,PDMM,False,3-4.5,Residente,True
+99999E30482295,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482307,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482315,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482318,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482320,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482350,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482353,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482364,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482430,other,PAUM,False,,,False
+99999E30482460,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482464,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482477,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482528,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482534,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482539,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482594,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482628,domestic,PDMM,False,3-4.5,Residente,True
+99999E30482632,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482644,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482647,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482681,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482725,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482730,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482772,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482803,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30482834,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482870,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482884,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482888,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30482930,domestic,PDMM,False,1.5-3,Residente,True
+99999E30482957,other,PAUM,False,,,False
+99999E30482965,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483005,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483014,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483083,other,PAUM,False,,,False
+99999E30483102,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483121,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30483133,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483152,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483166,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483231,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483254,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483271,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483298,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483301,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483333,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483336,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483452,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483456,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483476,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483486,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483507,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483530,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483565,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483629,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483635,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483651,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483698,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483701,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483743,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E30483746,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483766,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483835,domestic,PDMM,False,1.5-3,Residente,True
+99999E30483867,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483916,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483919,domestic,PDMM,False,0-1.5,Non Residente,True
+99999E30483924,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483931,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483958,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30483964,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484056,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484067,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484166,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484187,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484200,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484203,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484238,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484322,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484375,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484385,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484388,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484432,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484440,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484446,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484451,domestic,PDMM,False,1.5-3,Residente,True
+99999E30484513,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484610,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484625,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484787,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30484811,domestic,PDMM,False,3-4.5,Residente,True
+99999E30484924,domestic,PDMM,False,4.5-6,Residente,True
+99999E30484978,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30484996,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485017,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E30485039,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485136,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485160,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485196,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485242,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485284,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485337,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485462,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485525,domestic,PDMM,False,1.5-3,Residente,True
+99999E30485528,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485544,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30485639,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594379,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594380,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594393,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594394,other,PAUM,False,,,False
+99999E30594400,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594409,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594415,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594418,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594425,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594455,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594456,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594476,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594479,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594485,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594496,domestic,PDMM,False,1.5-3,Residente,True
+99999E30594500,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30594516,domestic,PDMM,False,1.5-3,Residente,True
+99999E30601128,other,PAUM,False,,,False
+99999E30601131,other,PAUM,False,,,False
+99999E30601137,other,PAUM,False,,,False
+99999E30601138,other,PAUM,False,,,False
+99999E30601141,domestic,PDMM,False,3-4.5,Residente,True
+99999E30601142,other,PAUM,False,,,False
+99999E30601143,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30601147,other,PAUM,False,,,False
+99999E30601154,other,PAUM,False,,,False
+99999E30601155,other,PAUM,False,,,False
+99999E30601156,other,PAUM,False,,,False
+99999E30601158,other,PAUM,False,,,False
+99999E30601161,other,PAUM,False,,,False
+99999E30601165,other,PAUM,False,,,False
+99999E30601166,other,PAUM,False,,,False
+99999E30601167,other,PAUM,False,,,False
+99999E30601174,other,PAUM,False,,,False
+99999E30601175,other,PAUM,False,,,False
+99999E30601179,other,PAUM,False,,,False
+99999E30601183,other,PAUM,False,,,False
+99999E30601187,other,PAUM,False,,,False
+99999E30601188,other,PAUM,False,,,False
+99999E30601191,other,PAUM,False,,,False
+99999E30601192,other,PAUM,False,,,False
+99999E30601194,other,PAUM,False,,,False
+99999E30601195,other,PAUM,False,,,False
+99999E30601202,other,PAUM,False,,,False
+99999E30601204,other,PAUM,False,,,False
+99999E30601206,other,PAUM,False,,,False
+99999E30601207,other,PAUM,False,,,False
+99999E30601208,lighting,PIRM,True,,,False
+99999E30601209,other,PAUM,False,,,False
+99999E30601210,other,PAUM,False,,,False
+99999E30601211,other,PAUM,False,,,False
+99999E30601212,other,PAUM,False,,,False
+99999E30601214,other,PAUM,False,,,False
+99999E30601215,lighting,PIRM,True,,,False
+99999E30601217,lighting,PIRM,True,,,False
+99999E30601219,other,PAUM,False,,,False
+99999E30601220,other,PAUM,False,,,False
+99999E30601221,other,PAUM,False,,,False
+99999E30601223,other,PAUM,False,,,False
+99999E30601224,other,PAUM,False,,,False
+99999E30601225,other,PAUM,False,,,False
+99999E30601226,other,PAUM,False,,,False
+99999E30601227,other,PAUM,False,,,False
+99999E30601229,other,PAUM,False,,,False
+99999E30601230,other,PAUM,False,,,False
+99999E30601231,other,PAUM,False,,,False
+99999E30601235,other,PAUM,False,,,False
+99999E30601236,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30601237,other,PAUM,False,,,False
+99999E30601239,other,PAUM,False,,,False
+99999E30601240,other,PAUM,False,,,False
+99999E30601243,other,PAUM,False,,,False
+99999E30601244,other,PAUM,False,,,False
+99999E30601245,other,PAUM,False,,,False
+99999E30601246,other,PAUM,False,,,False
+99999E30601247,other,PAUM,False,,,False
+99999E30601248,other,PAUM,False,,,False
+99999E30601249,other,PAUM,False,,,False
+99999E30601252,other,PAUM,False,,,False
+99999E30601254,other,PAUM,False,,,False
+99999E30601256,other,PAUM,False,,,False
+99999E30601262,other,PAUM,False,,,False
+99999E30601267,other,PAUM,False,,,False
+99999E30601269,other,PAUM,False,,,False
+99999E30601270,other,PAUM,False,,,False
+99999E30601271,other,PAUM,False,,,False
+99999E30601273,lighting,PIRM,True,,,False
+99999E30601275,other,PAUM,False,,,False
+99999E30601278,other,PAUM,False,,,False
+99999E30601281,other,PAUM,False,,,False
+99999E30601286,other,PAUM,False,,,False
+99999E30601287,other,PAUM,False,,,False
+99999E30601288,other,PAUM,False,,,False
+99999E30601289,other,PAUM,False,,,False
+99999E30601291,other,PAUM,False,,,False
+99999E30601292,other,PAUM,False,,,False
+99999E30601293,other,PAUM,False,,,False
+99999E30601295,other,PAUM,False,,,False
+99999E30601298,lighting,PIRM,True,,,False
+99999E30601299,other,PAUM,False,,,False
+99999E30601300,other,PAUM,False,,,False
+99999E30601302,other,PAUM,False,,,False
+99999E30601303,other,PAUM,False,,,False
+99999E30601304,other,PAUM,False,,,False
+99999E30601305,lighting,PIRM,True,,,False
+99999E30601306,lighting,PIRM,True,,,False
+99999E30601308,other,PAUM,False,,,False
+99999E30601310,other,PAUM,False,,,False
+99999E30601311,other,PAUM,False,,,False
+99999E30601313,other,PAUM,False,,,False
+99999E30601314,other,PAUM,False,,,False
+99999E30601317,other,PAUM,False,,,False
+99999E30601320,other,PAUM,False,,,False
+99999E30601325,other,PAUM,False,,,False
+99999E30601326,other,PAUM,False,,,False
+99999E30601329,other,PAUM,False,,,False
+99999E30601335,other,PAUM,False,,,False
+99999E30601338,other,PAUM,False,,,False
+99999E30601339,other,PAUM,False,,,False
+99999E30601342,other,PAUM,False,,,False
+99999E30601343,other,PAUM,False,,,False
+99999E30601344,other,PAUM,False,,,False
+99999E30601345,other,PAUM,False,,,False
+99999E30601346,other,PAUM,False,,,False
+99999E30601347,other,PAUM,False,,,False
+99999E30601348,other,PAUM,False,,,False
+99999E30601349,other,PAUM,False,,,False
+99999E30601350,other,PAUM,False,,,False
+99999E30601351,lighting,PIRM,True,,,False
+99999E30601352,other,PAUM,False,,,False
+99999E30601355,other,PAUM,False,,,False
+99999E30601356,other,PAUM,False,,,False
+99999E30601357,other,PAUM,False,,,False
+99999E30601359,other,PAUM,False,,,False
+99999E30601360,other,PAUM,False,,,False
+99999E30601363,other,PAUM,False,,,False
+99999E30601366,other,PAUM,False,,,False
+99999E30601367,other,PAUM,False,,,False
+99999E30601368,other,PAUM,False,,,False
+99999E30601369,other,PAUM,False,,,False
+99999E30601371,other,PAUM,False,,,False
+99999E30601372,other,PAUM,False,,,False
+99999E30601374,other,PAUM,False,,,False
+99999E30601381,other,PAUM,False,,,False
+99999E30601382,other,PAUM,False,,,False
+99999E30601383,other,PAUM,False,,,False
+99999E30601384,other,PAUM,False,,,False
+99999E30601385,other,PAUM,False,,,False
+99999E30601386,other,PAUM,False,,,False
+99999E30601391,other,PAUM,False,,,False
+99999E30601393,other,PAUM,False,,,False
+99999E30601394,other,PAUM,False,,,False
+99999E30601402,other,PAUM,False,,,False
+99999E30601403,domestic,PDMM,False,1.5-3,Residente,True
+99999E30601404,other,PAUM,False,,,False
+99999E30601405,other,PAUM,False,,,False
+99999E30601406,other,PAUM,False,,,False
+99999E30601408,other,PAUM,False,,,False
+99999E30601409,other,PAUM,False,,,False
+99999E30601410,other,PAUM,False,,,False
+99999E30601411,other,PAUM,False,,,False
+99999E30601419,other,PAUM,False,,,False
+99999E30601421,other,PAUM,False,,,False
+99999E30601422,other,PAUM,False,,,False
+99999E30601424,other,PAUM,False,,,False
+99999E30601425,other,PAUM,False,,,False
+99999E30601426,other,PAUM,False,,,False
+99999E30601427,other,PAUM,False,,,False
+99999E30601428,other,PAUM,False,,,False
+99999E30601432,other,PAUM,False,,,False
+99999E30601437,other,PAUM,False,,,False
+99999E30601439,lighting,PIRM,True,,,False
+99999E30601441,other,PAUM,False,,,False
+99999E30601444,other,PAUM,False,,,False
+99999E30601447,other,PAUM,False,,,False
+99999E30601449,other,PAUM,False,,,False
+99999E30601452,other,PAUM,False,,,False
+99999E30601454,other,PAUM,False,,,False
+99999E30601455,other,PAUM,False,,,False
+99999E30601456,other,PAUM,False,,,False
+99999E30601458,other,PAUM,False,,,False
+99999E30601460,other,PAUM,False,,,False
+99999E30601474,other,PAUM,False,,,False
+99999E30601478,other,PAUM,False,,,False
+99999E30601480,other,PAUM,False,,,False
+99999E30601482,other,PAUM,False,,,False
+99999E30601494,other,PAUM,False,,,False
+99999E30601498,other,PAUM,False,,,False
+99999E30601502,other,PAUM,False,,,False
+99999E30604264,other,PAUM,False,,,False
+99999E30604268,lighting,PIRM,True,,,False
+99999E30617066,lighting,PIRM,True,,,False
+99999E30617068,other,PAUM,False,,,False
+99999E30617070,lighting,PIRM,True,,,False
+99999E30617072,other,PAUM,False,,,False
+99999E30617074,other,PAUM,False,,,False
+99999E30617076,other,PAUM,False,,,False
+99999E30617084,lighting,PIRM,True,,,False
+99999E30617089,other,PAUM,False,,,False
+99999E30629011,other,PAUM,False,,,False
+99999E30639920,other,PAUM,False,,,False
+99999E30639921,other,PAUM,False,,,False
+99999E30639923,other,PAUM,False,,,False
+99999E30639924,lighting,PIRM,True,,,False
+99999E30639925,lighting,PIRM,True,,,False
+99999E30639926,other,PAUM,False,,,False
+99999E30639927,other,PAUM,False,,,False
+99999E30639928,other,PAUM,False,,,False
+99999E30639929,lighting,PIRM,True,,,False
+99999E30639931,other,PAUM,False,,,False
+99999E30639932,other,PAUM,False,,,False
+99999E30639934,other,PAUM,False,,,False
+99999E30639935,other,PAUM,False,,,False
+99999E30639936,lighting,PIRM,True,,,False
+99999E30639937,other,PAUM,False,,,False
+99999E30639938,other,PAUM,False,,,False
+99999E30639939,other,PAUM,False,,,False
+99999E30639940,lighting,PIRM,True,,,False
+99999E30639943,other,PAUM,False,,,False
+99999E30639944,other,PAUM,False,,,False
+99999E30639945,other,PAUM,False,,,False
+99999E30639946,other,PAUM,False,,,False
+99999E30639947,other,PAUM,False,,,False
+99999E30639948,other,PAUM,False,,,False
+99999E30639950,other,PAUM,False,,,False
+99999E30639951,other,PAUM,False,,,False
+99999E30639953,other,PAUM,False,,,False
+99999E30639954,other,PAUM,False,,,False
+99999E30639955,lighting,PIRM,True,,,False
+99999E30639960,other,PAUM,False,,,False
+99999E30639963,other,PAUM,False,,,False
+99999E30656670,other,PAUM,False,,,False
+99999E30663115,other,PAUM,False,,,False
+99999E30663144,other,PAUM,False,,,False
+99999E30663248,other,PAUM,False,,,False
+99999E30663278,other,PAUM,False,,,False
+99999E30663298,other,PAUM,False,,,False
+99999E30663365,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30663378,other,PAUM,False,,,False
+99999E30663424,domestic,PDMM,False,1.5-3,Residente,True
+99999E30685539,other,PAUM,False,,,False
+99999E30687517,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30689635,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30691487,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30702102,domestic,PDMM,False,1.5-3,Residente,True
+99999E30706007,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30706327,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30708610,other,PAUM,False,,,False
+99999E30710511,domestic,PDMM,False,1.5-3,Residente,True
+99999E30711374,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30711382,other,PAUM,False,,,False
+99999E30713153,other,PAUM,False,,,False
+99999E30713690,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30715817,other,PAUM,False,,,False
+99999E30715855,other,PAUM,False,,,False
+99999E30730075,other,PAUM,False,,,False
+99999E30730494,other,PAUM,False,,,False
+99999E30730712,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30734315,other,PAUM,False,,,False
+99999E30737010,other,PAUM,False,,,False
+99999E30737012,other,PAUM,False,,,False
+99999E30740297,other,PAUM,False,,,False
+99999E30740306,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30742899,other,PAUM,False,,,False
+99999E30748532,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30748871,other,PAUM,False,,,False
+99999E30753062,other,PAUM,False,,,False
+99999E30754865,lighting,PIRM,True,,,False
+99999E30758135,other,PAUM,False,,,False
+99999E30780137,other,PAUM,False,,,False
+99999E30791738,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30795274,other,PAUM,False,,,False
+99999E30798244,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30800039,other,PAUM,False,,,False
+99999E30800382,other,PAUM,False,,,False
+99999E30800864,other,PAUM,False,,,False
+99999E30804807,other,PAUM,False,,,False
+99999E30831149,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30832020,other,PAUM,False,,,False
+99999E30832026,other,PAUM,False,,,False
+99999E30832030,other,PAUM,False,,,False
+99999E30832031,other,PAUM,False,,,False
+99999E30832032,other,PAUM,False,,,False
+99999E30832033,other,PAUM,False,,,False
+99999E30832648,other,PAUM,False,,,False
+99999E30837078,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30884771,domestic,PDMM,False,1.5-3,Residente,True
+99999E30893170,other,PAUM,False,,,False
+99999E30906519,other,PAUM,False,,,False
+99999E30909838,other,PAUM,False,,,False
+99999E30913189,other,PAUM,False,,,False
+99999E30919076,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30925891,lighting,PIRM,True,,,False
+99999E30928389,other,PAUM,False,,,False
+99999E30938381,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E30939797,other,PAUM,False,,,False
+99999E31001357,other,PAUM,False,,,False
+99999E31001646,other,PAUM,False,,,False
+99999E31003248,other,PAUM,False,,,False
+99999E31005224,other,PAUM,False,,,False
+99999E31005308,other,PAUM,False,,,False
+99999E31007089,other,PAUM,False,,,False
+99999E31007663,other,PAUM,False,,,False
+99999E31008172,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E31010815,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E31011204,other,PAUM,False,,,False
+99999E31012625,other,PAUM,False,,,False
+99999E31012626,other,PAUM,False,,,False
+99999E31013532,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E31013534,domestic,PDMM,False,3-4.5,Residente,True
+99999E31014832,domestic,PDMM,False,1.5-3,Residente,True
+99999E31014923,other,PAUM,False,,,False
+99999E31014981,other,PAUM,False,,,False
+99999E31022481,other,PAUM,False,,,False
+99999E31023497,other,PAUM,False,,,False
+99999E31023930,other,PAUM,False,,,False
+99999E31024183,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E31025941,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E31026107,other,PAUM,False,,,False
+99999E31026256,other,PAUM,False,,,False
+99999E31026643,other,PAUM,False,,,False
+99999E31027863,other,PAUM,False,,,False
+99999E31028222,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E31028223,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E31028436,domestic,PDMM,False,1.5-3,Residente,True
+99999E31029211,other,PAUM,False,,,False
+99999E31029382,domestic,PDMM,False,1.5-3,Residente,True
+99999E31029428,other,PAUM,False,,,False
+99999E31029820,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E31030586,other,PAUM,False,,,False
+99999E40000074,other,PAUM,False,,,False
+99999E40000094,other,PAUM,False,,,False
+99999E40000097,other,PAUM,False,,,False
+99999E40000103,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000104,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40000112,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000116,other,PAUM,False,,,False
+99999E40000124,domestic,PDMM,False,3-4.5,Residente,True
+99999E40000128,other,PAUM,False,,,False
+99999E40000129,other,PAUM,False,,,False
+99999E40000149,other,PAUM,False,,,False
+99999E40000155,other,PAUM,False,,,False
+99999E40000163,other,PAUM,False,,,False
+99999E40000164,other,PAUM,False,,,False
+99999E40000167,other,PAUM,False,,,False
+99999E40000172,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000186,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000216,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40000223,other,PAUM,False,,,False
+99999E40000225,other,PAUM,False,,,False
+99999E40000228,other,PAUM,False,,,False
+99999E40000234,charging,PACM,True,,,False
+99999E40000235,charging,PACM,True,,,False
+99999E40000240,other,PAUM,False,,,False
+99999E40000241,other,PAUM,False,,,False
+99999E40000243,lighting,PIRM,True,,,False
+99999E40000245,other,PAUM,False,,,False
+99999E40000247,other,PAUM,False,,,False
+99999E40000254,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000262,lighting,PIRM,True,,,False
+99999E40000268,other,PAUM,False,,,False
+99999E40000278,other,PAUM,False,,,False
+99999E40000314,other,PAUM,False,,,False
+99999E40000324,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000336,other,PAUM,False,,,False
+99999E40000346,lighting,PIRM,True,,,False
+99999E40000353,other,PAUM,False,,,False
+99999E40000361,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000385,other,PAUM,False,,,False
+99999E40000416,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000426,other,PAUM,False,,,False
+99999E40000434,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000437,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E40000445,other,PAUM,False,,,False
+99999E40000456,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E40000459,charging,PACM,True,,,False
+99999E40000461,other,PAUM,False,,,False
+99999E40000471,other,PAUM,False,,,False
+99999E40000473,domestic,PDMM,False,3-4.5,Residente,True
+99999E40000478,lighting,PIRM,True,,,False
+99999E40000485,charging,PACM,True,,,False
+99999E40000494,other,PAUM,False,,,False
+99999E40000504,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E40000520,other,PAUM,False,,,False
+99999E40000521,other,PAUM,False,,,False
+99999E40000522,other,PAUM,False,,,False
+99999E40000523,other,PAUM,False,,,False
+99999E40000524,other,PAUM,False,,,False
+99999E40000525,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000535,other,PAUM,False,,,False
+99999E40000540,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000541,other,PAUM,False,,,False
+99999E40000544,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000547,other,PAUM,False,,,False
+99999E40000554,other,PAUM,False,,,False
+99999E40000579,lighting,PIRM,True,,,False
+99999E40000580,lighting,PIRM,True,,,False
+99999E40000582,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000592,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40000599,lighting,PIRM,True,,,False
+99999E40000600,lighting,PIRM,True,,,False
+99999E40000605,charging,PACM,True,,,False
+99999E40000615,charging,PACM,True,,,False
+99999E40000625,lighting,PIRM,True,,,False
+99999E40000639,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E40000648,lighting,PIRM,True,,,False
+99999E40000649,lighting,PIRM,True,,,False
+99999E40000650,lighting,PIRM,True,,,False
+99999E40000652,lighting,PIRM,True,,,False
+99999E40000660,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000666,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000675,other,PAUM,False,,,False
+99999E40000684,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000687,other,PAUM,False,,,False
+99999E40000692,domestic,PDMM,False,3-4.5,Residente,True
+99999E40000704,other,PAUM,False,,,False
+99999E40000705,other,PAUM,False,,,False
+99999E40000716,other,PAUM,False,,,False
+99999E40000718,domestic,PDMM,False,>6,Residente,True
+99999E40000726,lighting,PIRM,True,,,False
+99999E40000733,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000751,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000757,charging,PACM,True,,,False
+99999E40000758,charging,PACM,True,,,False
+99999E40000761,charging,PACM,True,,,False
+99999E40000764,other,PAUM,False,,,False
+99999E40000765,charging,PACM,True,,,False
+99999E40000767,charging,PACM,True,,,False
+99999E40000773,other,PAUM,False,,,False
+99999E40000777,other,PAUM,False,,,False
+99999E40000807,charging,PACM,True,,,False
+99999E40000813,other,PAUM,False,,,False
+99999E40000816,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40000819,other,PAUM,False,,,False
+99999E40000821,other,PAUM,False,,,False
+99999E40000823,other,PAUM,False,,,False
+99999E40000835,other,PAUM,False,,,False
+99999E40000840,other,PAUM,False,,,False
+99999E40000850,other,PAUM,False,,,False
+99999E40000875,other,PAUM,False,,,False
+99999E40000877,other,PAUM,False,,,False
+99999E40000884,other,PAUM,False,,,False
+99999E40000898,other,PAUM,False,,,False
+99999E40000918,other,PAUM,False,,,False
+99999E40000929,other,PAUM,False,,,False
+99999E40000935,other,PAUM,False,,,False
+99999E40000936,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40000937,other,PAUM,False,,,False
+99999E40000954,other,PAUM,False,,,False
+99999E40000960,domestic,PDMM,False,1.5-3,Residente,True
+99999E40000979,other,PAUM,False,,,False
+99999E40000982,other,PAUM,False,,,False
+99999E40000985,other,PAUM,False,,,False
+99999E40000988,domestic,PDMM,False,3-4.5,Non Residente,True
+99999E40000991,other,PAUM,False,,,False
+99999E40000992,domestic,PDMM,False,1.5-3,Residente,True
+99999E40001010,lighting,PIRM,True,,,False
+99999E40001016,other,PAUM,False,,,False
+99999E40001025,other,PAUM,False,,,False
+99999E40001030,domestic,PDMM,False,1.5-3,Non Residente,True
+99999E40001049,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40001050,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40001053,domestic,PDMM,False,4.5-6,Residente,True
+99999E40001054,domestic,PDMM,False,4.5-6,Non Residente,True
+99999E40001065,other,PAUM,False,,,False
+99999E40001077,other,PAUM,False,,,False
+99999E40001081,lighting,PIRM,True,,,False
+99999E40001082,lighting,PIRM,True,,,False
+99999E40001084,other,PAUM,False,,,False
+99999E40001098,other,PAUM,False,,,False
+99999E40001109,other,PAUM,False,,,False
+99999E40001128,other,PAUM,False,,,False

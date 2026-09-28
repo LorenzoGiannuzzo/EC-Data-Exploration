@@ -1,102 +1,63 @@
-# Data Explorer
+# SLP framework
 
-Modular-monolithic service for electrical-load profile analytics.
-Three layers — **core / db / api / cli** — wrapped in two containers
-(`backend` + `frontend`) plus an external `postgres` container.
+Implementation of the methodology of Section 2 of *What Do Standard Load Profiles
+Actually Represent?*. One script per subsection, so that a claim in the paper and
+the code that produces it are one file apart.
 
-## Repository layout
+## Layout
 
 ```
-data-exploration/
-├── docker-compose.yml          # postgres + backend + frontend
-├── .env.example                # copy to .env and edit
-│
-├── postgres/
-│   └── init.sql                # schema bootstrap (runs once on first start)
-│
-├── backend/
-│   ├── Dockerfile              # multi-stage, ~150 MB final image
-│   ├── pyproject.toml
-│   ├── alembic.ini
-│   ├── alembic/
-│   └── src/data_explorer/
-│       ├── core/               # pure-python algorithms (no Streamlit, no FastAPI)
-│       ├── db/                 # SQLAlchemy models, session, ingestion
-│       ├── api/                # FastAPI routers
-│       ├── cli/                # Typer commands
-│       └── config.py           # Pydantic Settings
-│
-└── frontend/
-    ├── Dockerfile
-    ├── requirements.txt
-    └── app.py                  # Streamlit GUI (calls backend over HTTP)
+slp/
+├── config.yaml            every parameter the paper declares, and nothing else
+├── main.py                runs the stages in order
+├── preprocessing.py       Section 2.2   cleaning, filters, Eq. 1-2
+├── clustering.py          Section 2.3   dictionary (Eq. 3) + users (Eq. 4-5)
+├── generation.py          Section 2.4   profiles (Eq. 6), 1000 kWh, dispersion
+├── comparison.py          Section 2.5   five measures (Eq. 7-9), assignment
+├── mapping.py             Section 2.6   M1, M2, M3 (Eq. 10-14) + impact (Eq. 15-16)
+├── common/
+│   ├── config.py          YAML loader, path resolution
+│   └── io.py              monthly folders; sniffs encoding, separator, decimal
+├── cache/                 .npy / .parquet handed from one stage to the next
+└── paper_results/
+    ├── preprocessing_results/
+    ├── clustering_results/
+    ├── generation_results/
+    ├── comparison_results/
+    └── mapping_results/
 ```
 
-## Phase 1 — what works now
-
-- PostgreSQL/PostGIS database container with full schema (PODs, measurements
-  partitioned by year, ATECO lookup, GSE/ARERA reference profiles).
-- Backend container with `/health` and `/info` endpoints, plus the CLI.
-- Ingestion command that loads your existing `data/` folder into Postgres.
-- Frontend container that confirms it can reach the backend.
-
-Phases 2-4 add the analytical endpoints and rebuild the dashboard tabs on
-top of them.
-
-## Quickstart
+## Running
 
 ```bash
-# 1. Configure
-cp .env.example .env
-# edit .env if needed — at minimum change POSTGRES_PASSWORD
-
-# 2. Build & start the stack
-docker compose up -d --build
-
-# 3. Verify
-curl http://localhost:8000/health
-# → {"status":"ok","version":"0.1.0"}
-
-# 4. Ingest your existing data (CSV/Excel under ./data)
-docker compose exec backend data-explorer ingest --data-dir /data/raw
-
-# 5. Optional: ingest the official ATECO lookup
-docker compose exec backend data-explorer ingest-ateco \
-    /data/raw/Note-esplicative-ATECO-2025-italiano-inglese.xlsx
-
-# 6. Check row counts
-docker compose exec backend data-explorer db-check
-
-# 7. Open the GUI
-#    http://localhost:8501
+python main.py                        # all stages
+python main.py --stage preprocessing  # one stage
+python main.py --from clustering      # from a stage onwards
 ```
 
-The host folder pointed at by `HOST_DATA_DIR` in `.env` (default `./data`)
-is mounted **read-only** into the backend container at `/data/raw`.
+Every stage reads what the previous one cached, so changing `lambda` and
+re-running `clustering` does not rebuild the dictionary.
 
-## Manual SQL access
+## Data
 
-```bash
-# from the host machine (psql installed)
-psql -h localhost -U data_explorer -d data_explorer
+Read from `../data`, one folder per month named `<mesYY>` in any case
+(`ago24`, `Ago25`), each holding `Metadati POD <mesYY>.xlsx` and `misure_*.csv`.
+Encoding, field separator and decimal mark are detected per file.
 
-# or from within the postgres container
-docker compose exec postgres psql -U data_explorer -d data_explorer
-```
+## Two things worth knowing
 
-## Migrations (after Phase 1)
+**ATECO levels.** The `CCATETE` code splits into three levels whose names do not
+match NACE:
 
-```bash
-# generate a new migration based on model changes
-docker compose exec backend alembic revision --autogenerate -m "add foo"
+| in the code | digits | NACE level |
+|---|---|---|
+| `ateco_l1` | 2 | Division |
+| `ateco_l2` | 4 | Class |
+| `ateco_l3` | 6 | Subcategory |
 
-# apply
-docker compose exec backend alembic upgrade head
-```
+The paper's "division level" is therefore `ateco_l1`, set in `config.yaml` as
+`labels.level: 1`.
 
-## Tear down
-
-```bash
-docker compose down              # keep DB volume
-docker compose down -v           # also wipe the database
-```
+**Eq. 1 and Eq. 2.** The annualised energy of Eq. 1 is the scale feature; the day
+weights of Eq. 2 normalise on the observed energy so that they sum to one. Using
+the annualised E as their denominator would make them sum to |D_i|/365.

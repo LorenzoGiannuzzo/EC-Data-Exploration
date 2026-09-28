@@ -1,0 +1,16 @@
+Period [YYYY]                2024-02-01 to 2025-12-31
+Calendar days spanned        576
+PODs retained [N]            7,527
+User-days retained           3,366,330
+Daily shapes for [N x 365]   2,606,345
+Days at zero, no shape       811,718 (24.1% of valid days)
+Days under 12 non-zero QH      77,266 (2.3%), no shape either
+PODs that also inject        298
+Shape normalisation          unit_integral
+Mean valid days per POD      447.2
+Annual energy, total GWh     20.2
+Distinct ateco_l1              61
+Distinct ateco_l2              165
+Distinct ateco_l3              162
+
+Months present               [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

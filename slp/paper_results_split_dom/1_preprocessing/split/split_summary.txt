@@ -1,0 +1,9 @@
+Source cache                 C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp\cache
+Class kept                   domestic (residential codes ['DO'])
+Shared dictionary            D = 19, from cache/dictionary.npy
+PODs retained                7,527 -> 6,584
+Share of the PODs            0.875
+Share of the annual energy   0.317
+Days retained                3,366,330 -> 2,955,750
+Shapes retained              2,606,345 -> 2,239,349
+PODs without any shape       106

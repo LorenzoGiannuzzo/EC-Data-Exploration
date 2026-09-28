@@ -1,0 +1,13 @@
+Population,Users per aggregate [-],"GSE, median [%]","ARERA, median [%]","Data-driven, median [%]","Activity-based, median [%]","Single local profile, median [%]"
+Domestic points carrying an ARERA profile,10,19.4,18.7,19.3,18.6,20.2
+Domestic points carrying an ARERA profile,25,13.8,13.0,13.9,12.6,15.1
+Domestic points carrying an ARERA profile,50,11.1,10.1,11.4,9.7,12.8
+Domestic points carrying an ARERA profile,100,9.2,8.0,9.7,7.4,11.2
+Domestic points carrying an ARERA profile,250,7.8,6.5,8.4,5.9,10.1
+Domestic points carrying an ARERA profile,500,7.2,5.7,7.9,4.9,9.7
+Points outside the ARERA tables,10,13.7,,12.4,12.2,13.4
+Points outside the ARERA tables,25,10.6,,9.2,9.1,10.1
+Points outside the ARERA tables,50,9.4,,7.6,7.5,8.5
+Points outside the ARERA tables,100,7.8,,5.8,5.7,6.7
+Points outside the ARERA tables,250,6.9,,5.0,5.1,5.7
+Points outside the ARERA tables,500,6.5,,4.2,4.0,5.2

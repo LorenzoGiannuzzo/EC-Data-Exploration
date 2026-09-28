@@ -1,0 +1,6 @@
+Contractual power class [kW],Points of delivery [-],GSE [%],ARERA [%],Data-driven (in-sample) [%],Activity-based (in-sample) [%],Data-driven (out-of-sample) [%],Activity-based (out-of-sample) [%]
+0-1.5,6,29.1,29.3,30.8,29.4,30.3,29.5
+1.5-3,646,33.9,33.8,34.4,33.8,34.2,33.8
+3-4.5,126,33.4,32.9,33.7,33.0,33.5,33.0
+4.5-6,57,40.9,40.5,41.3,40.5,40.9,40.6
+>6,7,25.7,25.6,24.5,24.8,25.4,24.9

@@ -1,0 +1,5 @@
+population,class,n_pods,annual_energy_MWh,n_days,n_shapes,share_of_pods,share_of_energy,share_of_shapes
+full,non-residential,943,13831.6988,410580,366996.0,0.1253,0.6832,0.1408
+full,residential,6584,6413.9781,2955750,2239349.0,0.8747,0.3168,0.8592
+balanced,non-residential,943,13831.6988,410580,366996.0,0.5,0.9356,0.5319
+balanced,residential,943,951.6993,422229,322943.0,0.5,0.0644,0.4681

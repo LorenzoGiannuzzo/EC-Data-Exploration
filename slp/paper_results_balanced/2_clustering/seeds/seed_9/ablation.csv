@@ -1,0 +1,2 @@
+comparison,K,ARI,silhouette_two_stage,silhouette_mean_curves,silhouette_two_stage_in_mean_space,silhouette_mean_curves_in_two_stage_space
+two-stage vs mean curves,6,0.1997177709329683,0.17317678357073893,0.08449824355218175,-0.16818265209944144,0.05036382928702719

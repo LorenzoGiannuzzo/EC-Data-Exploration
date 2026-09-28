@@ -1,0 +1,24 @@
+first-stage unit             day
+shape normalisation          unit_integral
+dictionary scope             global
+dictionary method            summarised_ward
+micro-clusters               4,000 (standing for all 688,448 shapes)
+[D] codewords                14
+    chosen because           D = 14: a codeword still buys 1% or more near the end of the range, so the top of the range is taken and the range should be widened
+[R] replicas                 10
+[K] groups                   6
+    chosen because           K = 6: no K of the admissible range 6-20 reaches the 0.65 threshold; the most stable admissible K is taken, at mean ARI 0.48, and the value is reported against the threshold
+[n_min] minimum group        30
+lambda, scale weight         0.5
+block normalisation          variance
+variance: forms / scale      0.5000 / 0.5000 (scale drives 50% of the distance)
+delta, zero replacement      0.0001
+
+ARI two-stage vs mean curves 0.121
+
+Groups below n_min           0
+
+Dispersion of the members from their own curve, median nRMSD over the cells:
+  at the selected K            1.043 weighted by PODs, 0.903 unweighted
+  PODs left without a profile  0
+  the sweep over the whole range is in validity_K_dispersion.csv

@@ -1,0 +1,13 @@
+Source cache                 C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp\cache
+Residential codes            ['DO']
+Basis / ratio / seed         count / 1.0 / 42
+Strata                       ['ateco_l2', 'prosumer', 'E_quantile'] (18 strata, 5 energy bins)
+Residential PODs             6,584 -> 943
+Non-residential PODs         943 (kept whole, 0 without a label)
+PODs retained                7,527 -> 1,886
+Days retained                3,366,330 -> 832,809
+Shapes retained              2,606,345 -> 689,939
+
+Shares, full -> balanced        PODs            energy          shapes
+  residential                 0.875 -> 0.500   0.317 -> 0.064   0.859 -> 0.468
+  non-residential             0.125 -> 0.500   0.683 -> 0.936   0.141 -> 0.532
