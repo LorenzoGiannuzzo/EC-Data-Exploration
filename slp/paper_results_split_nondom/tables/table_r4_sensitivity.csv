@@ -1,0 +1,16 @@
+Choice varied,Value,ARI against the adopted partition [-],Profiles published [-],Median class multiplicity [-],Uninformative reference [-],Coherent classes after correction [-],Profile entropy explained by the activity class [%],Behaviors delivered by GSE PDMM [-],"Behaviors delivered, range over national profiles [-]","Portfolio misallocation of the data-driven catalog, domestic points [%]"
+Adopted,"lambda = 0.5, delta = 0.0001, K = 8",1.000,8,4.66,7.19,10,26.0,,6.6 to 6.6,32.5
+Weight of the allocation features,0.0,0.318,8,4.25,7.50,11,26.5,,6.9 to 6.9,32.9
+Weight of the allocation features,0.25,0.481,8,4.99,7.34,11,27.2,,6.7 to 6.7,33.1
+Weight of the allocation features,0.75,0.340,8,4.16,7.19,10,24.3,,7.1 to 7.1,33.2
+Zero-replacement threshold,1e-06,0.500,8,4.36,6.57,10,27.4,,6.0 to 6.0,31.6
+Zero-replacement threshold,1e-05,0.628,8,4.15,7.40,10,26.7,,6.9 to 6.9,32.5
+Zero-replacement threshold,0.001,0.395,8,4.97,7.55,12,27.7,,7.3 to 7.3,33.0
+Zero-replacement threshold,0.002,0.528,8,4.68,7.60,11,28.1,,6.9 to 6.9,32.7
+Number of profiles K,6,0.857,6,3.66,5.46,9,24.1,,5.5 to 5.5,33.7
+Number of profiles K,7,0.921,7,4.53,6.27,7,23.7,,6.3 to 6.3,32.5
+Number of profiles K,9,0.966,9,4.66,7.87,9,25.6,,7.2 to 7.2,32.5
+Number of profiles K,10,0.914,10,5.02,8.75,9,25.0,,8.1 to 8.1,32.5
+Number of profiles K,11,0.749,11,6.03,10.49,12,26.2,,9.9 to 9.9,32.5
+Number of profiles K,12,0.730,11,5.72,10.34,12,27.1,,9.7 to 9.7,32.8
+Number of profiles K,13,0.692,12,5.72,11.25,11,26.9,,10.6 to 10.6,32.8

@@ -1,0 +1,7 @@
+profile,weight,n_pod,energy_kWh,M2_effective,M2_evenness,M2_ci_low,M2_ci_high,M2_hard80,n_classes_present,dominant_share,share_domestic_pod,share_domestic_energy
+DDSLP_1,pod,1589,447151.33270678355,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0
+DDSLP_2,pod,698,391725.86341777595,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0
+DDSLP_3,pod,386,204555.16270531,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0
+DDSLP_4,pod,1481,964617.1665068206,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0
+DDSLP_5,pod,203,462393.2257069703,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0
+DDSLP_6,pod,2121,3943492.66277379,1.0,1.0,1.0,1.0,1,1,1.0,1.0,1.0

@@ -1,0 +1,18 @@
+National profile,DD-SLP 1,DD-SLP 2,DD-SLP 3,DD-SLP 4,DD-SLP 5,DD-SLP 6,Nearest
+"ARERA 4.5-6 kW, non-resident",0.16,0.12,0.13,0.06,0.15,0.11,DD-SLP 4
+"ARERA 1.5-3 kW, all",0.12,0.12,0.14,0.12,0.23,0.06,DD-SLP 6
+"ARERA 1.5-3 kW, resident",0.12,0.12,0.14,0.12,0.24,0.06,DD-SLP 6
+"ARERA 3-4.5 kW, resident",0.15,0.15,0.14,0.14,0.25,0.07,DD-SLP 6
+"ARERA 3-4.5 kW, all",0.14,0.15,0.14,0.14,0.25,0.07,DD-SLP 6
+"ARERA 1.5-3 kW, non-resident",0.12,0.12,0.13,0.08,0.21,0.08,DD-SLP 6
+"ARERA 3-4.5 kW, non-resident",0.13,0.14,0.13,0.12,0.24,0.09,DD-SLP 6
+"ARERA 0-1.5 kW, all",0.20,0.13,0.17,0.09,0.12,0.15,DD-SLP 4
+"ARERA 0-1.5 kW, non-resident",0.19,0.14,0.17,0.09,0.12,0.15,DD-SLP 4
+"ARERA 4.5-6 kW, all",0.17,0.16,0.12,0.09,0.17,0.10,DD-SLP 4
+"GSE domestic, single rate",0.13,0.13,0.15,0.10,0.20,0.11,DD-SLP 4
+"ARERA 4.5-6 kW, resident",0.18,0.17,0.14,0.11,0.17,0.10,DD-SLP 6
+"ARERA >6 kW, all",0.26,0.20,0.20,0.16,0.10,0.19,DD-SLP 5
+"ARERA >6 kW, non-resident",0.21,0.16,0.15,0.11,0.11,0.14,DD-SLP 4
+"ARERA >6 kW, resident",0.29,0.23,0.22,0.19,0.11,0.22,DD-SLP 5
+"GSE other uses, single rate",0.23,0.15,0.24,0.14,0.17,0.17,DD-SLP 4
+"ARERA 0-1.5 kW, resident",0.24,0.18,0.21,0.15,0.14,0.16,DD-SLP 5

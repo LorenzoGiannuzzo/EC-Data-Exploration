@@ -21,6 +21,11 @@ the others, so that one that cannot run does not cost the others their results.
   R6  grid                     the data-driven and activity-based catalogs built on the
                                seasonal and on the monthly grid (comment on Section 2.4)
 
+When the caches of the split-domestic branch are present (review.split_catalog), R1, R7,
+R11 and R14 also evaluate the data-driven catalog built within the residential divide,
+the domestic and the non-domestic points clustered apart on the shared dictionary, on the
+same user-months as every other family.
+
 Run
     python main.py --stage review
     python review_analyses.py --only R2 R5
@@ -65,7 +70,11 @@ SIL_SAMPLE = int(REV.get("silhouette_sample", 4000))
 SENS_PORTFOLIO = bool(REV.get("sensitivity_portfolio", True))
 
 FAM_SHORT = {"GSE": "GSE", "ARERA": "ARERA", "DD_in": "Data-driven", "DD_cv": "Data-driven, out-of-sample",
-             "ACT_in": "Activity-based", "ACT_cv": "Activity-based, out-of-sample"}
+             "ACT_in": "Activity-based", "ACT_cv": "Activity-based, out-of-sample",
+             "SPLIT_in": "Data-driven within the residential divide",
+             "SPLIT_cv": "Data-driven within the residential divide, out-of-sample"}
+SPLIT_NAMES = ("SPLIT_in", "SPLIT_cv")
+_SPLIT_CACHE: dict = {}
 
 
 def save(table: pd.DataFrame, name: str) -> None:
@@ -77,6 +86,106 @@ def save(table: pd.DataFrame, name: str) -> None:
 
 def is_domestic_label(code: object) -> bool:
     return str(code).startswith(("DO",))
+
+
+# ============================================================ shared: catalog within the residential divide
+def split_partition(inp: X.Inputs) -> pd.DataFrame | None:
+    """The partition of the split-domestic branch, one group label per point of this run.
+
+    Reads groups.parquet from the cache of the domestic and of the non-domestic run and
+    labels their groups D1, D2, ... and N1, N2, ... Returns None, and the split family is
+    simply left out of the tables, when a cache is missing, when this run is itself a
+    split run, or when the two partitions do not cover the points clustered here.
+    """
+    spec = REV.get("split_catalog", {"domestic": "cache_split_dom", "non_domestic": "cache_split_nondom"}) or {}
+    if not spec or Path(str(_CFG.cache_dir)).name.startswith("cache_split"):
+        return None
+    root = Path(__file__).resolve().parent
+    frames = []
+    for cls, folder in spec.items():
+        path = Path(str(folder))
+        path = (path if path.is_absolute() else root / path) / "groups.parquet"
+        if not path.exists():
+            print(f"    split catalog left out: {path} not found")
+            return None
+        g = pd.read_parquet(path)
+        if not {"pod", "group"} <= set(g.columns):
+            print(f"    split catalog left out: {path} lacks the pod and group columns")
+            return None
+        tag = "D" if cls == "domestic" else "N"
+        frames.append(pd.DataFrame({"pod": g["pod"].to_numpy(),
+                                    "split_group": [f"{tag}{int(k)}" for k in g["group"]]}))
+    part = pd.concat(frames, ignore_index=True)
+    if part["pod"].duplicated().any():
+        raise ValueError("the domestic and the non-domestic partitions share "
+                         f"{int(part['pod'].duplicated().sum())} points: the split caches are inconsistent")
+    here = set(inp.groups["pod"])
+    covered = part["pod"].isin(here).sum()
+    #Lorenzo Giannuzzo: the split runs start from the cache of the base run, so their two partitions
+    # must cover the same points clustered here; on another population (the balanced branch, for
+    # instance) the family would be evaluated on a different set of users and is left out
+    if covered < 0.99 * len(here):
+        print(f"    split catalog left out: it covers {covered} of the {len(here)} points of this run")
+        return None
+    return part[part["pod"].isin(here)].reset_index(drop=True)
+
+
+def split_families(inp: X.Inputs, with_cv: bool = False) -> dict:
+    """The catalog within the residential divide, in sample and, if asked, out of sample.
+
+    Each group of the two split runs becomes one profile, built with X.catalog on the days
+    of this run exactly as every other catalog, so that the family differs from the
+    data-driven one only in the partition. Out of sample, the users are divided into folds
+    and each held-out user receives the curve of its group rebuilt without its fold.
+    """
+    key = ("cv" if with_cv else "in", id(inp.pod_cell))
+    if key in _SPLIT_CACHE:
+        return _SPLIT_CACHE[key]
+    part = split_partition(inp)
+    if part is None:
+        return {}
+    ix = inp.pod_cell["index"]
+    part = part[part["pod"].isin(list(ix))]
+    pods_arr = part["pod"].to_numpy()
+    lab = part["split_group"].to_numpy()
+    mem = {k: np.array([ix[p] for p in pods_arr[lab == k]]) for k in np.unique(lab)}
+    cat = X.catalog(inp, mem)
+    out = {"SPLIT_in": {"curves": X.expand(inp, cat), "keys": list(cat["keys"]),
+                        "of_pod": dict(zip(pods_arr, lab))}}
+    n_dom = len({k for k in lab if k.startswith("D")})
+    print(f"    split catalog: {n_dom} domestic and {len(np.unique(lab)) - n_dom} non-domestic profiles "
+          f"on {len(part)} points")
+    if with_cv:
+        n_f = int(REV.get("split_folds", 5))
+        rng = np.random.default_rng(SEED + 51)
+        fold = rng.permutation(len(part)) % n_f
+        curves, keys, of_pod = [], [], {}
+        for f in range(n_f):
+            tr = fold != f
+            mem_f = {k: np.array([ix[p] for p in pods_arr[tr & (lab == k)]]) for k in np.unique(lab[tr])}
+            cat_f = X.catalog(inp, mem_f)
+            cv = X.expand(inp, cat_f)
+            for q, k in enumerate(list(cat_f["keys"])):
+                curves.append(np.asarray(cv[q]))
+                keys.append(f"{f}|{k}")
+            for p, k in zip(pods_arr[~tr], lab[~tr]):
+                of_pod[p] = f"{f}|{k}"
+            print(f"    split catalog, fold {f + 1}/{n_f}: {int(tr.sum())} users to build, "
+                  f"{int((~tr).sum())} held out")
+        out["SPLIT_cv"] = {"curves": np.stack(curves), "keys": keys, "of_pod": of_pod}
+    _SPLIT_CACHE[key] = out
+    return out
+
+
+def family_ref(fam: dict, name: str, pod: object):
+    """The curve a family assigns to a point, or None where the family does not reach it."""
+    if name in SPLIT_NAMES:
+        f = fam.get(name)
+        k = f["of_pod"].get(pod) if f else None
+        if k is None or k not in f["keys"]:
+            return None
+        return f["curves"][f["keys"].index(k)]
+    return X.reference_of(fam, name, pod)
 
 
 # ============================================================ shared: references per user
@@ -181,22 +290,24 @@ def portfolio_tv(O: np.ndarray, R: np.ndarray, month: np.ndarray, hod: np.ndarra
 def run_R1(inp: X.Inputs) -> None:
     from scipy import sparse
     fam = X.build_families(inp)
+    split = split_families(inp, with_cv=True)
     hcal = inp.hcal
     month = hcal["month"].to_numpy()
     hod = hcal["hour"].to_numpy()
     groups = inp.groups
-    scopes = {"domestic": ("GSE", "ARERA", "DD_in", "DD_cv", "ACT_in", "ACT_cv"),
-              "non_domestic": ("GSE", "DD_in", "DD_cv", "ACT_in", "ACT_cv")}
+    built = ("DD_in", "DD_cv", "ACT_in", "ACT_cv") + tuple(n for n in SPLIT_NAMES if n in split)
+    scopes = {"domestic": ("GSE", "ARERA") + built,
+              "non_domestic": ("GSE",) + built}
     refs_of = {s: {} for s in scopes}
     for pod in groups["pod"]:
         r = national_refs(inp, pod)
-        for name in ("DD_in", "DD_cv", "ACT_in", "ACT_cv"):
-            c = X.reference_of(fam, name, pod)
+        for name in built:
+            c = family_ref(split if name in SPLIT_NAMES else fam, name, pod)
             if c is not None:
                 r[name] = (c, False)
-        if "ARERA" in r and len(r) == 6:
+        if "ARERA" in r and all(f in r for f in scopes["domestic"]):
             refs_of["domestic"][pod] = r
-        elif "ARERA" not in r and len(r) == 5:
+        elif "ARERA" not in r and all(f in r for f in scopes["non_domestic"]):
             refs_of["non_domestic"][pod] = r
     rng = np.random.default_rng(SEED + 11)
     rows = []
@@ -229,7 +340,7 @@ def run_R1(inp: X.Inputs) -> None:
                     vals.append(portfolio_tv(so, sr, month, hod)["hourly"])
                 stats[n][f] = np.concatenate(vals)
             del O, R
-            print(f"    {scope}: {X.FAMILY_LABEL[f]} done")
+            print(f"    {scope}: {FAM_SHORT[f]} done")
         for n in sizes:
             r = {"Population": scope, "Users per aggregate [-]": n,
                  "Aggregates evaluated [-]": len(stats[n][fams[0]])}
@@ -686,7 +797,7 @@ def refs_by_scope(inp: X.Inputs, fam: dict, names: tuple) -> dict:
     for pod in inp.groups["pod"]:
         r = national_refs(inp, pod)
         for name in names:
-            c = X.reference_of(fam, name, pod)
+            c = family_ref(fam, name, pod)
             if c is not None:
                 r[name] = (c, False)
         if "ARERA" in r and all(n in r for n in names) and "GSE" in r:
@@ -714,8 +825,9 @@ def user_month_stats(O: np.ndarray, R: np.ndarray, month: np.ndarray, hod: np.nd
 
 SCOPE_TXT = {"domestic": "Domestic points carrying an ARERA profile",
              "non_domestic": "Points outside the ARERA tables"}
-FAM7 = {"GSE": "GSE", "ARERA": "ARERA", "DD_in": "Data-driven", "ACT_in": "Activity-based",
-        "LOCAL": "Single local profile"}
+FAM7 = {"GSE": "GSE", "ARERA": "ARERA", "DD_in": "Data-driven",
+        "SPLIT_in": FAM_SHORT["SPLIT_in"], "SPLIT_cv": FAM_SHORT["SPLIT_cv"],
+        "ACT_in": "Activity-based", "LOCAL": "Single local profile"}
 
 
 # ============================================================ R7 single local profile and aggregates
@@ -723,10 +835,12 @@ def run_R7(inp: X.Inputs) -> None:
     """The single local profile against the catalogs, on user-months, random and homogeneous aggregates."""
     from scipy import sparse
     fam = insample_families(inp)
+    split = split_families(inp, with_cv=True)
+    fam.update(split)
     hcal = inp.hcal
     month = hcal["month"].to_numpy()
     hod = hcal["hour"].to_numpy()
-    scopes = refs_by_scope(inp, fam, ("DD_in", "ACT_in", "LOCAL"))
+    scopes = refs_by_scope(inp, fam, ("DD_in", "ACT_in", "LOCAL") + tuple(n for n in SPLIT_NAMES if n in split))
     a = inp.assign.set_index("pod")
     grp = dict(zip(inp.groups["pod"], inp.groups["group"]))
     rng = np.random.default_rng(SEED + 21)
@@ -737,7 +851,7 @@ def run_R7(inp: X.Inputs) -> None:
         N = len(pods_scope)
         if N == 0:
             continue
-        fams = [f for f in ("GSE", "ARERA", "DD_in", "ACT_in", "LOCAL")
+        fams = [f for f in ("GSE", "ARERA", "DD_in", "SPLIT_in", "SPLIT_cv", "ACT_in", "LOCAL")
                 if all(f in refs_of[p] for p in pods_scope)]
 
         def plan(labels: np.ndarray, n: int, reps: int) -> list:
@@ -1074,10 +1188,12 @@ FAM11 = {**FAM7, "OWN": "Own profile of each user"}
 def run_R11(inp: X.Inputs) -> None:
     from scipy import sparse
     fam = insample_families(inp)
+    split = split_families(inp)
+    fam.update(split)
     hcal = inp.hcal
     month = hcal["month"].to_numpy()
     hod = hcal["hour"].to_numpy()
-    scopes = refs_by_scope(inp, fam, ("DD_in", "ACT_in", "LOCAL"))
+    scopes = refs_by_scope(inp, fam, ("DD_in", "ACT_in", "LOCAL") + tuple(n for n in ("SPLIT_in",) if n in split))
     rng = np.random.default_rng(SEED + 31)
     rows_u, rows_p = [], []
     for scope, refs_of in scopes.items():
@@ -1094,7 +1210,8 @@ def run_R11(inp: X.Inputs) -> None:
         keep = (um[:, month] > 0).astype("float32")
         O *= keep
         R_own *= keep
-        fams = [f for f in ("GSE", "ARERA", "DD_in", "ACT_in", "LOCAL") if all(f in refs_of[p] for p in pods_scope)]
+        fams = [f for f in ("GSE", "ARERA", "DD_in", "SPLIT_in", "ACT_in", "LOCAL")
+                if all(f in refs_of[p] for p in pods_scope)]
         #Lorenzo Giannuzzo: delete-a-group jackknife over random groups of users. Resampling users with
         # replacement would duplicate them and bias the misallocation of the portfolio upward, whereas
         # leaving a group out keeps every aggregate a genuine portfolio of distinct users
@@ -1141,6 +1258,7 @@ def run_R11(inp: X.Inputs) -> None:
             del R
             print(f"    {scope}: {FAM11[f]} done")
         base = res["ACT_in"]
+        dd = res["DD_in"]
 
         def basic(v: np.ndarray, pct_: bool = True) -> str:
             th, jk = v[0], v[1:]
@@ -1162,6 +1280,10 @@ def run_R11(inp: X.Inputs) -> None:
                                "" if f == "ACT_in" else basic(diff_all, pct_=False),
                            "Groups left out in which the activity-based catalog still misallocates less [%]":
                                "" if f == "ACT_in" else X.pct(np.mean(diff > 0), 0),
+                           #Lorenzo Giannuzzo: the paired difference from the data-driven catalog of the joint
+                           # partition, which tells whether splitting the population lowers the error
+                           "Difference from the data-driven catalog, 95% interval [percentage points]":
+                               "" if f == "DD_in" else basic(r_["h"] - dd["h"], pct_=False),
                            "Error on the monthly peak, whole population [%]": X.pct(r_["peak"][0]),
                            "95% interval, peak [%]": basic(r_["peak"]),
                            "Signed error at the metered peak hour, whole population [%]": X.pct(r_["bias"][0]),
@@ -1284,6 +1406,7 @@ def run_R14(inp: X.Inputs) -> None:
     full = inp.pod_cell
     ix = full["index"]
     pc_train = pod_cell_from_mask(inp, mask)
+    split_part = split_partition(inp)
 
     def catalogs(pc: dict) -> dict:
         inp._cache["pod_cell"] = pc
@@ -1298,6 +1421,14 @@ def run_R14(inp: X.Inputs) -> None:
         cat = X.catalog(inp, {"all": np.array([ix[p] for p in f["pod"]])})
         out["LOCAL"] = {"curves": X.expand(inp, cat), "keys": ["all"],
                         "of_pod": {p: "all" for p in f["pod"]}}
+        #Lorenzo Giannuzzo: the catalog within the residential divide keeps the partition of the split
+        # runs, as the data-driven one keeps the joint partition, and only its curves are rebuilt
+        if split_part is not None:
+            f = split_part[split_part["pod"].isin(list(ix))]
+            mem = {k: np.array([ix[p] for p in x["pod"]]) for k, x in f.groupby("split_group")}
+            cat = X.catalog(inp, mem)
+            out["SPLIT"] = {"curves": X.expand(inp, cat), "keys": list(cat["keys"]),
+                            "of_pod": dict(zip(f["pod"], f["split_group"]))}
         inp._cache["pod_cell"] = full
         return out
 
@@ -1318,6 +1449,8 @@ def run_R14(inp: X.Inputs) -> None:
     families = {"GSE": None, "ARERA": None,
                 "DD_24": ("DD", fam_train), "ACT_24": ("ACT", fam_train), "LOCAL_24": ("LOCAL", fam_train),
                 "DD_all": ("DD", fam_full), "ACT_all": ("ACT", fam_full)}
+    if split_part is not None:
+        families.update({"SPLIT_24": ("SPLIT", fam_train), "SPLIT_all": ("SPLIT", fam_full)})
     refs_of = {"domestic": {}, "non_domestic": {}}
     for pod in groups["pod"]:
         r = national_refs(inp, pod)
@@ -1341,12 +1474,14 @@ def run_R14(inp: X.Inputs) -> None:
             refs_of["domestic"][pod] = r
         elif "GSE" in r:
             refs_of["non_domestic"][pod] = r
-    order = ["GSE", "ARERA", "DD_24", "ACT_24", "LOCAL_24", "OWN_24", "DD_all", "ACT_all"]
+    order = ["GSE", "ARERA", "DD_24", "SPLIT_24", "ACT_24", "LOCAL_24", "OWN_24", "DD_all", "SPLIT_all", "ACT_all"]
     label = {"GSE": "GSE", "ARERA": "ARERA",
              "DD_24": f"Data-driven, built on {year}", "ACT_24": f"Activity-based, built on {year}",
              "LOCAL_24": f"Single local profile, built on {year}",
              "OWN_24": f"Own profile of each user, built on {year}",
-             "DD_all": "Data-driven, built on the whole window", "ACT_all": "Activity-based, built on the whole window"}
+             "DD_all": "Data-driven, built on the whole window", "ACT_all": "Activity-based, built on the whole window",
+             "SPLIT_24": f"{FAM_SHORT['SPLIT_in']}, built on {year}",
+             "SPLIT_all": f"{FAM_SHORT['SPLIT_in']}, built on the whole window"}
     G = int(REV.get("portfolio_jackknife_groups", 20))
     rng = np.random.default_rng(SEED + 41)
     rows = []

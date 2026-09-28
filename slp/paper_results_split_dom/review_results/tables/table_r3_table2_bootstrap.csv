@@ -1,0 +1,20 @@
+National profile,Nearest data-driven profile,TV [-],95% interval [-],Second nearest,TV of the second [-],"Margin, 95% interval [-]",Bootstraps with the same nearest profile [%]
+"ARERA 1.5-3 kW, resident",DD-SLP 6,0.028,0.026 to 0.030,DD-SLP 2,0.060,0.028 to 0.037,100
+"ARERA 1.5-3 kW, all",DD-SLP 6,0.028,0.027 to 0.031,DD-SLP 2,0.058,0.026 to 0.034,100
+"ARERA 3-4.5 kW, all",DD-SLP 6,0.029,0.026 to 0.032,DD-SLP 2,0.061,0.028 to 0.038,100
+"ARERA 3-4.5 kW, resident",DD-SLP 6,0.029,0.027 to 0.032,DD-SLP 2,0.062,0.029 to 0.039,100
+"ARERA 3-4.5 kW, non-resident",DD-SLP 6,0.035,0.034 to 0.038,DD-SLP 2,0.053,0.014 to 0.023,100
+"ARERA 1.5-3 kW, non-resident",DD-SLP 6,0.039,0.037 to 0.041,DD-SLP 2,0.053,0.009 to 0.019,100
+"GSE domestic, time bands",DD-SLP 6,0.040,0.039 to 0.043,DD-SLP 4,0.046,0.002 to 0.009,100
+"ARERA 4.5-6 kW, non-resident",DD-SLP 4,0.041,0.038 to 0.043,DD-SLP 6,0.047,0.003 to 0.010,100
+"ARERA 4.5-6 kW, all",DD-SLP 6,0.046,0.042 to 0.050,DD-SLP 4,0.060,0.009 to 0.020,100
+"GSE domestic, single rate",DD-SLP 6,0.049,0.047 to 0.051,DD-SLP 2,0.068,0.014 to 0.025,100
+"ARERA 4.5-6 kW, resident",DD-SLP 6,0.049,0.044 to 0.053,DD-SLP 4,0.066,0.012 to 0.023,100
+"ARERA >6 kW, all",DD-SLP 5,0.052,0.048 to 0.060,DD-SLP 4,0.079,0.020 to 0.032,100
+"GSE other uses, time bands",DD-SLP 4,0.053,0.051 to 0.056,DD-SLP 5,0.056,-0.006 to 0.011,68
+"ARERA 0-1.5 kW, all",DD-SLP 5,0.054,0.048 to 0.065,DD-SLP 4,0.056,-0.008 to 0.010,71
+"ARERA >6 kW, non-resident",DD-SLP 5,0.054,0.048 to 0.065,DD-SLP 6,0.062,-0.003 to 0.015,92
+"ARERA 0-1.5 kW, non-resident",DD-SLP 4,0.059,0.056 to 0.062,DD-SLP 5,0.059,-0.008 to 0.012,50
+"ARERA >6 kW, resident",DD-SLP 5,0.059,0.053 to 0.070,DD-SLP 4,0.092,0.023 to 0.040,100
+"ARERA 0-1.5 kW, resident",DD-SLP 5,0.075,0.071 to 0.080,DD-SLP 6,0.076,-0.006 to 0.006,56
+"GSE other uses, single rate",DD-SLP 2,0.084,0.080 to 0.089,DD-SLP 4,0.085,-0.004 to 0.007,47

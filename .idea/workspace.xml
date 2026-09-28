@@ -5,6 +5,48 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3d1214e-c256-4e55-88ca-dcc46f1494d8" name="Changes" comment="Furhter updates">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/2_clustering/dictionary.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/2_clustering/dictionary.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/2_clustering/groups.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/2_clustering/groups.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/2_clustering/validity_D.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/2_clustering/validity_D.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/2_clustering/validity_K.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/2_clustering/validity_K.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/3_standard_lp_generation/profiles.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/3_standard_lp_generation/profiles.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/3_standard_lp_generation/weights.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/3_standard_lp_generation/weights.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig2_daily_shapes.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig2_daily_shapes.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig3_b2_distributions.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig3_b2_distributions.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig4_daytype_energy.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig4_daytype_energy.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig5_misallocated_energy.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/4_lp_comparison/figures/pdf/fig5_misallocated_energy.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_saturday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_saturday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_sunday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_sunday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_weekday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig16_profiles_with_classes_weekday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig8_m2_aggregation.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/aggregation/figures/pdf/fig8_m2_aggregation.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig13_behaviours_under_national.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig13_behaviours_under_national.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig14_declared_against_actual.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig14_declared_against_actual.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig15_reach_beyond_declared.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/coverage/figures/pdf/fig15_reach_beyond_declared.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/figures/pdf/fig6_contingency.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/figures/pdf/fig6_contingency.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/multiplicity/figures/pdf/fig17_classes_across_profiles.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/multiplicity/figures/pdf/fig17_classes_across_profiles.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/multiplicity/figures/pdf/fig7_m1_multiplicity.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/5_lp_mapping/multiplicity/figures/pdf/fig7_m1_multiplicity.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/dictionary.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/dictionary.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig13_behaviours_under_national.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig13_behaviours_under_national.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig14_declared_against_actual.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig14_declared_against_actual.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig15_reach_beyond_declared.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig15_reach_beyond_declared.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_saturday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_saturday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_sunday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_sunday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_weekday.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig16_profiles_with_classes_weekday.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig17_classes_across_profiles.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig17_classes_across_profiles.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig2_daily_shapes.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig2_daily_shapes.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig3_b2_distributions.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig3_b2_distributions.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig4_daytype_energy.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig4_daytype_energy.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig5_misallocated_energy.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig5_misallocated_energy.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig6_contingency.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig6_contingency.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig7_m1_multiplicity.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig7_m1_multiplicity.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig8_m2_aggregation.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/fig8_m2_aggregation.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/groups.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/groups.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/profiles.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/profiles.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/validity_D.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/validity_D.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/validity_K.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/validity_K.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/paper_results/figures/pdf/weights.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/slp/paper_results/figures/pdf/weights.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/slp/review_analyses.py" beforeDir="false" afterPath="$PROJECT_DIR$/slp/review_analyses.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../SOCrates" beforeDir="false" afterPath="$PROJECT_DIR$/../SOCrates" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -50,21 +92,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "Python.compare_normalisation.executor": "Run",
-    "Python.data_exploration.executor": "Run",
-    "Python.inspect_rows.executor": "Run",
-    "Python.inspect_units.executor": "Run",
-    "Python.inspect_windows.executor": "Run",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Paper__pipeline__domestic__separation",
-    "last_opened_file_path": "C:/Users/lorenzo.giannuzzo/PycharmProjects/Data Exploration/slp",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;Python.compare_normalisation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.data_exploration.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_rows.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_units.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inspect_windows.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Paper__pipeline__domestic__separation&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/lorenzo.giannuzzo/PycharmProjects/Data Exploration/slp&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\lorenzo.giannuzzo\PycharmProjects\Data Exploration\slp" />

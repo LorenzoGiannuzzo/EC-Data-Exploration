@@ -1,0 +1,6 @@
+Population,Aggregates drawn,Users per aggregate [-],Aggregates evaluated [-],"GSE, median [%]","GSE, 10th to 90th percentile [%]","Data-driven, median [%]","Data-driven, 10th to 90th percentile [%]","Activity-based, median [%]","Activity-based, 10th to 90th percentile [%]","Single local profile, median [%]","Single local profile, 10th to 90th percentile [%]"
+Points outside the ARERA tables,Within the same data-driven profile,10,375,16.4,9.5 to 35.2,13.7,5.6 to 25.0,16.2,6.3 to 27.7,16.0,8.8 to 34.4
+Points outside the ARERA tables,Within the same data-driven profile,25,135,13.3,8.7 to 25.4,10.0,4.7 to 16.3,12.6,5.5 to 21.1,12.9,8.1 to 25.1
+Points outside the ARERA tables,Within the same data-driven profile,50,55,10.7,8.1 to 22.1,7.8,4.2 to 11.5,8.2,4.8 to 17.8,10.6,7.5 to 21.9
+Points outside the ARERA tables,Within the same data-driven profile,100,20,8.9,8.1 to 13.9,6.3,2.5 to 8.1,6.4,4.6 to 14.1,8.7,6.4 to 12.5
+Points outside the ARERA tables,Within the same data-driven profile,250,0,,,,,,,,

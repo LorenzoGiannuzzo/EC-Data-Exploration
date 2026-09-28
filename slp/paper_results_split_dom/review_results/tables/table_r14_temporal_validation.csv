@@ -1,0 +1,16 @@
+Population,Family of profiles,User-months [-],Median TV [-],"Misallocated share, user-months [%]","Misallocated share, portfolio, hourly [%]","95% interval, hourly [%]","Misallocated share, portfolio, mean day [%]","95% interval, mean day [%]"
+Domestic points carrying an ARERA profile,GSE,32307,0.318,33.8,6.6,6.2 to 6.9,3.5,3.4 to 3.7
+Domestic points carrying an ARERA profile,ARERA,32307,0.316,33.6,5.0,4.7 to 5.3,2.2,2.0 to 2.3
+Domestic points carrying an ARERA profile,"Data-driven, built on 2024",32307,0.315,33.3,4.1,3.8 to 4.3,1.2,1.0 to 1.3
+Domestic points carrying an ARERA profile,"Activity-based, built on 2024",32307,0.316,33.6,4.2,3.9 to 4.5,1.3,1.2 to 1.4
+Domestic points carrying an ARERA profile,"Single local profile, built on 2024",32307,0.316,33.6,4.2,3.9 to 4.5,1.3,1.2 to 1.4
+Domestic points carrying an ARERA profile,"Own profile of each user, built on 2024",32307,0.313,32.3,4.1,3.8 to 4.4,1.2,1.0 to 1.3
+Domestic points carrying an ARERA profile,"Data-driven, built on the whole window",32307,0.315,33.3,4.0,3.8 to 4.3,1.0,0.9 to 1.0
+Domestic points carrying an ARERA profile,"Activity-based, built on the whole window",32307,0.316,33.6,4.1,3.9 to 4.4,1.1,1.0 to 1.3
+Points outside the ARERA tables,GSE,2082,0.196,22.0,10.5,9.0 to 12.0,9.7,8.2 to 11.1
+Points outside the ARERA tables,"Data-driven, built on 2024",2082,0.188,19.7,5.6,4.1 to 7.2,2.3,1.2 to 3.4
+Points outside the ARERA tables,"Activity-based, built on 2024",2082,0.197,21.6,9.5,8.1 to 11.0,7.7,6.5 to 8.8
+Points outside the ARERA tables,"Single local profile, built on 2024",2082,0.197,21.6,9.5,8.1 to 11.0,7.7,6.5 to 8.8
+Points outside the ARERA tables,"Own profile of each user, built on 2024",2082,0.170,18.4,5.5,4.1 to 6.9,1.5,1.0 to 2.0
+Points outside the ARERA tables,"Data-driven, built on the whole window",2082,0.188,19.7,5.5,4.1 to 6.9,2.2,1.0 to 3.3
+Points outside the ARERA tables,"Activity-based, built on the whole window",2082,0.197,21.6,9.3,7.9 to 10.8,7.4,6.1 to 8.6

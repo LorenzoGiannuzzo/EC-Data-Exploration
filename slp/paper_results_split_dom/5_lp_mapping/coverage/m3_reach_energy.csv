@@ -1,0 +1,76 @@
+national_profile,weight,activity,reach_share
+ARERA 0-1.5 Non Residente,energy,DO,1.0
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_1,0.420889546293131
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_2,0.11457316319086805
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_3,0.033051753183594074
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_4,0.15430155558518127
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_5,0.05331231385764026
+ARERA 0-1.5 Non Residente,energy,__profile__DDSLP_6,0.22387166788958535
+ARERA 0-1.5 Residente,energy,DO,1.0
+ARERA 0-1.5 Residente,energy,__profile__DDSLP_1,0.16439399618958622
+ARERA 0-1.5 Residente,energy,__profile__DDSLP_2,0.5844325817436368
+ARERA 0-1.5 Residente,energy,__profile__DDSLP_5,0.251173422066777
+ARERA 1.5-3 Non Residente,energy,DO,0.9999999999999999
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_1,0.23251472197099488
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_2,0.1519901999028999
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_3,0.0786604560244665
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_4,0.2953127709541014
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_5,0.011410458636131488
+ARERA 1.5-3 Non Residente,energy,__profile__DDSLP_6,0.23011139251140592
+ARERA 1.5-3 Residente,energy,DO,1.0
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_1,0.011757655630054464
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_2,0.03349185252052371
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_3,0.009106746562640562
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_4,0.07800587603633002
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_5,0.028198272179734914
+ARERA 1.5-3 Residente,energy,__profile__DDSLP_6,0.8394395970707164
+ARERA 3-4.5 Non Residente,energy,DO,1.0
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_1,0.14078187555431598
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_2,0.14947034856716399
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_3,0.1148913043221378
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_4,0.3800633039500504
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_5,0.00976005857352867
+ARERA 3-4.5 Non Residente,energy,__profile__DDSLP_6,0.20503310903280325
+ARERA 3-4.5 Residente,energy,DO,0.9999999999999999
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_1,0.003980116878103397
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_2,0.022664567767345593
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_3,0.005536761744795692
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_4,0.04515364260408065
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_5,0.021360320899908438
+ARERA 3-4.5 Residente,energy,__profile__DDSLP_6,0.9013045901057661
+ARERA 4.5-6 Non Residente,energy,DO,1.0000000000000002
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_1,0.16567334827534744
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_2,0.07364964465164851
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_3,0.09450276564253456
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_4,0.37792378255496567
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_5,0.04711645718309286
+ARERA 4.5-6 Non Residente,energy,__profile__DDSLP_6,0.2411340016924111
+ARERA 4.5-6 Residente,energy,DO,1.0
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_1,0.005039898479849531
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_2,0.002225315154781057
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_3,0.015807564492023033
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_4,0.05668809538010023
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_5,0.08309500399790079
+ARERA 4.5-6 Residente,energy,__profile__DDSLP_6,0.8371441224953453
+ARERA >6 Non Residente,energy,DO,1.0
+ARERA >6 Non Residente,energy,__profile__DDSLP_1,0.09852918694249096
+ARERA >6 Non Residente,energy,__profile__DDSLP_4,0.34290210724747716
+ARERA >6 Non Residente,energy,__profile__DDSLP_5,0.11794181159577975
+ARERA >6 Non Residente,energy,__profile__DDSLP_6,0.4406268942142521
+ARERA >6 Residente,energy,DO,1.0
+ARERA >6 Residente,energy,__profile__DDSLP_2,0.053724815777018174
+ARERA >6 Residente,energy,__profile__DDSLP_4,0.05911770657907085
+ARERA >6 Residente,energy,__profile__DDSLP_6,0.887157477643911
+PAUM,energy,DO,0.9999999999999999
+PAUM,energy,__profile__DDSLP_1,0.006852096325899177
+PAUM,energy,__profile__DDSLP_2,0.005160983477387552
+PAUM,energy,__profile__DDSLP_4,0.09841694837661803
+PAUM,energy,__profile__DDSLP_5,0.7386863362966626
+PAUM,energy,__profile__DDSLP_6,0.15088363552343254
+PDMM,energy,DO,1.0
+PDMM,energy,__profile__DDSLP_1,0.07396701072477568
+PDMM,energy,__profile__DDSLP_2,0.0648555530756492
+PDMM,energy,__profile__DDSLP_3,0.03404915554317055
+PDMM,energy,__profile__DDSLP_4,0.153909132156346
+PDMM,energy,__profile__DDSLP_5,0.02701065936377223
+PDMM,energy,__profile__DDSLP_6,0.6462084891362864

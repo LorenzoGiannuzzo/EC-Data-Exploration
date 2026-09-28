@@ -1,0 +1,5 @@
+Variable,Population,Points of delivery [-],Categories [-],Mutual information [nats],Share of the profile entropy explained [%],Normalized mutual information [-],Cramér's V [-],"Mutual information of random labels, 95th percentile [nats]",Permutation p-value [-]
+Activity class (Section 2.6),all points,916,14,0.513,26.0,0.238,0.466,0.0661,0.0010
+"Tariff category, domestic or other uses",all points,916,4,0.192,9.7,0.215,0.488,0.0190,0.0010
+Contractual power class,all points,916,5,0.152,7.7,0.091,0.277,0.0233,0.0010
+ARERA power class and residency,domestic points with an ARERA profile,9,1,0.000,0.0,,,0.0000,1.0000

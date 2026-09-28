@@ -1,0 +1,5 @@
+Quantity,All points,Prosumers excluded
+Adjusted Rand index against the adopted partition [-],1.000,0.661
+Prosumers removed [-],0,241
+Median class multiplicity [-],4.78,4.81
+Classes more coherent than a random label [-],0,0

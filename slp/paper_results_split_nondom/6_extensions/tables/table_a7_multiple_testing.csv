@@ -1,0 +1,15 @@
+Activity class,Points of delivery [-],Class multiplicity [-],Permutation p-value [-],Benjamini-Hochberg q-value [-],Coherent at 5%,Coherent at 5% after correction
+"Minor classes, pooled",263,6.7,0.0110,0.0171,yes,yes
+Warehousing,34,6.5,0.5145,0.5145,no,no
+Land transport,27,5.9,0.2987,0.3217,no,no
+Personal services,29,5.6,0.1319,0.1538,no,no
+Specialized construction,31,5.3,0.0659,0.0839,no,no
+Public administration,75,5.3,0.0010,0.0020,yes,yes
+Membership organizations,34,5.0,0.0250,0.0350,yes,yes
+Wood products,26,4.3,0.0070,0.0122,yes,yes
+Agriculture,60,4.3,0.0010,0.0020,yes,yes
+Retail trade,86,4.1,0.0010,0.0020,yes,yes
+Accommodation,79,2.8,0.0010,0.0020,yes,yes
+Food and beverage,55,2.6,0.0010,0.0020,yes,yes
+Public lighting,67,2.3,0.0010,0.0020,yes,yes
+Telecommunications,50,1.2,0.0010,0.0020,yes,yes

@@ -1,0 +1,7 @@
+Data-driven profile,Residential,Distance to the nearest national profile [-],95% interval [-],National profiles for which it is the nearest [-],"Same count, 5th to 95th percentile [-]",Bootstraps in which uncovered [%]
+DD-SLP 1,yes,0.063,0.057 to 0.071,0,0 to 0,
+DD-SLP 2,yes,0.053,0.049 to 0.058,1,0 to 1,
+DD-SLP 3,yes,0.134,0.128 to 0.142,0,0 to 0,
+DD-SLP 4,yes,0.041,0.038 to 0.043,3,1 to 5,
+DD-SLP 5,yes,0.052,0.047 to 0.057,5,2 to 8,
+DD-SLP 6,yes,0.028,0.026 to 0.030,10,10 to 12,

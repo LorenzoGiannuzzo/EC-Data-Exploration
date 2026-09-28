@@ -1,0 +1,10 @@
+Population,Family of profiles,User-months [-],Median TV [-],"Misallocated share, user-months [%]","Misallocated share, portfolio, hourly [%]","Misallocated share, portfolio, mean day [%]"
+Domestic points carrying an ARERA profile,GSE,43019,0.322,33.9,6.5,3.6
+Domestic points carrying an ARERA profile,ARERA,43019,0.320,33.6,4.9,2.2
+Domestic points carrying an ARERA profile,Data-driven,43019,0.319,33.4,3.9,1.0
+Domestic points carrying an ARERA profile,Activity-based,43019,0.319,33.6,4.0,1.2
+Domestic points carrying an ARERA profile,Single local profile,43019,0.319,33.6,4.0,1.2
+Points outside the ARERA tables,GSE,2469,0.191,21.4,9.8,9.1
+Points outside the ARERA tables,Data-driven,2469,0.181,19.6,4.9,1.7
+Points outside the ARERA tables,Activity-based,2469,0.191,21.3,8.9,7.1
+Points outside the ARERA tables,Single local profile,2469,0.191,21.3,8.9,7.1

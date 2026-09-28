@@ -1,0 +1,76 @@
+national_profile,weight,activity,reach_share
+ARERA 0-1.5 Non Residente,pod,DO,0.9999999999999999
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_1,0.6515151515151515
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_2,0.16666666666666666
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_3,0.030303030303030304
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_4,0.09090909090909091
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_5,0.015151515151515152
+ARERA 0-1.5 Non Residente,pod,__profile__DDSLP_6,0.045454545454545456
+ARERA 0-1.5 Residente,pod,DO,0.9999999999999999
+ARERA 0-1.5 Residente,pod,__profile__DDSLP_1,0.6666666666666666
+ARERA 0-1.5 Residente,pod,__profile__DDSLP_2,0.16666666666666666
+ARERA 0-1.5 Residente,pod,__profile__DDSLP_5,0.16666666666666666
+ARERA 1.5-3 Non Residente,pod,DO,1.0
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_1,0.4095107765993842
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_2,0.1518987341772152
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_3,0.08108108108108109
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_4,0.2689018132056107
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_5,0.005815942524803284
+ARERA 1.5-3 Non Residente,pod,__profile__DDSLP_6,0.08279165241190557
+ARERA 1.5-3 Residente,pod,DO,1.0
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_1,0.05408271474019088
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_2,0.06097560975609756
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_3,0.02014846235418876
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_4,0.1320254506892895
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_5,0.018027571580063628
+ARERA 1.5-3 Residente,pod,__profile__DDSLP_6,0.7147401908801697
+ARERA 3-4.5 Non Residente,pod,DO,0.9999999999999999
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_1,0.2541743970315399
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_2,0.14656771799628943
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_3,0.12430426716141002
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_4,0.39517625231910947
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_5,0.0055658627087198514
+ARERA 3-4.5 Non Residente,pod,__profile__DDSLP_6,0.07421150278293136
+ARERA 3-4.5 Residente,pod,DO,1.0
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_1,0.014164305949008499
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_2,0.042492917847025496
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_3,0.0169971671388102
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_4,0.06515580736543909
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_5,0.0113314447592068
+ARERA 3-4.5 Residente,pod,__profile__DDSLP_6,0.8498583569405099
+ARERA 4.5-6 Non Residente,pod,DO,1.0
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_1,0.2898550724637681
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_2,0.09057971014492754
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_3,0.12318840579710146
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_4,0.391304347826087
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_5,0.010869565217391304
+ARERA 4.5-6 Non Residente,pod,__profile__DDSLP_6,0.09420289855072464
+ARERA 4.5-6 Residente,pod,DO,1.0
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_1,0.02727272727272727
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_2,0.00909090909090909
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_3,0.01818181818181818
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_4,0.1
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_5,0.045454545454545456
+ARERA 4.5-6 Residente,pod,__profile__DDSLP_6,0.8
+ARERA >6 Non Residente,pod,DO,1.0
+ARERA >6 Non Residente,pod,__profile__DDSLP_1,0.25
+ARERA >6 Non Residente,pod,__profile__DDSLP_4,0.45
+ARERA >6 Non Residente,pod,__profile__DDSLP_5,0.05
+ARERA >6 Non Residente,pod,__profile__DDSLP_6,0.25
+ARERA >6 Residente,pod,DO,1.0
+ARERA >6 Residente,pod,__profile__DDSLP_2,0.07142857142857142
+ARERA >6 Residente,pod,__profile__DDSLP_4,0.14285714285714285
+ARERA >6 Residente,pod,__profile__DDSLP_6,0.7857142857142857
+PAUM,pod,DO,1.0
+PAUM,pod,__profile__DDSLP_1,0.0456140350877193
+PAUM,pod,__profile__DDSLP_2,0.021052631578947368
+PAUM,pod,__profile__DDSLP_4,0.2596491228070175
+PAUM,pod,__profile__DDSLP_5,0.47017543859649125
+PAUM,pod,__profile__DDSLP_6,0.20350877192982456
+PDMM,pod,DO,1.0
+PDMM,pod,__profile__DDSLP_1,0.2544808654932989
+PDMM,pod,__profile__DDSLP_2,0.11173906022929113
+PDMM,pod,__profile__DDSLP_3,0.062328435330211526
+PDMM,pod,__profile__DDSLP_4,0.2271919909575327
+PDMM,pod,__profile__DDSLP_5,0.011141611496851283
+PDMM,pod,__profile__DDSLP_6,0.33311803649281446

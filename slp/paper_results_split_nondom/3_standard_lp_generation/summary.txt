@@ -1,0 +1,17 @@
+Profiles                     8
+Grid                         season
+Curve weighting              energy
+Cells per profile            9  (3 seasons x 3 day types)
+PODs carrying a profile      916
+Normalised to                1000 kWh per year
+
+Dispersion of the members from their own curve, nRMSD:
+  median p50                 0.617
+  median p95                 1.956
+  worst cell p95             4.143
+
+The weights are taken over the calendar, not over the observed days.
+The period has whole months missing, so an observed share would be the
+share of that season which happens to sit in the archive, a property of
+the export rather than of the users. Averaging within the cell and
+weighting by the calendar keeps the two apart.

@@ -1,0 +1,10 @@
+National profile,"Behaviors delivered, full partition [-]",Median over subsample partitions [-],5th to 95th percentile [-]
+"ARERA 0-1.5 kW, non-resident",3.0,3.1,2.4 to 3.6
+"ARERA 1.5-3 kW, non-resident",4.2,4.5,4.2 to 4.7
+"ARERA 1.5-3 kW, resident",2.7,2.7,2.3 to 3.2
+"ARERA 3-4.5 kW, non-resident",4.4,4.8,4.3 to 5.1
+"ARERA 3-4.5 kW, resident",1.9,1.9,1.6 to 2.4
+"ARERA 4.5-6 kW, non-resident",4.4,4.9,4.3 to 5.3
+"ARERA 4.5-6 kW, resident",2.1,2.5,1.9 to 3.0
+"GSE other uses, single rate",3.5,3.4,2.8 to 4.1
+"GSE domestic, single rate",4.6,4.7,4.5 to 5.2

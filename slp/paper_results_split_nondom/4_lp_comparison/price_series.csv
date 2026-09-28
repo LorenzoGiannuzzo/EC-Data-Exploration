@@ -1,0 +1,3 @@
+series,note,available
+dayahead,comparison.price_file not set: Eq. 14 not computed,False
+imbalance,comparison.imbalance_price_file not set: Eq. 14 not computed,False

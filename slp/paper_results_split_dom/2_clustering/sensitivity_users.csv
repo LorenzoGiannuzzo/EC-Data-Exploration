@@ -1,0 +1,8 @@
+parameter,value,base_value,K,ARI_vs_base,scale_share_of_distance
+zero_replacement,1e-06,0.0001,6,0.5464639886091899,
+zero_replacement,1e-05,0.0001,6,0.6288479035633321,
+zero_replacement,0.001,0.0001,6,0.5649807995148564,
+zero_replacement,0.002,0.0001,6,0.5483994723037328,
+scale_weight,0.0,0.5,6,0.04094980332281589,0.0
+scale_weight,0.25,0.5,6,0.2484353681142823,0.2500000000000003
+scale_weight,0.75,0.5,6,0.4244775203379657,0.75

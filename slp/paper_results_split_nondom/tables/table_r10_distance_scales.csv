@@ -1,0 +1,9 @@
+Data-driven profile,"Nearest other data-driven profile, nRMSD",nRMSD to it [-],"Nearest single-rate national profile, nRMSD",nRMSD to it [-] ,"Nearest other data-driven profile, TV",TV to it [-],"Nearest national profile, TV",TV to it [-] 
+DD-SLP 1,DD-SLP 6,0.24,"ARERA 0-1.5 kW, non-resident",0.16,DD-SLP 6,0.105,"GSE other uses, time bands",0.058
+DD-SLP 2,DD-SLP 3,0.69,"ARERA >6 kW, resident",0.87,DD-SLP 3,0.353,"GSE domestic, time bands",0.282
+DD-SLP 3,DD-SLP 1,0.27,"ARERA >6 kW, resident",0.16,DD-SLP 1,0.108,"ARERA >6 kW, resident",0.073
+DD-SLP 4,DD-SLP 6,0.17,"GSE other uses, single rate",0.18,DD-SLP 6,0.111,"GSE other uses, time bands",0.092
+DD-SLP 5,DD-SLP 1,0.41,"GSE other uses, single rate",0.43,DD-SLP 7,0.308,"GSE other uses, time bands",0.157
+DD-SLP 6,DD-SLP 4,0.17,"GSE other uses, single rate",0.11,DD-SLP 4,0.088,"GSE other uses, time bands",0.045
+DD-SLP 7,DD-SLP 6,0.37,"GSE other uses, single rate",0.41,DD-SLP 6,0.170,"GSE other uses, time bands",0.151
+DD-SLP 8,DD-SLP 6,0.20,"GSE other uses, single rate",0.23,DD-SLP 6,0.088,"GSE other uses, time bands",0.093

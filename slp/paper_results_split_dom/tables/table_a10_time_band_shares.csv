@@ -1,0 +1,24 @@
+Profile,Type,F1 [%],F2 [%],F3 [%]
+DD-SLP 1,Data-driven,33.3,31.3,35.4
+DD-SLP 2,Data-driven,34.4,29.8,35.8
+DD-SLP 3,Data-driven,23.8,32.4,43.8
+DD-SLP 4,Data-driven,30.8,28.3,40.9
+DD-SLP 5,Data-driven,31.7,25.3,43.1
+DD-SLP 6,Data-driven,32.8,30.8,36.4
+"ARERA 0-1.5 kW, non-resident",ARERA,33.0,27.2,39.8
+"ARERA 0-1.5 kW, resident",ARERA,29.7,29.2,41.1
+"ARERA 0-1.5 kW, all",ARERA,31.8,28.0,40.2
+"ARERA 1.5-3 kW, non-resident",ARERA,32.3,30.6,37.1
+"ARERA 1.5-3 kW, resident",ARERA,32.7,30.8,36.5
+"ARERA 1.5-3 kW, all",ARERA,32.7,30.8,36.5
+"ARERA 3-4.5 kW, non-resident",ARERA,32.8,30.9,36.3
+"ARERA 3-4.5 kW, resident",ARERA,31.9,31.5,36.6
+"ARERA 3-4.5 kW, all",ARERA,32.0,31.5,36.5
+"ARERA 4.5-6 kW, non-resident",ARERA,31.6,29.3,39.2
+"ARERA 4.5-6 kW, resident",ARERA,30.3,30.4,39.3
+"ARERA 4.5-6 kW, all",ARERA,30.5,30.2,39.3
+"ARERA >6 kW, non-resident",ARERA,33.0,28.3,38.8
+"ARERA >6 kW, resident",ARERA,29.2,28.2,42.6
+"ARERA >6 kW, all",ARERA,30.3,28.2,41.5
+"GSE domestic, single rate",GSE,34.6,28.9,36.6
+"GSE other uses, single rate",GSE,38.0,24.9,37.1

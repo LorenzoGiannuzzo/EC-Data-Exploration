@@ -1,0 +1,5 @@
+Grid,Catalog,Cells per profile [-],User-months [-],"Median TV, user-month [-]","Portfolio misallocation, hourly [%]","Portfolio misallocation, mean day [%]"
+Seasons (three) by day type,Data-driven,9,43019,0.319,3.9,1.0
+Seasons (three) by day type,Activity-based,9,43019,0.319,4.0,1.2
+Calendar months by day type,Data-driven,36,43019,0.319,3.8,0.2
+Calendar months by day type,Activity-based,36,43019,0.320,3.9,0.5

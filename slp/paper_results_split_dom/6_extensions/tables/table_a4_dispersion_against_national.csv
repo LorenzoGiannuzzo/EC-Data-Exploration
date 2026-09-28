@@ -1,0 +1,7 @@
+Data-driven profile,Median nRMSD of the member days [-],90th percentile nRMSD of the member days [-],"Nearest single-rate national profile, Eq. 7",Median nRMSD of that national profile [-],Member days farther than that national profile [%]
+DD-SLP 1,0.94,1.96,"ARERA 1.5-3 kW, all",0.12,100.0
+DD-SLP 2,0.52,1.40,"ARERA 1.5-3 kW, non-resident",0.12,100.0
+DD-SLP 3,0.45,1.47,"ARERA 4.5-6 kW, all",0.12,100.0
+DD-SLP 4,0.33,1.06,"ARERA 4.5-6 kW, non-resident",0.06,100.0
+DD-SLP 5,0.25,0.66,"ARERA >6 kW, all",0.10,85.4
+DD-SLP 6,0.76,1.38,"ARERA 1.5-3 kW, all",0.06,100.0

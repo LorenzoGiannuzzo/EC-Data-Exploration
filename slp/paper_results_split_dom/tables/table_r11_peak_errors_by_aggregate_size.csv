@@ -1,0 +1,18 @@
+Population,Users per aggregate [-],Family of profiles,"Misallocated share, hourly, median [%]","Error on the monthly peak, median [%]","Signed error at the metered peak hour, median [%]","Error on the energy of the top 5% hours, median [%]"
+Domestic points carrying an ARERA profile,100,GSE,9.0,33.4,-37.6,-26.1
+Domestic points carrying an ARERA profile,1000,GSE,6.8,23.5,-25.5,-17.0
+Domestic points carrying an ARERA profile,100,ARERA,8.1,26.8,-32.8,-20.7
+Domestic points carrying an ARERA profile,1000,ARERA,5.3,15.9,-20.7,-10.7
+Domestic points carrying an ARERA profile,100,Data-driven,7.5,25.6,-32.3,-20.5
+Domestic points carrying an ARERA profile,1000,Data-driven,4.3,14.6,-18.5,-10.6
+Domestic points carrying an ARERA profile,100,Activity-based,7.6,26.7,-33.1,-21.3
+Domestic points carrying an ARERA profile,1000,Activity-based,4.5,15.7,-18.9,-11.8
+Domestic points carrying an ARERA profile,100,Single local profile,7.6,26.7,-33.1,-21.3
+Domestic points carrying an ARERA profile,1000,Single local profile,4.5,15.7,-18.9,-11.8
+Domestic points carrying an ARERA profile,100,Own profile of each user,7.3,23.1,-31.4,-20.1
+Domestic points carrying an ARERA profile,1000,Own profile of each user,4.4,13.8,-18.9,-11.2
+Points outside the ARERA tables,100,GSE,10.1,11.6,-21.7,-15.9
+Points outside the ARERA tables,100,Data-driven,5.1,13.9,-22.9,-14.9
+Points outside the ARERA tables,100,Activity-based,9.3,7.9,-11.9,-2.8
+Points outside the ARERA tables,100,Single local profile,9.3,7.9,-11.9,-2.8
+Points outside the ARERA tables,100,Own profile of each user,4.9,17.5,-23.4,-15.3

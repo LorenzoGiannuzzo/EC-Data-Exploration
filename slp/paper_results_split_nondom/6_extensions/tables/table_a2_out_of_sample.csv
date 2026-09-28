@@ -1,0 +1,5 @@
+Population,Catalog,"Median TV, in-sample [-]","Portfolio misallocation, in-sample [%]","Median TV, out-of-sample [-]","Portfolio misallocation, out-of-sample [%]"
+Domestic points carrying an ARERA profile,Data-driven,0.496,32.5,0.504,33.0
+Domestic points carrying an ARERA profile,Activity-based,0.509,37.0,0.508,37.1
+Points outside the ARERA tables,Data-driven,0.233,4.2,0.238,4.2
+Points outside the ARERA tables,Activity-based,0.254,4.1,0.256,4.1

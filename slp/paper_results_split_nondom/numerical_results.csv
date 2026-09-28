@@ -1,0 +1,1264 @@
+section,figure,quantity,subject,value,unit,source,definition
+2.2 / 3.1,,rows with a meter constant above one,,84692.0,POD-days,1_preprocessing/preprocessing_facts.csv,"withdrawn active energy rows whose K column is 20, 25 or 40"
+2.2 / 3.1,,rows with meter constant 20,,41321.0,POD-days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,rows with meter constant 25,,41015.0,POD-days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,rows with meter constant 40,,2356.0,POD-days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,PODs with a meter constant above one,,248.0,PODs,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,"PODs recording injected energy (AN rows), as read",,502.0,PODs,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,clock-change days in the period,,4.0,days,1_preprocessing/preprocessing_facts.csv,"days of 92 or 100 quarter-hours present in the archive, removed"
+2.2 / 3.1,,readings censored above the contractual power,,193401.0,quarter-hours,1_preprocessing/preprocessing_facts.csv,reading x 4 above 1.5 x contractual power
+2.2 / 3.1,,share of readings censored,,0.000469,-,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,PODs retained,,7527.0,PODs,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,prosumers among the retained PODs,,298.0,PODs,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,"days at zero, kept as days without a shape",,811718.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,"days under 12 non-zero quarter-hours, kept without a shape",,77266.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,daily shapes,,2606345.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,zero days classified genuine,,811719.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,zero days classified faults,,2154.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,days dropped for gaps longer than four hours,,5760.0,days,1_preprocessing/preprocessing_facts.csv,nan
+2.2 / 3.1,,retained PODs without any day carrying a shape,,133.0,PODs,1_preprocessing/preprocessing_facts.csv,they pass the completeness thresholds on zero days alone and cannot be clustered
+2.2 / 3.1,,share of the previous month's PODs found in this month,Feb24,,-,1_preprocessing/pod_continuity.csv,"codes matching IT###E########: 2158; examples not matching: 1,00E+58"
+2.2 / 3.1,,share of the previous month's PODs found in this month,Mar24,0.99861,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 2707; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Apr24,0.999261,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 3320; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Mag24,0.998795,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 4019; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Giu24,0.999502,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 4453; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,lug24,0.998428,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 4696; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,ago24,0.998296,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 4954; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Set24,0.999193,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 5401; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Ott24,0.996667,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 5701; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Nov24,0.996667,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 6357; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,gen25,0.997326,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 7550; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Mar25,0.996821,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 8391; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Giu25,0.998808,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 9782; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Lug25,0.999284,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 11523; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Ago25,0.999393,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 11871; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Set25,0.998484,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 12055; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Ott25,0.996516,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 12216; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Nov25,0.996971,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 12204; examples not matching: nan
+2.2 / 3.1,,share of the previous month's PODs found in this month,Dic25,0.997624,-,1_preprocessing/pod_continuity.csv,codes matching IT###E########: 12202; examples not matching: nan
+2.2 / 3.1,,"coverage by month, read_pods",2024-02,2159,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-02,29,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-02,2146,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-02,29,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-03,2707,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-03,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-03,2693,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-03,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-04,3320,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-04,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-04,3304,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-04,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-05,4019,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-05,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-05,4001,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-05,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-06,4453,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-06,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-06,4424,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-06,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-07,4696,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-07,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-07,4664,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-07,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-08,4954,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-08,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-08,4918,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-08,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-09,5401,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-09,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-09,5362,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-09,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-10,5701,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-10,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-10,5674,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-10,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2024-11,6357,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2024-11,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2024-11,6331,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2024-11,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-01,7550,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-01,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-01,7510,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-01,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-03,8390,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-03,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-03,7508,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-03,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-06,9782,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-06,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-06,7510,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-06,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-07,11523,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-07,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-07,7513,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-07,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-08,11871,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-08,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-08,7512,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-08,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-09,12053,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-09,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-09,7510,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-09,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-10,12214,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-10,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-10,7506,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-10,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-11,12204,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-11,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-11,7497,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-11,30,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_pods",2025-12,12202,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, read_days",2025-12,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_pods",2025-12,7490,PODs,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,"coverage by month, retained_days",2025-12,31,days,1_preprocessing/coverage_by_month.csv,before (read) and after (retained) the completeness thresholds
+2.2 / 3.1,,PODs read from the archive,,12398,PODs,1_preprocessing/funnel.csv,"first step of the funnel, withdrawn active energy rows only"
+2.2 / 3.1,,"funnel, PODs after step",0. as read,12398,PODs,1_preprocessing/funnel.csv,AP only
+2.2 / 3.1,,"funnel, user-days after step",0. as read,4321668,days,1_preprocessing/funnel.csv,AP only
+2.2 / 3.1,,"funnel, PODs after step",1. DST days removed,12398,PODs,1_preprocessing/funnel.csv,"['2024-03-31', '2024-10-27', '2025-03-30', '2025-10-26']"
+2.2 / 3.1,,"funnel, user-days after step",1. DST days removed,4292719,days,1_preprocessing/funnel.csv,"['2024-03-31', '2024-10-27', '2025-03-30', '2025-10-26']"
+2.2 / 3.1,,"funnel, PODs after step",2. readings above contractual power,12398,PODs,1_preprocessing/funnel.csv,"193,401 censored (0.047% of readings), 4,444 rows without a usable threshold"
+2.2 / 3.1,,"funnel, user-days after step",2. readings above contractual power,4292719,days,1_preprocessing/funnel.csv,"193,401 censored (0.047% of readings), 4,444 rows without a usable threshold"
+2.2 / 3.1,,"funnel, PODs after step",3. zero runs classified,12398,PODs,1_preprocessing/funnel.csv,"811,719 genuine, 2,154 faults"
+2.2 / 3.1,,"funnel, user-days after step",3. zero runs classified,4292719,days,1_preprocessing/funnel.csv,"811,719 genuine, 2,154 faults"
+2.2 / 3.1,,"funnel, PODs after step",4. long gaps: days dropped,12397,PODs,1_preprocessing/funnel.csv,"5,760 days"
+2.2 / 3.1,,"funnel, user-days after step",4. long gaps: days dropped,4286959,days,1_preprocessing/funnel.csv,"5,760 days"
+2.2 / 3.1,,"funnel, PODs after step","5. days without a shape, kept as days",12397,PODs,1_preprocessing/funnel.csv,"811,718 at zero + 77,266 under 12 non-zero quarters = 20.7%"
+2.2 / 3.1,,"funnel, user-days after step","5. days without a shape, kept as days",4286959,days,1_preprocessing/funnel.csv,"811,718 at zero + 77,266 under 12 non-zero quarters = 20.7%"
+2.2 / 3.1,,"funnel, PODs after step",6. completeness thresholds,7527,PODs,1_preprocessing/funnel.csv,">= 250 of 576 days, all 3 seasons"
+2.2 / 3.1,,"funnel, user-days after step",6. completeness thresholds,3366330,days,1_preprocessing/funnel.csv,">= 250 of 576 days, all 3 seasons"
+2.2 / 3.1,,PODs retained after pre-processing,,943,PODs,cache/users.parquet,
+2.2 / 3.1,,PODs clustered (at least one day with a shape),,916,PODs,cache/user_vectors.parquet,
+2.2 / 3.1,,retained PODs that cannot be clustered,,27,PODs,,"retained on zero days alone, no daily shape"
+2.2 / 3.1,,valid user-days,,410580,days,cache/days.parquet,
+2.2 / 3.1,Figure 2,daily curves with a shape,,366996,days,cache/days.parquet,days of non-null energy and at least min_nonzero_quarters readings
+2.2 / 3.1,,days without a shape,,43584,days,cache/days.parquet,
+2.2 / 3.1,,calendar days spanned,,576,days,,
+2.2 / 3.1,,first day,,2024-02-01,date,,
+2.2 / 3.1,,last day,,2025-12-31,date,,
+2.2 / 3.1,,months present,,19,months,,2024-02 2024-03 2024-04 2024-05 2024-06 2024-07 2024-08 2024-09 2024-10 2024-11 2025-01 2025-03 2025-06 2025-07 2025-08 2025-09 2025-10 2025-11 2025-12
+2.2 / 3.1,,mean valid days per POD,,435.397667,days,,
+2.2 / 3.1,,annualized energy of the retained PODs,,13.831699,GWh/year,cache/users.parquet,sum of Eq. 1 annualized over the valid days
+2.2 / 3.1,,PODs flagged as prosumers,,57,PODs,,PODs with at least one row of injected active energy (AN)
+2.2 / 3.1,,share of prosumers,,0.060445,-,,
+2.2 / 3.1,,share of domestic PODs (activity label DO.*),,0.0,-,,"over the retained PODs, before clustering"
+2.3 / 3.1,,n_shapes,,366996.0,days,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,n_pods_clustered,,916.0,PODs,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,D,,19.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,K,,8.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,n_micro_clusters,,0.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,n_min_group,,30.0,PODs,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,groups_below_n_min,,0.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,pods_below_n_min,,0.0,PODs,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,published_profiles,,8.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,pods_in_published_profiles,,916.0,PODs,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,scale_weight_declared,,0.5,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,scale_share_of_distance,,0.5,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,zero_replacement,,0.0001,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,largest_form_share_of_days,,0.471299,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,largest_form,,17.0,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,stability_ARI_mean_at_K,,0.470429,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,stability_ARI_min_at_K,,0.348594,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,ARI_two_stage_vs_mean_curves,,0.263308,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,silhouette_two_stage,,0.165439,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,silhouette_mean_curves,,0.118114,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,silhouette_two_stage_in_mean_space,,-0.057641,-,2_clustering/clustering_facts.csv,
+2.3 / 3.1,,silhouette_mean_curves_in_two_stage_space,,0.077955,-,2_clustering/clustering_facts.csv,
+3.1,Figure 2,share of daily curves,form 1,0.003929,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 1,1442,days,,
+3.1,Figure 2,peak hour of the centroid,form 1,20.0,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 2,0.022281,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 2,8177,days,,
+3.1,Figure 2,peak hour of the centroid,form 2,20.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 3,0.004313,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 3,1583,days,,
+3.1,Figure 2,peak hour of the centroid,form 3,19.5,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 4,0.011997,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 4,4403,days,,
+3.1,Figure 2,peak hour of the centroid,form 4,18.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 5,0.013175,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 5,4835,days,,
+3.1,Figure 2,peak hour of the centroid,form 5,11.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 6,0.011987,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 6,4399,days,,
+3.1,Figure 2,peak hour of the centroid,form 6,9.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 7,0.100759,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 7,36978,days,,
+3.1,Figure 2,peak hour of the centroid,form 7,10.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 8,0.009063,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 8,3326,days,,
+3.1,Figure 2,peak hour of the centroid,form 8,22.25,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 9,0.116315,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 9,42687,days,,
+3.1,Figure 2,peak hour of the centroid,form 9,0.0,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 10,0.005867,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 10,2153,days,,
+3.1,Figure 2,peak hour of the centroid,form 10,8.5,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 11,0.017414,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 11,6391,days,,
+3.1,Figure 2,peak hour of the centroid,form 11,9.0,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 12,0.007174,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 12,2633,days,,
+3.1,Figure 2,peak hour of the centroid,form 12,7.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 13,0.011115,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 13,4079,days,,
+3.1,Figure 2,peak hour of the centroid,form 13,6.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 14,0.012482,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 14,4581,days,,
+3.1,Figure 2,peak hour of the centroid,form 14,14.25,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 15,0.008145,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 15,2989,days,,
+3.1,Figure 2,peak hour of the centroid,form 15,12.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 16,0.12196,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 16,44759,days,,
+3.1,Figure 2,peak hour of the centroid,form 16,18.75,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 17,0.471299,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 17,172965,days,,
+3.1,Figure 2,peak hour of the centroid,form 17,7.25,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 18,0.023989,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 18,8804,days,,
+3.1,Figure 2,peak hour of the centroid,form 18,16.25,h,2_clustering/dictionary.csv,
+3.1,Figure 2,share of daily curves,form 19,0.026736,-,2_clustering/dictionary.csv,
+3.1,Figure 2,number of daily curves,form 19,9812,days,,
+3.1,Figure 2,peak hour of the centroid,form 19,17.75,h,2_clustering/dictionary.csv,
+3.1,Figure 3,PODs in group,DD-SLP 1,124,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 1,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 1,0.016,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 2,58,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 2,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 2,0.034,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 3,157,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 3,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 3,0.153,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 4,78,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 4,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 4,0.0,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 5,75,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 5,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 5,0.04,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 6,242,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 6,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 6,0.07,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 7,84,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 7,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 7,0.083,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,PODs in group,DD-SLP 8,98,PODs,2_clustering/groups.csv,
+3.1,Figure 3,group below n_min (not published),DD-SLP 8,False,-,2_clustering/groups.csv,
+4.4,Figure 3,share of prosumers in group,DD-SLP 8,0.02,-,2_clustering/groups.csv,share of the group's PODs flagged as prosumers (AN rows)
+3.1,Figure 3,median of load_factor in the group,DD-SLP 1,0.517293,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 1,0.121348,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 1,-0.000564,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 1,0.000508,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 1,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 1,17.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 1,0.988732,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 2,0.391357,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 2,0.865724,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 2,-0.002755,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 2,0.201671,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 2,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 2,9.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 2,0.998183,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 3,0.09436,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 3,1.064109,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 3,-0.008823,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 3,0.260524,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 3,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 3,17.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 3,0.505687,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 4,0.006853,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 4,2.055528,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 4,-0.001875,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 4,0.034854,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 4,0.835472,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 4,17.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 4,0.208805,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 5,0.070624,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 5,1.525499,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 5,0.496473,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 5,0.120179,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 5,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 5,7.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 5,0.518853,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 6,0.153298,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 6,0.991029,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 6,-0.028441,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 6,-0.095631,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 6,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 6,16.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 6,0.384759,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 7,0.033996,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 7,2.177262,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 7,0.029706,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 7,0.13255,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 7,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 7,7.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 7,0.169687,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of load_factor in the group,DD-SLP 8,0.034616,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of log_par in the group,DD-SLP 8,1.698549,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of weekday_contrast in the group,DD-SLP 8,-0.070394,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of seasonal_amplitude in the group,DD-SLP 8,-0.297893,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of zero_day_fraction in the group,DD-SLP 8,0.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form in the group,DD-SLP 8,17.0,-,2_clustering/group_features.csv,
+3.1,Figure 3,median of dominant_form_share in the group,DD-SLP 8,0.261663,-,2_clustering/group_features.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 6,0.562509,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 6,0.66705,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 6,1.65335,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 6,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 6,0.203732,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 6,0.586995,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 6,6.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 7,0.562509,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 7,0.763979,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 7,1.65335,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 7,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 7,0.206568,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 7,0.585949,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 7,7.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 8,0.514508,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 8,0.620314,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 8,1.543829,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 8,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 8,0.249611,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 8,0.569834,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 8,8.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 9,0.514508,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 9,0.533879,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 9,1.543829,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 9,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 9,0.250353,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 9,0.569551,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 9,9.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 10,0.512589,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 10,0.545794,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 10,1.387449,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 10,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 10,0.256784,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 10,0.567103,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 10,10.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 11,0.534458,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 11,0.536721,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 11,1.563081,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 11,0.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 11,0.260356,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 11,0.565739,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 11,11.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 12,0.531556,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 12,0.536721,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 12,1.524232,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 12,35.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 12,0.260593,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 12,0.565648,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 12,11.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 13,0.504851,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 13,0.535984,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 13,1.524232,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 13,35.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 13,0.268598,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 13,0.562578,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 13,12.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 14,0.503091,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 14,0.535984,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 14,1.49824,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 14,61.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 14,0.270082,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 14,0.562007,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 14,12.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 15,0.498106,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 15,0.503091,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 15,1.377351,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 15,126.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 15,0.275826,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 15,0.559791,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 15,11.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 16,0.490133,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 16,0.499902,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 16,1.216609,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 16,126.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 16,0.281177,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 16,0.557719,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 16,12.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 17,0.43954,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 17,0.503091,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 17,1.019004,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 17,403.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 17,0.284053,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 17,0.556602,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 17,7.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 18,0.40215,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 18,0.456674,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 18,0.86214,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 18,487.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 18,0.292673,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 18,0.553242,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 18,6.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 19,0.385414,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 19,0.40098,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 19,0.822462,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 19,559.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 19,0.293306,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 19,0.552994,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 19,5.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD weighted by PODs,K = 20,0.385414,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,median nRMSD unweighted,K = 20,0.434247,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,95th percentile nRMSD weighted by PODs,K = 20,0.853641,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,PODs left without a profile,K = 20,617.0,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,"share of the day-shape variance explained by the groups (exact, energy-weighted)",K = 20,0.293415,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,pooled energy-weighted nRMSD of the days from their group curve (exact),K = 20,0.552951,-,2_clustering/validity_K_dispersion.csv,
+3.5,Figure 16,published profiles,K = 20,4.0,-,2_clustering/validity_K_dispersion.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 6,0.446458,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 6,0.298009,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 7,0.462699,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 7,0.371775,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 8,0.470429,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 8,0.348594,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 9,0.452568,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 9,0.371854,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 10,0.463828,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 10,0.370299,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 11,0.466721,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 11,0.362123,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 12,0.456111,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 12,0.361167,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 13,0.459566,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 13,0.38332,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 14,0.454731,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 14,0.364768,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 15,0.460867,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 15,0.369125,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 16,0.464422,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 16,0.365933,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 17,0.459224,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 17,0.371868,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 18,0.463523,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 18,0.371312,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 19,0.470196,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 19,0.393751,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, mean over replicas",K = 20,0.478662,-,2_clustering/validity_K.csv,
+2.3 / 3.5,,"stability ARI, least favourable replica",K = 20,0.401145,-,2_clustering/validity_K.csv,
+3.5,,ARI of the user partition against the base partition,zero_replacement = 1e-06,0.499893,-,2_clustering/sensitivity_users.csv,"base value 0.0001, same K and same dictionary"
+3.5,,ARI of the user partition against the base partition,zero_replacement = 1e-05,0.627595,-,2_clustering/sensitivity_users.csv,"base value 0.0001, same K and same dictionary"
+3.5,,ARI of the user partition against the base partition,zero_replacement = 0.001,0.394955,-,2_clustering/sensitivity_users.csv,"base value 0.0001, same K and same dictionary"
+3.5,,ARI of the user partition against the base partition,zero_replacement = 0.002,0.528172,-,2_clustering/sensitivity_users.csv,"base value 0.0001, same K and same dictionary"
+3.5,,ARI of the user partition against the base partition,scale_weight = 0.0,0.31849,-,2_clustering/sensitivity_users.csv,"base value 0.5, same K and same dictionary"
+3.5,,share of the distance carried by the scale block,scale_weight = 0.0,0.0,-,2_clustering/sensitivity_users.csv,
+3.5,,ARI of the user partition against the base partition,scale_weight = 0.25,0.481367,-,2_clustering/sensitivity_users.csv,"base value 0.5, same K and same dictionary"
+3.5,,share of the distance carried by the scale block,scale_weight = 0.25,0.25,-,2_clustering/sensitivity_users.csv,
+3.5,,ARI of the user partition against the base partition,scale_weight = 0.75,0.340465,-,2_clustering/sensitivity_users.csv,"base value 0.5, same K and same dictionary"
+3.5,,share of the distance carried by the scale block,scale_weight = 0.75,0.75,-,2_clustering/sensitivity_users.csv,
+2.3,,"codewords realized per user, median",,10.0,-,,"non-empty coordinates of the frequency vector, out of 19"
+2.3,,share of users with more than half the vector empty,,0.4869,-,,
+2.3,,share of the variation in realized codewords explained by the groups,,0.577117,-,,eta squared of the count of non-empty coordinates on the groups
+2.4,,"median over the cells of the member nRMSD, 50th percentile",,0.616803,-,3_standard_lp_generation/dispersion.csv,
+2.4,,"median over the cells of the member nRMSD, 95th percentile",,1.955992,-,3_standard_lp_generation/dispersion.csv,
+2.4,,cells per profile,,9,-,,
+2.4,,curve weighting within the cell,,energy,-,,energy: normalized aggregate curve of the group; day: mean of the day shapes
+3.1,"Figures 9, 12",PODs,DD-SLP 1,124,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 1,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 1,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 1,0.0,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 1,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 2,58,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 2,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 2,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 2,0.0,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 2,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 3,157,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 3,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 3,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 3,0.006369,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 3,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 4,78,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 4,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 4,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 4,0.025641,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 4,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 5,75,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 5,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 5,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 5,0.0,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 5,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 6,242,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 6,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 6,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 6,0.004132,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 6,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 7,84,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 7,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 7,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 7,0.0,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 7,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12",PODs,DD-SLP 8,98,PODs,4_lp_comparison/ddslp_composition.csv,
+3.1,"Figures 9, 12","domestic share by points, activity label",DD-SLP 8,0.0,-,4_lp_comparison/ddslp_composition.csv,share of points with ateco_l1 DO.*; used in every figure
+3.1,,"domestic share by energy, activity label",DD-SLP 8,0.0,-,4_lp_comparison/ddslp_composition.csv,annualized energy of DO.* points over the energy of the profile
+3.1,,"domestic share by points, tariff category",DD-SLP 8,0.05102,-,4_lp_comparison/ddslp_composition.csv,"share of points with a domestic tariff, as read by the GSE assignment rule"
+3.4,Figure 12,residential (activity share >= threshold),DD-SLP 8,False,-,4_lp_comparison/ddslp_composition.csv,
+3.1,,"domestic share of the published catalogue by points, activity label",,0.0,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 0-1.5 Non Residente,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 0-1.5 Non Residente,0.074219,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 0-1.5 Residente,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 0-1.5 Residente,0.099152,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 0-1.5 Tutti,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 0-1.5 Tutti,0.076335,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 1.5-3 Non Residente,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 1.5-3 Non Residente,0.102092,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 1.5-3 Residente,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 1.5-3 Residente,0.101508,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 1.5-3 Tutti,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 1.5-3 Tutti,0.100768,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 3-4.5 Non Residente,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 3-4.5 Non Residente,0.103854,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 3-4.5 Residente,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 3-4.5 Residente,0.109705,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 3-4.5 Tutti,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 3-4.5 Tutti,0.108706,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 4.5-6 Non Residente,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 4.5-6 Non Residente,0.096748,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 4.5-6 Residente,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 4.5-6 Residente,0.105784,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA 4.5-6 Tutti,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA 4.5-6 Tutti,0.103618,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA >6 Non Residente,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA >6 Non Residente,0.074687,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA >6 Residente,DD-SLP 3,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA >6 Residente,0.073083,-,,
+3.4,Figure 8,nearest data-driven profile,ARERA >6 Tutti,DD-SLP 1,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,ARERA >6 Tutti,0.076788,-,,
+3.4,Figure 8,nearest data-driven profile,GSE PAUF,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,GSE PAUF,0.044576,-,,
+3.4,Figure 8,nearest data-driven profile,GSE PAUM,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,GSE PAUM,0.055888,-,,
+3.4,Figure 8,nearest data-driven profile,GSE PDMF,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,GSE PDMF,0.079038,-,,
+3.4,Figure 8,nearest data-driven profile,GSE PDMM,DD-SLP 6,-,4_lp_comparison/b1_ddslp_vs_national.csv,"argmin over the columns of the total variation, S1 monthly setting"
+3.4,Figure 8,total variation to the nearest data-driven profile,GSE PDMM,0.096836,-,,
+3.4,Figure 8,national profiles positioned,,19,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 1,8,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 2,0,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 3,1,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 4,0,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 5,0,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 6,10,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 7,0,-,,
+3.4,Figure 8,national profiles for which it is the nearest,DD-SLP 8,0,-,,
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 1,0.058166,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 2,0.28161,-,,nearest national profile: GSE PDMF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 3,0.073083,-,,nearest national profile: ARERA >6 Residente
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 4,0.091921,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 5,0.156894,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 6,0.044576,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 7,0.151094,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation to its nearest national profile,DD-SLP 8,0.093355,-,,nearest national profile: GSE PAUF
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 1,0.074219,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 1,0.099152,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 1,0.076335,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 1,0.114071,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 1,0.115667,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 1,0.114893,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 1,0.123867,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 1,0.126806,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 1,0.126381,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 1,0.096748,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 1,0.105784,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 1,0.103618,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 1,0.074687,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 1,0.085238,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 1,0.076788,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 1,0.058166,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 1,0.07843,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 1,0.088729,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 1,0.102729,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 2,0.447043,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 2,0.406304,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 2,0.430491,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 2,0.447481,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 2,0.448534,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 2,0.448605,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 2,0.448075,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 2,0.444948,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 2,0.445203,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 2,0.434588,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 2,0.417286,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 2,0.420129,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 2,0.432263,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 2,0.394191,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 2,0.405743,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 2,0.304141,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 2,0.491044,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 2,0.28161,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 2,0.447764,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 3,0.112532,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 3,0.101718,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 3,0.101514,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 3,0.139301,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 3,0.143357,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 3,0.14254,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 3,0.148075,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 3,0.14698,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 3,0.146772,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 3,0.116802,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 3,0.110844,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 3,0.110671,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 3,0.102413,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 3,0.073083,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 3,0.079257,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 3,0.100159,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 3,0.154126,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 3,0.097258,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 3,0.134855,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 4,0.12135,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 4,0.16667,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 4,0.137617,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 4,0.15126,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 4,0.157531,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 4,0.156252,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 4,0.154575,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 4,0.164095,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 4,0.162932,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 4,0.146747,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 4,0.16964,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 4,0.165085,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 4,0.150628,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 4,0.184967,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 4,0.173089,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 4,0.091921,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 4,0.100816,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 4,0.11006,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 4,0.142936,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 5,0.412033,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 5,0.448166,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 5,0.426273,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 5,0.422751,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 5,0.420542,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 5,0.420731,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 5,0.420684,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 5,0.430417,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 5,0.429456,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 5,0.42798,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 5,0.44159,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 5,0.4394,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 5,0.413449,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 5,0.445034,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 5,0.435158,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 5,0.156894,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 5,0.370088,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 5,0.178266,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 5,0.401759,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 6,0.099701,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 6,0.142619,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 6,0.111255,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 6,0.102092,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 6,0.101508,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 6,0.100768,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 6,0.103854,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 6,0.109705,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 6,0.108706,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 6,0.106081,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 6,0.128363,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 6,0.124011,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 6,0.104066,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 6,0.156875,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 6,0.139638,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 6,0.044576,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 6,0.055888,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 6,0.079038,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 6,0.096836,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 7,0.234974,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 7,0.251233,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 7,0.238944,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 7,0.24148,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 7,0.231792,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 7,0.232369,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 7,0.244294,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 7,0.23924,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 7,0.239702,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 7,0.244956,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 7,0.246638,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 7,0.246064,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 7,0.229967,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 7,0.251772,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 7,0.244042,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 7,0.151094,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 7,0.194879,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 7,0.185394,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 7,0.231902,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Non Residente | DD-SLP 8,0.129117,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Residente | DD-SLP 8,0.160089,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 0-1.5 Tutti | DD-SLP 8,0.133371,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Non Residente | DD-SLP 8,0.114399,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Residente | DD-SLP 8,0.112609,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 1.5-3 Tutti | DD-SLP 8,0.112468,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Non Residente | DD-SLP 8,0.113947,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Residente | DD-SLP 8,0.116165,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 3-4.5 Tutti | DD-SLP 8,0.115569,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Non Residente | DD-SLP 8,0.122455,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Residente | DD-SLP 8,0.141714,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA 4.5-6 Tutti | DD-SLP 8,0.137641,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Non Residente | DD-SLP 8,0.129057,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Residente | DD-SLP 8,0.181058,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,ARERA >6 Tutti | DD-SLP 8,0.163953,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUF | DD-SLP 8,0.093355,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PAUM | DD-SLP 8,0.104839,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMF | DD-SLP 8,0.104917,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,Figure 8,total variation,GSE PDMM | DD-SLP 8,0.11771,-,4_lp_comparison/b1_ddslp_vs_national.csv,
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 1, weekday",2,-,,winter: ARERA 0-1.5 Non Residente (0.062); mid: GSE PAUM (0.065); summer: ARERA 0-1.5 Non Residente (0.061)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 2, weekday",2,-,,winter: ARERA >6 Residente (0.335); mid: ARERA 0-1.5 Residente (0.388); summer: ARERA 0-1.5 Residente (0.496)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 3, weekday",2,-,,winter: ARERA >6 Tutti (0.062); mid: ARERA >6 Residente (0.081); summer: ARERA >6 Residente (0.068)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 4, weekday",1,-,,winter: GSE PAUM (0.098); mid: GSE PAUM (0.062); summer: GSE PAUM (0.071)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 5, weekday",1,-,,winter: GSE PAUM (0.306); mid: GSE PAUM (0.349); summer: GSE PAUM (0.323)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 6, weekday",1,-,,winter: GSE PAUM (0.044); mid: GSE PAUM (0.045); summer: GSE PAUM (0.068)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 7, weekday",1,-,,winter: GSE PAUM (0.185); mid: GSE PAUM (0.231); summer: GSE PAUM (0.180)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 8, weekday",2,-,,winter: GSE PDMM (0.098); mid: GSE PAUM (0.049); summer: GSE PAUM (0.111)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 1, saturday",2,-,,winter: ARERA 0-1.5 Residente (0.060); mid: GSE PAUM (0.066); summer: ARERA 0-1.5 Residente (0.066)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 2, saturday",1,-,,winter: ARERA >6 Residente (0.348); mid: ARERA >6 Residente (0.423); summer: ARERA >6 Residente (0.508)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 3, saturday",1,-,,winter: ARERA >6 Residente (0.056); mid: ARERA >6 Residente (0.089); summer: ARERA >6 Residente (0.065)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 4, saturday",1,-,,winter: GSE PAUM (0.122); mid: GSE PAUM (0.078); summer: GSE PAUM (0.081)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 5, saturday",1,-,,winter: GSE PAUM (0.141); mid: GSE PAUM (0.183); summer: GSE PAUM (0.166)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 6, saturday",1,-,,winter: GSE PAUM (0.048); mid: GSE PAUM (0.038); summer: GSE PAUM (0.073)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 7, saturday",1,-,,winter: GSE PAUM (0.176); mid: GSE PAUM (0.226); summer: GSE PAUM (0.183)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 8, saturday",1,-,,winter: ARERA 1.5-3 Residente (0.112); mid: ARERA 1.5-3 Residente (0.072); summer: ARERA 1.5-3 Residente (0.113)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 1, sunday",2,-,,winter: ARERA 0-1.5 Tutti (0.062); mid: ARERA 0-1.5 Non Residente (0.066); summer: ARERA 0-1.5 Tutti (0.060)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 2, sunday",1,-,,winter: ARERA >6 Residente (0.343); mid: ARERA >6 Residente (0.418); summer: ARERA >6 Residente (0.512)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 3, sunday",1,-,,winter: ARERA >6 Residente (0.070); mid: ARERA >6 Residente (0.117); summer: ARERA >6 Residente (0.092)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 4, sunday",2,-,,winter: GSE PAUM (0.115); mid: ARERA 0-1.5 Non Residente (0.072); summer: GSE PAUM (0.081)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 5, sunday",3,-,,winter: ARERA >6 Tutti (0.079); mid: GSE PAUM (0.053); summer: ARERA 0-1.5 Non Residente (0.088)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 6, sunday",1,-,,winter: GSE PAUM (0.041); mid: GSE PAUM (0.033); summer: GSE PAUM (0.069)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 7, sunday",1,-,,winter: GSE PAUM (0.172); mid: GSE PAUM (0.201); summer: GSE PAUM (0.161)
+3.4,,distinct nearest national profiles across the seasons,"DD-SLP 8, sunday",1,-,,winter: GSE PAUM (0.104); mid: GSE PAUM (0.074); summer: GSE PAUM (0.097)
+3.4,"Figures 14, 15","B2 common set, n",ARERA,65.0,user-months,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, n_pods",ARERA,8.0,PODs,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p10",ARERA,0.239174,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p25",ARERA,0.39375,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_median",ARERA,0.487384,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p75",ARERA,0.569445,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p90",ARERA,0.689332,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_kWh",ARERA,2490.813807,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, month_energy_kWh",ARERA,5135.664035,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_share",ARERA,0.485003,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, months_covered",ARERA,1 3 6 7 8 9 10 11 12,month numbers,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, n",DDSLP,65.0,user-months,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, n_pods",DDSLP,8.0,PODs,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p10",DDSLP,0.268756,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p25",DDSLP,0.409231,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_median",DDSLP,0.495689,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p75",DDSLP,0.564856,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p90",DDSLP,0.688155,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_kWh",DDSLP,2498.148086,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, month_energy_kWh",DDSLP,5135.664035,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_share",DDSLP,0.486431,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, months_covered",DDSLP,1 3 6 7 8 9 10 11 12,month numbers,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, n",GSE,65.0,user-months,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, n_pods",GSE,8.0,PODs,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p10",GSE,0.237122,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p25",GSE,0.396141,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_median",GSE,0.492923,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p75",GSE,0.578739,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, tv_p90",GSE,0.691238,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_kWh",GSE,2516.138113,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, month_energy_kWh",GSE,5135.664035,kWh,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, misallocated_share",GSE,0.489934,-,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,"Figures 14, 15","B2 common set, months_covered",GSE,1 3 6 7 8 9 10 11 12,month numbers,4_lp_comparison/b2_summary_common_set.csv,"user-months of the reference year on which GSE, ARERA and the data-driven profile are all evaluated; S1 monthly setting"
+3.4,Figure 15,Eq. 13 misallocated energy,1.5-3 kW | ARERA,2.490814,MWh,4_lp_comparison/b2_pod_month.csv,
+3.4,Figure 15,Eq. 13 share of the energy misallocated,1.5-3 kW | ARERA,0.485003,-,,
+3.4,Figure 15,PODs in the power class,1.5-3 kW | ARERA,8,PODs,,
+3.4,Figure 15,Eq. 13 misallocated energy,1.5-3 kW | DDSLP,2.498148,MWh,4_lp_comparison/b2_pod_month.csv,
+3.4,Figure 15,Eq. 13 share of the energy misallocated,1.5-3 kW | DDSLP,0.486431,-,,
+3.4,Figure 15,PODs in the power class,1.5-3 kW | DDSLP,8,PODs,,
+3.4,Figure 15,Eq. 13 misallocated energy,1.5-3 kW | GSE,2.516138,MWh,4_lp_comparison/b2_pod_month.csv,
+3.4,Figure 15,Eq. 13 share of the energy misallocated,1.5-3 kW | GSE,0.489934,-,,
+3.4,Figure 15,PODs in the power class,1.5-3 kW | GSE,8,PODs,,
+3.4,,"B3 reference scope, n_portfolio_months",ARERA,9.0,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_energy_weighted",ARERA,0.321677,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_mean_day",ARERA,0.093039,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, misallocated_kWh",ARERA,1652.026703,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, portfolio_energy_kWh",ARERA,5135.664035,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, n_portfolio_months",DDSLP,29.0,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_energy_weighted",DDSLP,0.35722,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_mean_day",DDSLP,0.160056,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, misallocated_kWh",DDSLP,1834.563795,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, portfolio_energy_kWh",DDSLP,5135.664035,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, n_portfolio_months",GSE,9.0,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_energy_weighted",GSE,0.329828,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, tv_mean_day",GSE,0.09855,-,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, misallocated_kWh",GSE,1693.887995,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 reference scope, portfolio_energy_kWh",GSE,5135.664035,kWh,4_lp_comparison/b3_summary_reference.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, n_portfolio_months",ARERA,9.0,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_energy_weighted",ARERA,0.321677,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_mean_day",ARERA,0.093039,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, misallocated_kWh",ARERA,1652.026703,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, portfolio_energy_kWh",ARERA,5135.664035,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, n_portfolio_months",DDSLP,9.0,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_energy_weighted",DDSLP,0.324848,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_mean_day",DDSLP,0.14002,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, misallocated_kWh",DDSLP,1668.309852,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, portfolio_energy_kWh",DDSLP,5135.664035,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, n_portfolio_months",GSE,9.0,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_energy_weighted",GSE,0.329828,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, tv_mean_day",GSE,0.09855,-,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, misallocated_kWh",GSE,1693.887995,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,"B3 system scope, portfolio_energy_kWh",GSE,5135.664035,kWh,4_lp_comparison/b3_summary_system.csv,aggregate of the portfolio (reference) or of the whole family (system)
+3.4,,Eq. 14 price series available,dayahead,False,-,4_lp_comparison/price_series.csv,comparison.price_file not set: Eq. 14 not computed
+3.4,,Eq. 14 price series available,imbalance,False,-,4_lp_comparison/price_series.csv,comparison.imbalance_price_file not set: Eq. 14 not computed
+3.4,Figure 13,"GSE profile, coefficient of variation of the daily energy within the month, maximum over months",PDMM,0.0,-,cache/gse.parquet,zero means every day of a month receives the same energy
+3.4,Figure 13,"GSE profile, coefficient of variation of the daily energy within the month, median over months",PDMM,0.0,-,cache/gse.parquet,
+3.4,Figure 13,"GSE profile, coefficient of variation of the daily energy within the month, maximum over months",PAUM,0.0,-,cache/gse.parquet,zero means every day of a month receives the same energy
+3.4,Figure 13,"GSE profile, coefficient of variation of the daily energy within the month, median over months",PAUM,0.0,-,cache/gse.parquet,
+3.4,Figure 13,PODs with a defined Sunday to working-day ratio,,915,PODs,,
+3.4,Figure 13,median Sunday to working-day energy ratio,,1.003228,-,,
+3.4,Figure 13,5th percentile of the ratio,,0.2292,-,,
+3.4,Figure 13,95th percentile of the ratio,,1.783911,-,,
+3.4,Figure 13,share of PODs with the ratio above 2.2 (outside the axis),,0.029508,-,,
+3.4,Figure 13,Sunday to working-day energy ratio of the GSE profile,PDMM,0.999035,-,4_lp_comparison/gse_normalisation.csv,holidays counted as Sundays; single-rate profiles only
+3.4,Figure 13,Sunday to working-day energy ratio of the GSE profile,PAUM,0.999035,-,4_lp_comparison/gse_normalisation.csv,holidays counted as Sundays; single-rate profiles only
+2.6 / 3.2,Figure 5,"uninformative reference exp(H(A)), weighted by pod",,7.18706,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number of published profiles of the whole population
+3.2,Figure 5,"M1 effective number, weighted by pod",other (below n_min),6.674557,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",other (below n_min),6.19555,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",other (below n_min),6.941853,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,other (below n_min),263,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",other (below n_min),6.832243,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",other (below n_min),7.399097,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",other (below n_min),0.01,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",other (below n_min),True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",52,6.497551,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",52,4.875069,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",52,6.765674,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,52,34,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",52,5.295116,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",52,7.37095,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",52,0.514,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",52,False,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",49,5.93389,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",49,4.137225,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",49,6.471095,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,49,27,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",49,5.039411,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",49,7.360135,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",49,0.298,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",49,False,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",96,5.550815,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",96,3.630593,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",96,6.205197,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,96,29,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",96,5.122066,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",96,7.358973,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",96,0.131,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",96,False,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",43,5.31192,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",43,3.575398,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",43,6.034011,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,43,31,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",43,5.248293,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",43,7.408409,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",43,0.065,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",43,False,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",84,5.252595,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",84,4.013416,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",84,5.983754,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,84,75,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",84,6.199049,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",84,7.465781,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",84,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",84,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",94,5.000027,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",94,3.556256,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",94,5.590683,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,94,34,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",94,5.295116,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",94,7.37095,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",94,0.024,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",94,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",16,4.324656,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",16,2.819877,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",16,5.039132,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,16,26,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",16,4.954566,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",16,7.331631,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",16,0.006,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",16,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",01,4.285746,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",01,3.489729,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",01,4.679478,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,01,60,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",01,5.957553,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",01,7.479013,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",01,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",01,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",47,4.055949,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",47,3.060155,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",47,4.923206,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,47,86,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",47,6.295112,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",47,7.464815,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",47,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",47,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",55,2.801782,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",55,2.196422,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",55,3.314134,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,55,79,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",55,6.25204,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",55,7.473496,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",55,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",55,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",56,2.608255,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",56,1.899805,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",56,3.221724,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,56,55,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",56,5.936619,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",56,7.467333,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",56,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",56,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",IL,2.274376,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",IL,1.686777,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",IL,2.733544,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,IL,67,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",IL,6.104507,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",IL,7.474995,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",IL,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",IL,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 effective number, weighted by pod",61,1.216126,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, pod",61,1.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, pod",61,1.468472,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,PODs in the class,61,50,PODs,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null 5th percentile, pod",61,5.758135,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, pod",61,7.448968,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, pod",61,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, pod",61,True,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,classes coherent at 5% (weighted by points),,10,classes,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+3.2,Figure 5,median M1 over the classes (weighted by points),,4.662342,-,5_lp_mapping/multiplicity/m1_multiplicity_pod.csv,
+2.6 / 3.2,Figure 5,"uninformative reference exp(H(A)), weighted by energy",,3.976347,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number of published profiles of the whole population
+3.2,Figure 5,"M1 effective number, weighted by energy",other (below n_min),4.552558,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",other (below n_min),3.595574,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",other (below n_min),4.826568,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,other (below n_min),263,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",other (below n_min),3.184424,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",other (below n_min),4.564835,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",other (below n_min),0.947,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",other (below n_min),False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",52,4.014204,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",52,2.327937,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",52,4.778601,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,52,34,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",52,2.016838,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",52,4.956186,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",52,0.789,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",52,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",96,3.827653,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",96,2.400061,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",96,4.229768,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,96,29,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",96,1.900888,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",96,4.826142,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",96,0.755,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",96,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",43,3.773818,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",43,2.009236,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",43,5.326197,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,43,31,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",43,1.892417,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",43,4.773236,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",43,0.732,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",43,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",84,3.297797,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",84,2.511259,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",84,3.944805,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,84,75,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",84,2.423526,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",84,4.807292,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",84,0.388,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",84,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",01,3.273061,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",01,2.066936,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",01,3.398403,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,01,60,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",01,2.33922,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",01,4.89213,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",01,0.427,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",01,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",49,3.21376,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",49,1.712286,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",49,4.967733,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,49,27,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",49,1.837026,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",49,4.834276,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",49,0.53,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",49,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",47,3.137703,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",47,1.932089,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",47,3.486715,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,47,86,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",47,2.578519,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",47,4.853707,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",47,0.241,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",47,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",94,2.975984,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",94,1.694105,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",94,4.365763,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,94,34,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",94,2.016838,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",94,4.956186,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",94,0.429,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",94,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",IL,2.291163,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",IL,1.379885,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",IL,2.967575,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,IL,67,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",IL,2.332808,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",IL,4.923065,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",IL,0.043,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",IL,True,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",16,1.866159,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",16,1.316871,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",16,2.715014,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,16,26,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",16,1.818326,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",16,4.820203,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",16,0.061,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",16,False,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",55,1.599075,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",55,1.293293,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",55,2.00674,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,55,79,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",55,2.504727,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",55,4.779174,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",55,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",55,True,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",56,1.539253,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",56,1.235177,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",56,2.002775,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,56,55,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",56,2.186239,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",56,4.828583,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",56,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",56,True,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 effective number, weighted by energy",61,1.019796,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval low, energy",61,1.0,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 95% bootstrap interval high, energy",61,1.058968,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,PODs in the class,61,50,PODs,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null 5th percentile, energy",61,2.209346,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,effective number over the same number of points drawn at random
+3.2,Figure 5,"M1 null 95th percentile, energy",61,5.008329,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 5,"M1 null quantile of the observed value, energy",61,0.0,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,share of random classes of the same size with M1 <= observed
+3.2,Figure 5,"coherent at 5%, energy",61,True,-,5_lp_mapping/multiplicity/m1_multiplicity_energy.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 2,0.016667,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 3,0.033333,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 4,0.333333,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 6,0.1,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 7,0.333333,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,01 | DD-SLP 8,0.183333,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 1,0.038462,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 4,0.076923,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 5,0.461538,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 6,0.115385,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 7,0.230769,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,16 | DD-SLP 8,0.076923,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 1,0.032258,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 3,0.096774,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 4,0.064516,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 5,0.193548,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 6,0.16129,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 7,0.387097,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,43 | DD-SLP 8,0.064516,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 1,0.05814,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 3,0.081395,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 4,0.069767,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 5,0.05814,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 6,0.593023,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 7,0.05814,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,47 | DD-SLP 8,0.081395,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 1,0.111111,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 3,0.296296,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 4,0.222222,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 5,0.037037,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 6,0.148148,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 7,0.111111,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,49 | DD-SLP 8,0.074074,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 1,0.205882,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 3,0.147059,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 4,0.176471,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 5,0.088235,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 6,0.117647,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 7,0.058824,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,52 | DD-SLP 8,0.205882,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,55 | DD-SLP 1,0.050633,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,55 | DD-SLP 3,0.113924,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,55 | DD-SLP 4,0.037975,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,55 | DD-SLP 6,0.683544,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,55 | DD-SLP 8,0.113924,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,56 | DD-SLP 1,0.054545,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,56 | DD-SLP 3,0.109091,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,56 | DD-SLP 5,0.018182,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,56 | DD-SLP 6,0.709091,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,56 | DD-SLP 8,0.109091,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,61 | DD-SLP 1,0.96,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,61 | DD-SLP 3,0.02,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,61 | DD-SLP 4,0.02,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 1,0.04,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 2,0.026667,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 3,0.44,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 4,0.093333,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 5,0.08,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 6,0.186667,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 7,0.026667,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,84 | DD-SLP 8,0.106667,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 3,0.323529,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 4,0.117647,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 5,0.058824,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 6,0.294118,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 7,0.117647,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,94 | DD-SLP 8,0.088235,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 2,0.068966,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 3,0.103448,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 4,0.137931,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 5,0.103448,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 6,0.034483,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 7,0.37931,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,96 | DD-SLP 8,0.172414,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,IL | DD-SLP 1,0.014925,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,IL | DD-SLP 2,0.746269,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,IL | DD-SLP 3,0.164179,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,IL | DD-SLP 4,0.044776,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,IL | DD-SLP 6,0.029851,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 1,0.18251,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 2,0.011407,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 3,0.220532,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 4,0.053232,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 5,0.136882,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 6,0.186312,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 7,0.072243,-,5_lp_mapping/contingency_pod.csv,
+3.2,Figure 4,share of the class in the profile,other (below n_min) | DD-SLP 8,0.136882,-,5_lp_mapping/contingency_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 4,9.626703,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 4,13,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 4,7,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 8,8.020618,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 8,12,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 8,7,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 7,7.542144,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 7,10,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 7,5,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 6,7.397418,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 6,13,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 6,5,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 3,7.359878,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 3,13,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 3,6,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 5,5.471012,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 5,10,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 5,4,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 1,4.590638,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 1,11,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 1,3,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by pod",DD-SLP 2,1.792088,-,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes present,DD-SLP 2,5,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,classes covering 80% of the points,DD-SLP 2,1,classes,5_lp_mapping/aggregation/m2_aggregation_pod.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 8,6.583087,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 7,5.848647,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 3,5.792252,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 4,5.560998,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 6,4.290528,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 1,3.961979,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 5,3.437618,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"M2 effective number, weighted by energy",DD-SLP 2,1.076681,-,5_lp_mapping/aggregation/m2_aggregation_energy.csv,
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 1 | 61,7.091613,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.387, count = 48"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 1 | 52,1.520873,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.056, count = 7"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 1 | other (below n_min),1.348215,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.387, count = 48"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 2 | IL,11.785898,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.862, count = 50"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 2 | 96,1.08918,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.034, count = 2"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 2 | 84,0.421149,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.034, count = 2"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 3 | 84,2.567134,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.210, count = 33"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 3 | 94,1.887598,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.070, count = 11"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 3 | 49,1.72871,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.051, count = 8"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 4 | 01,3.91453,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.256, count = 20"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 4 | 49,2.609687,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.077, count = 6"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 4 | 52,2.072398,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.077, count = 6"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 5 | 16,5.636923,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.160, count = 12"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 5 | 43,2.363871,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.080, count = 6"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 5 | other (below n_min),1.671787,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.480, count = 36"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 6 | 56,2.683997,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.161, count = 39"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 6 | 55,2.5873,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.223, count = 54"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 6 | 47,2.244667,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.211, count = 51"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 7 | 43,4.221198,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.143, count = 12"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 7 | 96,4.136289,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.131, count = 11"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 7 | 01,3.634921,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.238, count = 20"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 8 | 52,1.92437,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.071, count = 7"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 8 | 01,1.713605,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.112, count = 11"
+3.3,Figure 7,"lift, top classes of the profile (points)",DD-SLP 8 | 96,1.611541,-,5_lp_mapping/aggregation/lift.csv,"p(class|profile) = 0.051, count = 5"
+3.4,"Figures 9, 10",behaviors delivered (effective number of DD-SLPs),PAUM,6.579682,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 10,activity classes represented (effective number),PAUM,9.975321,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,"Figures 9, 10, 11",PODs the national profile is applied to,PAUM,824,PODs,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 11,reach outside the declared category,PAUM,0.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,"Eq. 12, activity dimension only (lower bound)"
+3.4,Figure 11,domestic share of the reach,PAUM,0.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,"Figures 9, 10",behaviors delivered (effective number of DD-SLPs),ARERA 1.5-3 Non Residente,3.155225,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 10,activity classes represented (effective number),ARERA 1.5-3 Non Residente,1.981272,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,"Figures 9, 10, 11",PODs the national profile is applied to,ARERA 1.5-3 Non Residente,9,PODs,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 11,reach outside the declared category,ARERA 1.5-3 Non Residente,1.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,"Eq. 12, activity dimension only (lower bound)"
+3.4,Figure 11,domestic share of the reach,ARERA 1.5-3 Non Residente,0.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,"Figures 9, 10",behaviors delivered (effective number of DD-SLPs),PDMM,3.155225,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 10,activity classes represented (effective number),PDMM,1.981272,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,"Figures 9, 10, 11",PODs the national profile is applied to,PDMM,9,PODs,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 11,reach outside the declared category,PDMM,1.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,"Eq. 12, activity dimension only (lower bound)"
+3.4,Figure 11,domestic share of the reach,PDMM,0.0,-,5_lp_mapping/coverage/m3_coverage_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,ARERA 1.5-3 Non Residente | DD-SLP 3,0.111111,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,ARERA 1.5-3 Non Residente | DD-SLP 4,0.222222,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,ARERA 1.5-3 Non Residente | DD-SLP 6,0.111111,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,ARERA 1.5-3 Non Residente | DD-SLP 8,0.555556,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 1,0.143204,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 2,0.009709,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 3,0.174757,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 4,0.088592,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 5,0.091019,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 6,0.290049,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 7,0.101942,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PAUM | DD-SLP 8,0.100728,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PDMM | DD-SLP 3,0.111111,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PDMM | DD-SLP 4,0.222222,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PDMM | DD-SLP 6,0.111111,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.4,Figure 9,share of the applied PODs in the data-driven profile,PDMM | DD-SLP 8,0.555556,-,5_lp_mapping/coverage/m3_reach_pod.csv,
+3.5,,"sensitivity to K, published_profiles",K = 8,8.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 8,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 8,4.662342,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 8,7.18706,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 8,1.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 8,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 6,6.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 6,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 6,3.663375,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 6,5.464668,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 6,0.907692,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 6,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 7,7.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 7,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 7,4.533442,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 7,6.267868,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 7,0.973626,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 7,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 9,9.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 9,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 9,4.662342,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 9,7.870459,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 9,0.991209,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 9,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 10,10.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 10,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 10,5.017666,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 10,8.746347,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 10,0.956044,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 10,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 11,11.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 11,916.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 11,6.026449,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 11,10.488007,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 11,0.854945,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 11,3.155225,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 12,11.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 12,881.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 12,5.7217,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 12,10.338214,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 12,0.917582,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 12,2.925727,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, published_profiles",K = 13,12.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, pods_in_published",K = 13,881.0,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, M1_median",K = 13,5.7217,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, reference_uninformative",K = 13,11.253998,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, spearman_M1_vs_base",K = 13,0.906593,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"sensitivity to K, PDMM_behaviours",K = 13,2.925727,-,5_lp_mapping/sensitivity_k.csv,same tree of the users cut at K; Spearman over the classes common to both
+3.5,,"M1 at the ATECO class level, median over classes",,2.488538,-,5_lp_mapping/multiplicity/m1_multiplicity_pod_ateco_l2.csv,
+3.5,,ATECO classes retained at the class level,,7,classes,,
