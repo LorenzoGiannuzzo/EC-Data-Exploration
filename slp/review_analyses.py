@@ -135,8 +135,9 @@ def split_families(inp: X.Inputs, with_cv: bool = False) -> dict:
 
     Each group of the two split runs becomes one profile, built with X.catalog on the days
     of this run exactly as every other catalog, so that the family differs from the
-    data-driven one only in the partition. Out of sample, the users are divided into folds
-    and each held-out user receives the curve of its group rebuilt without its fold.
+    data-driven one only in the partition. Out of sample, each class is clustered again on
+    the folds of the data-driven catalog and each held-out user is assigned to the nearest
+    centroid of its class, the validation of the data-driven catalog applied within the divide.
     """
     key = ("cv" if with_cv else "in", id(inp.pod_cell))
     if key in _SPLIT_CACHE:
@@ -156,22 +157,43 @@ def split_families(inp: X.Inputs, with_cv: bool = False) -> dict:
     print(f"    split catalog: {n_dom} domestic and {len(np.unique(lab)) - n_dom} non-domestic profiles "
           f"on {len(part)} points")
     if with_cv:
-        n_f = int(REV.get("split_folds", 5))
-        rng = np.random.default_rng(SEED + 51)
-        fold = rng.permutation(len(part)) % n_f
+        #Lorenzo Giannuzzo: out of sample the catalog within the divide is validated exactly as the
+        # data-driven one: on the folds of X.build_families, the users of the other folds of each
+        # class are clustered again at the K of that class on the representation of the class,
+        # the curves are built from their days only, and each held-out user is assigned to the
+        # nearest centroid of its own class, as a new user would be allocated to the catalog
+        groups = inp.groups[inp.groups["pod"].isin(list(ix))]
+        pods_all, _ = X.user_X(inp, groups["pod"].to_numpy())
+        fold_all = np.random.default_rng(X.SEED).integers(0, X.N_FOLDS, len(pods_all))
+        fold_of = dict(zip(pods_all, fold_all))
         curves, keys, of_pod = [], [], {}
-        for f in range(n_f):
-            tr = fold != f
-            mem_f = {k: np.array([ix[p] for p in pods_arr[tr & (lab == k)]]) for k in np.unique(lab[tr])}
-            cat_f = X.catalog(inp, mem_f)
-            cv = X.expand(inp, cat_f)
-            for q, k in enumerate(list(cat_f["keys"])):
-                curves.append(np.asarray(cv[q]))
-                keys.append(f"{f}|{k}")
-            for p, k in zip(pods_arr[~tr], lab[~tr]):
-                of_pod[p] = f"{f}|{k}"
-            print(f"    split catalog, fold {f + 1}/{n_f}: {int(tr.sum())} users to build, "
-                  f"{int((~tr).sum())} held out")
+        for tag in ("D", "N"):
+            cls = part[part["split_group"].str.startswith(tag)]
+            if cls.empty:
+                continue
+            K_c = int(cls["split_group"].nunique())
+            pods_c, X_c = X.user_X(inp, cls["pod"].to_numpy())
+            f_c = np.array([fold_of.get(p, -1) for p in pods_c])
+            for f in range(X.N_FOLDS):
+                tr, te = f_c != f, f_c == f
+                if te.sum() == 0:
+                    continue
+                lab = X.ward_partition(X_c[tr], K_c)
+                ids = np.unique(lab)
+                cent = np.stack([X_c[tr][lab == g].mean(axis=0) for g in ids])
+                d2 = ((X_c[te][:, None, :] - cent[None, :, :]) ** 2).sum(axis=2)
+                te_lab = ids[d2.argmin(axis=1)]
+                mem_f = {g: np.array([ix[p] for p in pods_c[tr][lab == g]]) for g in ids}
+                cat_f = X.catalog(inp, mem_f)
+                cv = X.expand(inp, cat_f)
+                for q, g in enumerate(list(cat_f["keys"])):
+                    curves.append(np.asarray(cv[q]))
+                    keys.append(f"{f}|{tag}{int(g)}")
+                for p, g in zip(pods_c[te], te_lab):
+                    of_pod[p] = f"{f}|{tag}{int(g)}"
+                print(f"    split catalog, {'domestic' if tag == 'D' else 'non-domestic'} fold "
+                      f"{f + 1}/{X.N_FOLDS}: {int(tr.sum())} users clustered at K = {K_c}, "
+                      f"{int(te.sum())} held out")
         out["SPLIT_cv"] = {"curves": np.stack(curves), "keys": keys, "of_pod": of_pod}
     _SPLIT_CACHE[key] = out
     return out
